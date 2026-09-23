@@ -13,7 +13,6 @@ export async function GET(
     const user = await requirePermission('lptk.read');
     const { id } = params;
 
-    // Operator scope check
     if (user.role_code === 'OPERATOR_LPTK' && user.lptk_id !== id) {
       return errorResponse('FORBIDDEN', 'Anda hanya dapat mengakses data LPTK Anda sendiri.', 403);
     }
@@ -32,7 +31,48 @@ export async function GET(
       return errorResponse('NOT_FOUND', 'LPTK tidak ditemukan.', 404);
     }
 
-    return successResponse(rows[0]);
+    const lptk = rows[0];
+
+    // Fetch stats for this LPTK
+    const statsRows = await db.query`
+      SELECT 
+        count(p.id)::int as total_participants,
+        count(p.id) FILTER (WHERE p.gender_code = 'MALE')::int as male_participants,
+        count(p.id) FILTER (WHERE p.gender_code = 'FEMALE')::int as female_participants,
+        count(p.id) FILTER (WHERE p.status_code = 'VERIFIED')::int as verified_participants,
+        count(p.id) FILTER (WHERE p.status_code IN ('SUBMITTED', 'IN_REVIEW', 'DRAFT'))::int as pending_participants,
+        count(p.id) FILTER (WHERE p.status_code IN ('REVISION_REQUIRED', 'REJECTED'))::int as revision_participants
+      FROM public.participants p
+      WHERE p.lptk_id = ${id} AND p.deleted_at IS NULL;
+    `;
+
+    // Fetch participants in this LPTK
+    const participants = await db.query`
+      SELECT 
+        p.id, p.name, p.nik, p.gender_code, p.status_code, p.phone, p.photo_url,
+        p.school_or_institution, p.birth_place, p.birth_date,
+        c.name as category_name,
+        comp.name as competition_name
+      FROM public.participants p
+      LEFT JOIN public.participant_categories pc ON p.id = pc.participant_id
+      LEFT JOIN public.categories c ON pc.category_id = c.id
+      LEFT JOIN public.competitions comp ON p.competition_id = comp.id
+      WHERE p.lptk_id = ${id} AND p.deleted_at IS NULL
+      ORDER BY p.created_at DESC;
+    `;
+
+    return successResponse({
+      ...lptk,
+      stats: statsRows[0] || {
+        total_participants: 0,
+        male_participants: 0,
+        female_participants: 0,
+        verified_participants: 0,
+        pending_participants: 0,
+        revision_participants: 0,
+      },
+      participants: participants || [],
+    });
   } catch (err) {
     if (err instanceof AuthError) {
       return errorResponse(err.code, err.message, err.code === 'UNAUTHORIZED' ? 401 : 403);
@@ -63,45 +103,47 @@ export async function PATCH(
     }
     const oldData = existingRows[0];
 
+    if (user.role_code === 'OPERATOR_LPTK' && user.lptk_id !== id) {
+      return errorResponse('FORBIDDEN', 'Anda hanya dapat mengubah data LPTK Anda sendiri.', 403);
+    }
+
     const { village_id, code, name, leader_name, phone, address, active } = parsed.data;
 
-    // Check code duplication
     if (code && code !== oldData.code) {
-      const dup = await db.query`
+      const duplicateCode = await db.query`
         SELECT id FROM public.lptks WHERE code = ${code} AND id != ${id} AND deleted_at IS NULL LIMIT 1;
       `;
-      if (dup.length > 0) {
-        return errorResponse('DUPLICATE_CODE', 'Kode LPTK sudah digunakan.', 400);
+      if (duplicateCode && duplicateCode.length > 0) {
+        return errorResponse('CONFLICT', 'Kode LPTK sudah digunakan.', 409);
       }
     }
 
     const updatedRows = await db.query`
       UPDATE public.lptks
       SET
-        village_id = COALESCE(${village_id || null}, village_id),
-        code = COALESCE(${code || null}, code),
-        name = COALESCE(${name || null}, name),
-        leader_name = COALESCE(${leader_name || null}, leader_name),
-        phone = COALESCE(${phone || null}, phone),
-        address = COALESCE(${address || null}, address),
-        active = COALESCE(${active ?? null}, active),
+        village_id = COALESCE(${village_id}, village_id),
+        code = COALESCE(${code}, code),
+        name = COALESCE(${name}, name),
+        leader_name = COALESCE(${leader_name}, leader_name),
+        phone = COALESCE(${phone}, phone),
+        address = COALESCE(${address}, address),
+        active = COALESCE(${active}, active),
         updated_at = NOW()
-      WHERE id = ${id}
-      RETURNING id, village_id, code, name, leader_name, phone, address, active, created_at, updated_at;
+      WHERE id = ${id} AND deleted_at IS NULL
+      RETURNING *;
     `;
-
-    const newData = updatedRows[0];
 
     await recordAuditLog({
       userId: user.id,
       actionCode: 'UPDATE_LPTK',
       entityType: 'lptk',
       entityId: id,
-      oldData,
-      newData,
+      oldData: oldData,
+      newData: updatedRows[0],
+      
     });
 
-    return successResponse(newData);
+    return successResponse(updatedRows[0]);
   } catch (err) {
     if (err instanceof AuthError) {
       return errorResponse(err.code, err.message, err.code === 'UNAUTHORIZED' ? 401 : 403);
@@ -115,38 +157,38 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await requirePermission('lptk.write');
+    const user = await requirePermission('lptk.delete');
     const { id } = params;
 
-    // Check if referenced by participants
-    const partRef = await db.query`
+    const existingRows = await db.query`
+      SELECT * FROM public.lptks WHERE id = ${id} AND deleted_at IS NULL LIMIT 1;
+    `;
+    if (!existingRows || existingRows.length === 0) {
+      return errorResponse('NOT_FOUND', 'LPTK tidak ditemukan.', 404);
+    }
+    const oldData = existingRows[0];
+
+    const activeParticipants = await db.query`
       SELECT id FROM public.participants WHERE lptk_id = ${id} AND deleted_at IS NULL LIMIT 1;
     `;
-    if (partRef.length > 0) {
-      return errorResponse(
-        'DATA_REFERENCED',
-        'LPTK tidak dapat dihapus karena telah memiliki pendaftaran peserta.',
-        400
-      );
+    if (activeParticipants && activeParticipants.length > 0) {
+      return errorResponse('BAD_REQUEST', 'Tidak dapat menghapus LPTK yang masih memiliki peserta aktif.', 400);
     }
 
-    const deletedRows = await db.query`
+    await db.query`
       UPDATE public.lptks
       SET deleted_at = NOW()
-      WHERE id = ${id} AND deleted_at IS NULL
-      RETURNING id, code, name;
+      WHERE id = ${id};
     `;
-
-    if (!deletedRows || deletedRows.length === 0) {
-      return errorResponse('NOT_FOUND', 'LPTK tidak ditemukan atau sudah dihapus.', 404);
-    }
 
     await recordAuditLog({
       userId: user.id,
       actionCode: 'DELETE_LPTK',
       entityType: 'lptk',
       entityId: id,
-      oldData: deletedRows[0],
+      oldData: oldData,
+      newData: null,
+      
     });
 
     return successResponse({ message: 'LPTK berhasil dihapus.' });

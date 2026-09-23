@@ -5,22 +5,30 @@ import Link from 'next/link';
 import {
   Plus,
   Search,
+  FileDown,
+  Building2,
+  CheckSquare,
+  AlertTriangle,
+  Eye,
   Edit2,
   Trash2,
-  Eye,
-  FileDown,
-  UserCheck,
-  Building2,
-  Trophy,
-  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { PaginationBar } from '@/components/ui/pagination';
 import { ViewToggle, ViewMode } from '@/components/ui/view-toggle';
 import { BulkToolbar } from '@/components/ui/bulk-toolbar';
-import { Participant, Competition, Lptk } from '@/types/database';
+import { ColumnToggle } from '@/components/ui/column-toggle';
+import { ActionMenu } from '@/components/ui/action-menu';
+import { Competition, Lptk } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
+
+const PARTICIPANT_COLUMNS = [
+  { id: 'lptk', label: 'LPTK' },
+  { id: 'lomba', label: 'Lomba & Cabang' },
+  { id: 'berkas', label: 'Berkas' },
+  { id: 'status', label: 'Status' },
+];
 
 export default function ParticipantsPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -32,8 +40,19 @@ export default function ParticipantsPage() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+
+  // Selective Bulk Selection Mode (disabled by default)
+  const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+
+  // Column Visibility Filter
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([
+    'lptk',
+    'lomba',
+    'berkas',
+    'status',
+  ]);
 
   // Custom Delete Modal states
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
@@ -124,6 +143,7 @@ export default function ParticipantsPage() {
       const json = await res.json();
       if (json.success) {
         setSelectedIds([]);
+        setIsSelectMode(false);
         setIsBulkDeleteModalOpen(false);
         fetchParticipants();
       }
@@ -156,20 +176,53 @@ export default function ParticipantsPage() {
     );
   };
 
+  const handleToggleSelectMode = () => {
+    if (isSelectMode) {
+      setIsSelectMode(false);
+      setSelectedIds([]);
+    } else {
+      setIsSelectMode(true);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'DRAFT':
-        return <span className="bg-neutral-100 text-neutral-600 border border-neutral-300 px-2 py-0.5 rounded text-[10px] font-mono">DRAF</span>;
+        return (
+          <span className="bg-neutral-100 text-neutral-600 border border-neutral-300 px-2 py-0.5 rounded text-[10px] font-mono">
+            DRAF
+          </span>
+        );
       case 'SUBMITTED':
-        return <span className="bg-neutral-200 text-black border border-neutral-400 px-2 py-0.5 rounded text-[10px] font-mono font-medium">TERKIRIM</span>;
+        return (
+          <span className="bg-neutral-200 text-black border border-neutral-400 px-2 py-0.5 rounded text-[10px] font-mono font-medium">
+            TERKIRIM
+          </span>
+        );
       case 'IN_REVIEW':
-        return <span className="bg-neutral-800 text-white border border-black px-2 py-0.5 rounded text-[10px] font-mono">DITINJAU</span>;
+        return (
+          <span className="bg-neutral-800 text-white border border-black px-2 py-0.5 rounded text-[10px] font-mono">
+            DITINJAU
+          </span>
+        );
       case 'VERIFIED':
-        return <span className="bg-black text-white border border-black px-2 py-0.5 rounded text-[10px] font-mono font-bold">VALID</span>;
+        return (
+          <span className="bg-black text-white border border-black px-2 py-0.5 rounded text-[10px] font-mono font-bold">
+            VALID
+          </span>
+        );
       case 'REVISION_REQUIRED':
-        return <span className="bg-white text-black border border-black underline px-2 py-0.5 rounded text-[10px] font-mono">REVISI</span>;
+        return (
+          <span className="bg-white text-black border border-black underline px-2 py-0.5 rounded text-[10px] font-mono">
+            REVISI
+          </span>
+        );
       case 'REJECTED':
-        return <span className="bg-neutral-900 text-white line-through px-2 py-0.5 rounded text-[10px] font-mono">DITOLAK</span>;
+        return (
+          <span className="bg-neutral-900 text-white line-through px-2 py-0.5 rounded text-[10px] font-mono">
+            DITOLAK
+          </span>
+        );
       default:
         return <span className="text-[10px] font-mono">{status}</span>;
     }
@@ -181,11 +234,32 @@ export default function ParticipantsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-black uppercase">Peserta</h1>
-          <p className="text-xs text-neutral-500">Pendaftaran dan verifikasi kafilah MTQ/LPTK Mahato</p>
+          <p className="text-xs text-neutral-500">
+            Pendaftaran dan verifikasi kafilah MTQ/LPTK Mahato
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant={isSelectMode ? 'primary' : 'outline'}
+            size="sm"
+            onClick={handleToggleSelectMode}
+            className="gap-1.5 font-bold text-xs"
+          >
+            <CheckSquare className="w-3.5 h-3.5" />
+            {isSelectMode ? 'Batal' : 'Pilih'}
+          </Button>
+          <ColumnToggle
+            columns={PARTICIPANT_COLUMNS}
+            visibleColumns={visibleColumns}
+            onChange={setVisibleColumns}
+          />
           <ViewToggle mode={viewMode} onChange={setViewMode} />
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 font-medium">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            className="gap-1.5 font-medium"
+          >
             <FileDown className="w-3.5 h-3.5" />
             Ekspor
           </Button>
@@ -198,9 +272,9 @@ export default function ParticipantsPage() {
         </div>
       </div>
 
-      {/* Filter Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-        <div className="relative">
+      {/* Filter / Search Bar */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
           <input
             type="text"
@@ -279,20 +353,30 @@ export default function ParticipantsPage() {
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="w-10 px-3 py-2.5 text-center">
-                    <input
-                      type="checkbox"
-                      checked={items.length > 0 && selectedIds.length === items.length}
-                      onChange={(e) => toggleSelectAll(e.target.checked)}
-                      className="rounded border-neutral-300"
-                    />
-                  </th>
-                  <th className="px-4 py-2.5">Peserta</th>
-                  <th className="px-4 py-2.5">LPTK Desa</th>
-                  <th className="px-4 py-2.5">Lomba & Cabang</th>
-                  <th className="px-4 py-2.5">Berkas</th>
-                  <th className="px-4 py-2.5">Status</th>
-                  <th className="w-28 px-4 py-2.5 text-right">Aksi</th>
+                  {isSelectMode && (
+                    <th className="w-10 px-3 py-2.5 text-center whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={items.length > 0 && selectedIds.length === items.length}
+                        onChange={(e) => toggleSelectAll(e.target.checked)}
+                        className="rounded border-neutral-300"
+                      />
+                    </th>
+                  )}
+                  <th className="px-4 py-2.5 whitespace-nowrap">Peserta</th>
+                  {visibleColumns.includes('lptk') && (
+                    <th className="px-4 py-2.5 whitespace-nowrap">LPTK Desa</th>
+                  )}
+                  {visibleColumns.includes('lomba') && (
+                    <th className="px-4 py-2.5 whitespace-nowrap">Lomba & Cabang</th>
+                  )}
+                  {visibleColumns.includes('berkas') && (
+                    <th className="px-4 py-2.5 whitespace-nowrap">Berkas</th>
+                  )}
+                  {visibleColumns.includes('status') && (
+                    <th className="px-4 py-2.5 whitespace-nowrap">Status</th>
+                  )}
+                  <th className="px-4 py-2.5 whitespace-nowrap text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
@@ -306,15 +390,17 @@ export default function ParticipantsPage() {
 
                   return (
                     <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
-                      <td className="px-3 py-2.5 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(item.id)}
-                          onChange={() => toggleSelectOne(item.id)}
-                          className="rounded border-neutral-300"
-                        />
-                      </td>
-                      <td className="px-4 py-2.5">
+                      {isSelectMode && (
+                        <td className="px-3 py-2.5 text-center whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(item.id)}
+                            onChange={() => toggleSelectOne(item.id)}
+                            className="rounded border-neutral-300"
+                          />
+                        </td>
+                      )}
+                      <td className="px-4 py-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
                           {item.photo_url ? (
                             <img
@@ -331,49 +417,79 @@ export default function ParticipantsPage() {
                             </div>
                           )}
                           <div className="min-w-0">
-                            <Link href={`/admin/participants/${item.id}`} className="font-semibold text-black hover:underline block truncate">
+                            <Link
+                              href={`/admin/participants/${item.id}`}
+                              className="font-semibold text-black hover:underline block truncate"
+                            >
                               {item.name}
                             </Link>
-                            <span className="font-mono text-[10px] text-neutral-500">{item.nik}</span>
+                            <span className="font-mono text-[10px] text-neutral-500">
+                              {item.nik}
+                            </span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-2.5">
-                        <div className="font-medium">{item.lptk_name}</div>
-                        <div className="text-[10px] text-neutral-400">{item.village_name}</div>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <div className="text-neutral-700 font-medium truncate max-w-xs">{item.competition_name}</div>
-                        {Array.isArray(item.categories) && item.categories.length > 0 && (
-                          <div className="text-[10px] text-neutral-500 truncate max-w-xs">
-                            {item.categories.map((c: any) => c.name).join(', ')}
+                      {visibleColumns.includes('lptk') && (
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          <div className="font-medium text-black">{item.lptk_name}</div>
+                          <div className="text-[10px] text-neutral-400">{item.village_name}</div>
+                        </td>
+                      )}
+                      {visibleColumns.includes('lomba') && (
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          <div className="text-neutral-700 font-medium truncate max-w-xs">
+                            {item.competition_name}
                           </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5 font-mono text-[11px] text-neutral-600">
-                        {item.documents_count || 0} berkas
-                      </td>
-                      <td className="px-4 py-2.5">{getStatusBadge(item.status_code)}</td>
-                      <td className="px-4 py-2.5 text-right space-x-1">
-                        <Link href={`/admin/participants/${item.id}`}>
-                          <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Lihat">
-                            <Eye className="w-3.5 h-3.5" />
+                          {Array.isArray(item.categories) && item.categories.length > 0 && (
+                            <div className="text-[10px] text-neutral-500 truncate max-w-xs">
+                              {item.categories.map((c: any) => c.name).join(', ')}
+                            </div>
+                          )}
+                        </td>
+                      )}
+                      {visibleColumns.includes('berkas') && (
+                        <td className="px-4 py-2.5 whitespace-nowrap font-mono text-[11px] text-neutral-600">
+                          {item.documents_count || 0} berkas
+                        </td>
+                      )}
+                      {visibleColumns.includes('status') && (
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          {getStatusBadge(item.status_code)}
+                        </td>
+                      )}
+                      <td className="px-4 py-2.5 whitespace-nowrap text-right">
+                        {/* Mobile 3-Dots Action Menu */}
+                        <div className="sm:hidden flex justify-end">
+                          <ActionMenu
+                            detailHref={`/admin/participants/${item.id}`}
+                            editHref={`/admin/participants/${item.id}/edit`}
+                            onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
+                          />
+                        </div>
+
+                        {/* Desktop Full Actions */}
+                        <div className="hidden sm:inline-flex items-center justify-end gap-1">
+                          <Link href={`/admin/participants/${item.id}`}>
+                            <Button variant="outline" size="sm" className="gap-1 font-bold">
+                              <Eye className="w-3.5 h-3.5" />
+                              Lihat
+                            </Button>
+                          </Link>
+                          <Link href={`/admin/participants/${item.id}/edit`}>
+                            <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                            className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
+                            aria-label="Hapus"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
-                        </Link>
-                        <Link href={`/admin/participants/${item.id}/edit`}>
-                          <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                          className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
-                          aria-label="Hapus"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -384,9 +500,9 @@ export default function ParticipantsPage() {
           <PaginationBar meta={meta} onPageChange={setPage} />
         </div>
       ) : (
-        /* Grid Mode With Photos */
+        /* Grid Mode: 2 Columns on Mobile / Android, 5 Columns on Desktop */
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
             {items.map((item: any) => {
               const initials = item.name
                 .split(' ')
@@ -398,80 +514,96 @@ export default function ParticipantsPage() {
               return (
                 <div
                   key={item.id}
-                  className="bg-white border border-neutral-300 p-3.5 rounded-lg hover:border-black transition-all flex flex-col justify-between shadow-sm group"
+                  className="bg-white border border-neutral-300 p-2.5 sm:p-3 rounded-lg hover:border-black transition-all flex flex-col justify-between shadow-sm group"
                 >
                   <div>
-                    {/* Header: NIK + Checkbox */}
-                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-neutral-100">
-                      <span className="font-mono text-[11px] text-neutral-500 font-medium">{item.nik}</span>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => toggleSelectOne(item.id)}
-                        className="rounded border-neutral-300 text-black focus:ring-black cursor-pointer"
-                      />
+                    {/* Header: Status + Selection Checkbox / 3-dots */}
+                    <div className="flex items-start justify-between gap-1 mb-2 pb-1.5 border-b border-neutral-100">
+                      {getStatusBadge(item.status_code)}
+                      {isSelectMode ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => toggleSelectOne(item.id)}
+                          className="rounded border-neutral-300 text-black focus:ring-black cursor-pointer h-4 w-4"
+                        />
+                      ) : (
+                        <ActionMenu
+                          className="sm:hidden"
+                          detailHref={`/admin/participants/${item.id}`}
+                          editHref={`/admin/participants/${item.id}/edit`}
+                          onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
+                        />
+                      )}
                     </div>
 
                     {/* Participant Info & Photo */}
-                    <div className="flex items-start gap-3 mb-3">
+                    <div className="flex flex-col items-center text-center mb-2">
                       {item.photo_url ? (
                         <img
                           src={item.photo_url}
                           alt={item.name}
-                          className="w-12 h-12 rounded object-cover border border-neutral-200 flex-shrink-0"
+                          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-neutral-200 mb-1.5 shadow-sm"
                           onError={(e) => {
                             (e.target as HTMLElement).style.display = 'none';
                           }}
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded bg-neutral-100 border border-neutral-200 flex items-center justify-center font-bold text-xs text-neutral-700 flex-shrink-0">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center font-bold text-xs text-neutral-700 mb-1.5">
                           {initials}
                         </div>
                       )}
-                      <div className="min-w-0 flex-1">
-                        <Link
-                          href={`/admin/participants/${item.id}`}
-                          className="font-bold text-sm text-black leading-snug hover:underline line-clamp-1 block"
-                        >
-                          {item.name}
-                        </Link>
-                        <div className="text-[11px] text-neutral-600 mt-0.5 flex items-center gap-1 truncate">
-                          <Building2 className="w-3 h-3 text-neutral-400 flex-shrink-0" />
-                          <span className="truncate">{item.lptk_name || item.village_name}</span>
-                        </div>
-                        {Array.isArray(item.categories) && item.categories.length > 0 && (
-                          <div className="mt-1">
-                            <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-medium bg-neutral-100 text-neutral-700 border border-neutral-200 truncate max-w-full">
-                              {item.categories.map((c: any) => c.name).join(', ')}
-                            </span>
-                          </div>
-                        )}
+                      <Link
+                        href={`/admin/participants/${item.id}`}
+                        className="font-bold text-xs sm:text-sm text-black leading-tight hover:underline line-clamp-2 block"
+                      >
+                        {item.name}
+                      </Link>
+                      <div className="font-mono text-[9px] sm:text-[10px] text-neutral-500 mt-0.5 truncate">
+                        {item.nik}
                       </div>
                     </div>
+
+                    {visibleColumns.includes('lptk') && (
+                      <div className="text-[10px] text-neutral-600 mt-1 flex items-center justify-center gap-1 truncate">
+                        <Building2 className="w-3 h-3 text-neutral-400 flex-shrink-0" />
+                        <span className="truncate">{item.lptk_name || item.village_name}</span>
+                      </div>
+                    )}
+
+                    {visibleColumns.includes('lomba') &&
+                      Array.isArray(item.categories) &&
+                      item.categories.length > 0 && (
+                        <div className="mt-1 text-center">
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-medium bg-neutral-100 text-neutral-700 border border-neutral-200 truncate max-w-full">
+                            {item.categories.map((c: any) => c.name).join(', ')}
+                          </span>
+                        </div>
+                      )}
                   </div>
 
-                  {/* Footer Actions & Status */}
-                  <div className="flex justify-between items-center pt-2.5 border-t border-neutral-100 mt-2">
-                    {getStatusBadge(item.status_code)}
-                    <div className="flex gap-1">
-                      <Link href={`/admin/participants/${item.id}`}>
-                        <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Lihat">
-                          <Eye className="w-3.5 h-3.5" />
-                        </Button>
-                      </Link>
+                  {/* Desktop Footer Actions */}
+                  <div className="hidden sm:flex justify-between items-center pt-2 border-t border-neutral-100 mt-2">
+                    <Link href={`/admin/participants/${item.id}`}>
+                      <Button variant="outline" size="sm" className="h-6 px-2 text-[10px] font-bold gap-1">
+                        <Eye className="w-3 h-3" />
+                        Lihat
+                      </Button>
+                    </Link>
+                    <div className="flex items-center gap-1">
                       <Link href={`/admin/participants/${item.id}/edit`}>
-                        <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
-                          <Edit2 className="w-3.5 h-3.5" />
+                        <Button variant="outline" size="sm" className="p-1 h-6 w-6" aria-label="Ubah">
+                          <Edit2 className="w-3 h-3" />
                         </Button>
                       </Link>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                        className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
+                        className="p-1 h-6 w-6 text-neutral-600 hover:text-black"
                         aria-label="Hapus"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
@@ -485,13 +617,15 @@ export default function ParticipantsPage() {
         </div>
       )}
 
-      {/* Floating Bulk Toolbar */}
-      <BulkToolbar
-        selectedCount={selectedIds.length}
-        onClear={() => setSelectedIds([])}
-        onDelete={() => setIsBulkDeleteModalOpen(true)}
-        isLoading={bulkLoading}
-      />
+      {/* Floating Bulk Toolbar (only active when in selection mode) */}
+      {isSelectMode && (
+        <BulkToolbar
+          selectedCount={selectedIds.length}
+          onClear={() => setSelectedIds([])}
+          onDelete={() => setIsBulkDeleteModalOpen(true)}
+          isLoading={bulkLoading}
+        />
+      )}
 
       {/* Custom Delete Single Item Modal */}
       <Modal
@@ -505,7 +639,6 @@ export default function ParticipantsPage() {
             <div className="text-xs text-neutral-700 leading-relaxed">
               Anda akan menghapus pendaftaran peserta{' '}
               <strong className="text-black font-semibold">"{deleteTarget?.name}"</strong>.
-              Tindakan ini akan memindahkan data ke riwayat terhapus.
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100">
@@ -541,7 +674,6 @@ export default function ParticipantsPage() {
             <div className="text-xs text-neutral-700 leading-relaxed">
               Anda akan menghapus secara massal{' '}
               <strong className="text-black font-semibold">{selectedIds.length}</strong> data peserta terpilih.
-              Pastikan Anda telah memeriksa data sebelum melanjutkan.
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100">

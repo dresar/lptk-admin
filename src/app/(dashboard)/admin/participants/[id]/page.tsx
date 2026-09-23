@@ -68,7 +68,7 @@ export default function ParticipantDetailPage() {
   }, [id, fetchParticipant]);
 
   const handleSubmitParticipant = async () => {
-    if (!confirm('Kirim pendaftaran peserta ini ke antrean verifikasi?')) return;
+    
     setSubmitting(true);
     try {
       const res = await fetch(`/api/admin/participants/${id}/submit`, { method: 'POST' });
@@ -125,7 +125,7 @@ export default function ParticipantDetailPage() {
   };
 
   const handleDeleteDoc = async (docId: string) => {
-    if (!confirm('Hapus berkas persyaratan ini?')) return;
+    
     try {
       const res = await fetch(`/api/admin/documents/${docId}`, { method: 'DELETE' });
       const json = await res.json();
