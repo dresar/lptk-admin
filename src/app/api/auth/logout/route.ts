@@ -27,15 +27,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Clear cookie header
-    const clearCookieHeader = `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-
-    return successResponse(
+    const response = successResponse(
       { message: 'Berhasil keluar dari sistem.' },
       undefined,
-      200,
-      { 'Set-Cookie': clearCookieHeader }
+      200
     );
+
+    response.cookies.delete(SESSION_COOKIE_NAME);
+    return response;
   } catch (err) {
     return handleServerError(err);
   }

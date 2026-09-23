@@ -103,12 +103,7 @@ export async function POST(req: NextRequest) {
       newData: { email: user.email, role: user.role_code },
     });
 
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cookieHeader = `${SESSION_COOKIE_NAME}=${rawToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ABSOLUTE_TIMEOUT_MS / 1000}${
-      isProduction ? '; Secure' : ''
-    }`;
-
-    return successResponse(
+    const response = successResponse(
       {
         user: {
           id: user.id,
@@ -121,9 +116,21 @@ export async function POST(req: NextRequest) {
         },
       },
       undefined,
-      200,
-      { 'Set-Cookie': cookieHeader }
+      200
     );
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    response.cookies.set({
+      name: SESSION_COOKIE_NAME,
+      value: rawToken,
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: isProduction,
+      maxAge: Math.floor(ABSOLUTE_TIMEOUT_MS / 1000),
+    });
+
+    return response;
   } catch (err) {
     return handleServerError(err);
   }
