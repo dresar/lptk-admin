@@ -148,7 +148,7 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
               L
             </div>
             <div className="flex flex-col">
-              <span className="text-white font-bold leading-none">LPTK ADMIN</span>
+              <span className="text-white font-bold leading-none">LPTK MAHATO</span>
               <span className="text-[9px] text-neutral-400 font-mono tracking-tight lowercase">
                 kecamatan panel
               </span>

@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LPTK Admin — Sistem Pendataan & Verifikasi Peserta',
-  description: 'Admin Panel Sistem Pendataan dan Verifikasi Peserta Lomba LPTK Kecamatan',
+  title: 'LPTK Mahato — Sistem Pendataan & Verifikasi Peserta',
+  description: 'Admin Panel Sistem Pendataan dan Verifikasi Peserta Lomba LPTK Kecamatan Mahato',
 };
 
 export default function RootLayout({

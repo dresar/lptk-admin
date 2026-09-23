@@ -55,7 +55,7 @@ export default function LoginPage() {
             L
           </div>
           <h1 className="text-base font-bold text-black tracking-tight uppercase">
-            LPTK Admin Panel
+            LPTK Mahato
           </h1>
           <p className="text-xs text-neutral-500 mt-0.5">
             Sistem Pendataan & Verifikasi Peserta
