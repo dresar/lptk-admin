@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       `;
       const rawSql = `
         SELECT 
-          c.id, c.name, c.description, c.period_year, c.status_code, 
+          c.id, c.name, c.description, c.period_year, c.status_code, c.banner_url,
           c.registration_open_at, c.registration_close_at, c.created_at, c.updated_at,
           COUNT(DISTINCT cat.id)::int AS categories_count,
           COUNT(DISTINCT p.id)::int AS participants_count
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       countQuery = db.query`SELECT COUNT(*)::int AS count FROM public.competitions WHERE deleted_at IS NULL`;
       const rawSql = `
         SELECT 
-          c.id, c.name, c.description, c.period_year, c.status_code, 
+          c.id, c.name, c.description, c.period_year, c.status_code, c.banner_url,
           c.registration_open_at, c.registration_close_at, c.created_at, c.updated_at,
           COUNT(DISTINCT cat.id)::int AS categories_count,
           COUNT(DISTINCT p.id)::int AS participants_count

@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
         p.lptk_id, l.name AS lptk_name,
         l.village_id, v.name AS village_name,
         p.name, p.nik, p.gender_code, p.birth_place, p.birth_date,
-        p.phone, p.status_code, p.submitted_at, p.created_at, p.updated_at,
+        p.phone, p.status_code, p.photo_url, p.submitted_at, p.created_at, p.updated_at,
         COALESCE(
           json_agg(json_build_object('id', cat.id, 'name', cat.name)) FILTER (WHERE cat.id IS NOT NULL),
           '[]'

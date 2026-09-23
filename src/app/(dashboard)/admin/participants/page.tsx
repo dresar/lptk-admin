@@ -12,8 +12,10 @@ import {
   UserCheck,
   Building2,
   Trophy,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
 import { PaginationBar } from '@/components/ui/pagination';
 import { ViewToggle, ViewMode } from '@/components/ui/view-toggle';
 import { BulkToolbar } from '@/components/ui/bulk-toolbar';
@@ -21,7 +23,7 @@ import { Participant, Competition, Lptk } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
 
 export default function ParticipantsPage() {
-  const [items, setItems] = useState<Participant[]>([]);
+  const [items, setItems] = useState<any[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -32,6 +34,11 @@ export default function ParticipantsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+
+  // Custom Delete Modal states
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [lptks, setLptks] = useState<Lptk[]>([]);
@@ -85,23 +92,28 @@ export default function ParticipantsPage() {
     fetchParticipants();
   }, [fetchParticipants]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Hapus pendaftaran peserta ini?')) return;
+  // Execute single delete
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
-      const res = await fetch(`/api/admin/participants/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/participants/${deleteTarget.id}`, { method: 'DELETE' });
       const json = await res.json();
       if (!res.ok || !json.success) {
         alert(json.error?.message || 'Gagal menghapus peserta.');
         return;
       }
+      setDeleteTarget(null);
       fetchParticipants();
-    } catch (err) {
+    } catch {
       alert('Terjadi kesalahan jaringan.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (!confirm(`Hapus ${selectedIds.length} peserta terpilih?`)) return;
+  // Execute bulk delete
+  const confirmBulkDelete = async () => {
     setBulkLoading(true);
     try {
       const res = await fetch('/api/admin/participants/bulk-delete', {
@@ -112,9 +124,10 @@ export default function ParticipantsPage() {
       const json = await res.json();
       if (json.success) {
         setSelectedIds([]);
+        setIsBulkDeleteModalOpen(false);
         fetchParticipants();
       }
-    } catch (err) {
+    } catch {
       alert('Gagal melakukan hapus massal.');
     } finally {
       setBulkLoading(false);
@@ -167,17 +180,17 @@ export default function ParticipantsPage() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black">Peserta</h1>
-          <p className="text-xs text-neutral-500">Pendaftaran dan verifikasi berkas kafilah MTQ/LPTK</p>
+          <h1 className="text-xl font-bold tracking-tight text-black uppercase">Peserta</h1>
+          <p className="text-xs text-neutral-500">Pendaftaran dan verifikasi kafilah MTQ/LPTK Mahato</p>
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5">
+          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 font-medium">
             <FileDown className="w-3.5 h-3.5" />
             Ekspor
           </Button>
           <Link href="/admin/participants/new">
-            <Button size="sm" className="gap-1.5">
+            <Button size="sm" className="gap-1.5 font-bold">
               <Plus className="w-3.5 h-3.5" />
               Tambah
             </Button>
@@ -261,7 +274,7 @@ export default function ParticipantsPage() {
           Tidak ada data peserta ditemukan.
         </div>
       ) : viewMode === 'list' ? (
-        <div className="bg-white border border-neutral-200 rounded overflow-hidden">
+        <div className="bg-white border border-neutral-200 rounded overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
@@ -274,120 +287,197 @@ export default function ParticipantsPage() {
                       className="rounded border-neutral-300"
                     />
                   </th>
-                  <th className="px-4 py-2.5">Nama & NIK</th>
-                  <th className="px-4 py-2.5">LPTK</th>
-                  <th className="px-4 py-2.5">Lomba</th>
+                  <th className="px-4 py-2.5">Peserta</th>
+                  <th className="px-4 py-2.5">LPTK Desa</th>
+                  <th className="px-4 py-2.5">Lomba & Cabang</th>
                   <th className="px-4 py-2.5">Berkas</th>
                   <th className="px-4 py-2.5">Status</th>
                   <th className="w-28 px-4 py-2.5 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
-                {items.map((item: any) => (
-                  <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
-                    <td className="px-3 py-2.5 text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => toggleSelectOne(item.id)}
-                        className="rounded border-neutral-300"
-                      />
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <div className="font-semibold text-black">{item.name}</div>
-                      <div className="font-mono text-[11px] text-neutral-500">{item.nik}</div>
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <div>{item.lptk_name}</div>
-                      <div className="text-[10px] text-neutral-400">{item.village_name}</div>
-                    </td>
-                    <td className="px-4 py-2.5 text-neutral-700">{item.competition_name}</td>
-                    <td className="px-4 py-2.5 font-mono text-[11px] text-neutral-600">
-                      {item.documents_count || 0} berkas
-                    </td>
-                    <td className="px-4 py-2.5">{getStatusBadge(item.status_code)}</td>
-                    <td className="px-4 py-2.5 text-right space-x-1">
-                      <Link href={`/admin/participants/${item.id}`}>
-                        <Button variant="outline" size="sm" className="p-1.5" aria-label="Lihat">
-                          <Eye className="w-3.5 h-3.5" />
+                {items.map((item: any) => {
+                  const initials = item.name
+                    .split(' ')
+                    .map((n: string) => n[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase();
+
+                  return (
+                    <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
+                      <td className="px-3 py-2.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => toggleSelectOne(item.id)}
+                          className="rounded border-neutral-300"
+                        />
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          {item.photo_url ? (
+                            <img
+                              src={item.photo_url}
+                              alt={item.name}
+                              className="w-8 h-8 rounded object-cover border border-neutral-200 flex-shrink-0"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded bg-neutral-100 border border-neutral-300 flex items-center justify-center font-bold text-[10px] text-neutral-700 flex-shrink-0">
+                              {initials}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <Link href={`/admin/participants/${item.id}`} className="font-semibold text-black hover:underline block truncate">
+                              {item.name}
+                            </Link>
+                            <span className="font-mono text-[10px] text-neutral-500">{item.nik}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <div className="font-medium">{item.lptk_name}</div>
+                        <div className="text-[10px] text-neutral-400">{item.village_name}</div>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <div className="text-neutral-700 font-medium truncate max-w-xs">{item.competition_name}</div>
+                        {Array.isArray(item.categories) && item.categories.length > 0 && (
+                          <div className="text-[10px] text-neutral-500 truncate max-w-xs">
+                            {item.categories.map((c: any) => c.name).join(', ')}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 font-mono text-[11px] text-neutral-600">
+                        {item.documents_count || 0} berkas
+                      </td>
+                      <td className="px-4 py-2.5">{getStatusBadge(item.status_code)}</td>
+                      <td className="px-4 py-2.5 text-right space-x-1">
+                        <Link href={`/admin/participants/${item.id}`}>
+                          <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Lihat">
+                            <Eye className="w-3.5 h-3.5" />
+                          </Button>
+                        </Link>
+                        <Link href={`/admin/participants/${item.id}/edit`}>
+                          <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                          className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
+                          aria-label="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
-                      </Link>
-                      <Link href={`/admin/participants/${item.id}/edit`}>
-                        <Button variant="outline" size="sm" className="p-1.5" aria-label="Ubah">
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1.5"
-                        aria-label="Hapus"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
           <PaginationBar meta={meta} onPageChange={setPage} />
         </div>
       ) : (
-        /* Grid Mode */
+        /* Grid Mode With Photos */
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {items.map((item: any) => (
-              <div
-                key={item.id}
-                className="bg-white border border-neutral-200 p-4 rounded hover:border-black transition-colors flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs text-neutral-500">{item.nik}</span>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(item.id)}
-                      onChange={() => toggleSelectOne(item.id)}
-                      className="rounded border-neutral-300"
-                    />
+            {items.map((item: any) => {
+              const initials = item.name
+                .split(' ')
+                .map((n: string) => n[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase();
+
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white border border-neutral-300 p-3.5 rounded-lg hover:border-black transition-all flex flex-col justify-between shadow-sm group"
+                >
+                  <div>
+                    {/* Header: NIK + Checkbox */}
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-neutral-100">
+                      <span className="font-mono text-[11px] text-neutral-500 font-medium">{item.nik}</span>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(item.id)}
+                        onChange={() => toggleSelectOne(item.id)}
+                        className="rounded border-neutral-300 text-black focus:ring-black cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Participant Info & Photo */}
+                    <div className="flex items-start gap-3 mb-3">
+                      {item.photo_url ? (
+                        <img
+                          src={item.photo_url}
+                          alt={item.name}
+                          className="w-12 h-12 rounded object-cover border border-neutral-200 flex-shrink-0"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-neutral-100 border border-neutral-200 flex items-center justify-center font-bold text-xs text-neutral-700 flex-shrink-0">
+                          {initials}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          href={`/admin/participants/${item.id}`}
+                          className="font-bold text-sm text-black leading-snug hover:underline line-clamp-1 block"
+                        >
+                          {item.name}
+                        </Link>
+                        <div className="text-[11px] text-neutral-600 mt-0.5 flex items-center gap-1 truncate">
+                          <Building2 className="w-3 h-3 text-neutral-400 flex-shrink-0" />
+                          <span className="truncate">{item.lptk_name || item.village_name}</span>
+                        </div>
+                        {Array.isArray(item.categories) && item.categories.length > 0 && (
+                          <div className="mt-1">
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-medium bg-neutral-100 text-neutral-700 border border-neutral-200 truncate max-w-full">
+                              {item.categories.map((c: any) => c.name).join(', ')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="font-bold text-sm text-black mb-1">{item.name}</div>
-                  <div className="text-xs text-neutral-600 mb-1 flex items-center gap-1">
-                    <Building2 className="w-3.5 h-3.5 text-neutral-400" />
-                    <span>{item.lptk_name}</span>
-                  </div>
-                  <div className="text-xs text-neutral-500 mb-2 flex items-center gap-1">
-                    <Trophy className="w-3.5 h-3.5 text-neutral-400" />
-                    <span>{item.competition_name}</span>
+
+                  {/* Footer Actions & Status */}
+                  <div className="flex justify-between items-center pt-2.5 border-t border-neutral-100 mt-2">
+                    {getStatusBadge(item.status_code)}
+                    <div className="flex gap-1">
+                      <Link href={`/admin/participants/${item.id}`}>
+                        <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Lihat">
+                          <Eye className="w-3.5 h-3.5" />
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/participants/${item.id}/edit`}>
+                        <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                        className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
+                        aria-label="Hapus"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center mt-4 pt-3 border-t border-neutral-100">
-                  {getStatusBadge(item.status_code)}
-                  <div className="flex gap-1">
-                    <Link href={`/admin/participants/${item.id}`}>
-                      <Button variant="outline" size="sm" className="p-1.5">
-                        <Eye className="w-3.5 h-3.5" />
-                      </Button>
-                    </Link>
-                    <Link href={`/admin/participants/${item.id}/edit`}>
-                      <Button variant="outline" size="sm" className="p-1.5">
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(item.id)}
-                      className="p-1.5"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="mt-3 bg-white border border-neutral-200 rounded">
             <PaginationBar meta={meta} onPageChange={setPage} />
@@ -395,13 +485,85 @@ export default function ParticipantsPage() {
         </div>
       )}
 
-      {/* Bulk Delete Toolbar */}
+      {/* Floating Bulk Toolbar */}
       <BulkToolbar
         selectedCount={selectedIds.length}
-        onDelete={handleBulkDelete}
         onClear={() => setSelectedIds([])}
+        onDelete={() => setIsBulkDeleteModalOpen(true)}
         isLoading={bulkLoading}
       />
+
+      {/* Custom Delete Single Item Modal */}
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Konfirmasi Hapus"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded">
+            <AlertTriangle className="w-5 h-5 text-black flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-neutral-700 leading-relaxed">
+              Anda akan menghapus pendaftaran peserta{' '}
+              <strong className="text-black font-semibold">"{deleteTarget?.name}"</strong>.
+              Tindakan ini akan memindahkan data ke riwayat terhapus.
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteTarget(null)}
+              disabled={isDeleting}
+            >
+              Batal
+            </Button>
+            <Button
+              size="sm"
+              onClick={confirmDelete}
+              isLoading={isDeleting}
+              className="bg-black hover:bg-neutral-800 text-white font-bold"
+            >
+              Hapus
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Custom Bulk Delete Confirmation Modal */}
+      <Modal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        title="Konfirmasi Hapus Massal"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded">
+            <AlertTriangle className="w-5 h-5 text-black flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-neutral-700 leading-relaxed">
+              Anda akan menghapus secara massal{' '}
+              <strong className="text-black font-semibold">{selectedIds.length}</strong> data peserta terpilih.
+              Pastikan Anda telah memeriksa data sebelum melanjutkan.
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBulkDeleteModalOpen(false)}
+              disabled={bulkLoading}
+            >
+              Batal
+            </Button>
+            <Button
+              size="sm"
+              onClick={confirmBulkDelete}
+              isLoading={bulkLoading}
+              className="bg-black hover:bg-neutral-800 text-white font-bold"
+            >
+              Hapus
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

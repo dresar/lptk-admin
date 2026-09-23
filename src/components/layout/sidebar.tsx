@@ -195,19 +195,23 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
         {/* User Profile Card & Logout in Sidebar (Mobile & Desktop) */}
         <div className="p-3 border-t border-neutral-800 bg-neutral-950/80 flex-shrink-0 space-y-2">
           {currentUser && (
-            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded bg-neutral-900 border border-neutral-800">
-              <div className="w-7 h-7 rounded bg-neutral-800 text-white flex items-center justify-center text-[10px] font-bold border border-neutral-700">
+            <Link
+              href="/admin/profile"
+              onClick={onClose}
+              className="flex items-center gap-2.5 px-2 py-1.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 transition-colors group cursor-pointer"
+            >
+              <div className="w-7 h-7 rounded bg-neutral-800 text-white flex items-center justify-center text-[10px] font-bold border border-neutral-700 group-hover:border-neutral-500">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-white truncate leading-tight">
+                <p className="text-xs font-medium text-white truncate leading-tight group-hover:underline">
                   {currentUser.full_name}
                 </p>
                 <span className="inline-block mt-0.5 px-1 py-0.2 text-[9px] font-mono tracking-tight uppercase bg-neutral-800 text-neutral-300 rounded border border-neutral-700">
                   {currentUser.role_code.replace(/_/g, ' ')}
                 </span>
               </div>
-            </div>
+            </Link>
           )}
 
           {/* Direct Logout Button */}

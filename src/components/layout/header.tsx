@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, LogOut, User } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -20,6 +21,7 @@ const PATH_TITLES: Record<string, string> = {
   '/admin/reports': 'Laporan',
   '/admin/audit-logs': 'Audit',
   '/admin/settings': 'Pengaturan',
+  '/admin/profile': 'Profil',
 };
 
 export interface HeaderProps {
@@ -60,7 +62,11 @@ export function Header({ onToggleSidebar, currentUser, onLogout }: HeaderProps) 
       {/* Right: Desktop User Profile & Logout */}
       <div className="flex items-center gap-3 sm:gap-4">
         {currentUser && (
-          <div className="hidden sm:flex items-center gap-2 text-right">
+          <Link
+            href="/admin/profile"
+            className="hidden sm:flex items-center gap-2 text-right hover:opacity-80 transition-opacity cursor-pointer"
+            title="Lihat Profil"
+          >
             <div>
               <div className="text-xs font-semibold text-black leading-tight">
                 {currentUser.full_name}
@@ -72,7 +78,7 @@ export function Header({ onToggleSidebar, currentUser, onLogout }: HeaderProps) 
             <div className="w-8 h-8 rounded bg-neutral-100 border border-neutral-300 flex items-center justify-center text-black font-bold text-xs">
               <User className="w-4 h-4" />
             </div>
-          </div>
+          </Link>
         )}
 
         {/* 1-Word Button: Keluar */}
