@@ -4,6 +4,8 @@ import { validateMagicBytes, computeSha256 } from '@/server/utils/magic-bytes';
 import { successResponse, errorResponse, handleServerError } from '@/server/utils/response';
 import { requirePermission, AuthError } from '@/server/middlewares/auth';
 import { recordAuditLog } from '@/server/utils/audit';
+import { uploadToS3 } from '@/server/utils/s3';
+import { randomUUID } from 'crypto';
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -29,7 +31,8 @@ export async function GET(
     const docs = await db.query`
       SELECT 
         pd.id, pd.document_type_id, dt.code AS document_type_code, dt.name AS document_type_name,
-        pd.file_name, pd.mime_type, pd.file_size_bytes, pd.sha256_hash, pd.status_code, pd.created_at
+        pd.file_name, pd.mime_type, pd.file_size_bytes, pd.sha256_hash, pd.status_code,
+        pd.s3_key, pd.created_at
       FROM public.participant_documents pd
       JOIN public.document_types dt ON pd.document_type_id = dt.id
       WHERE pd.participant_id = ${id}
@@ -101,9 +104,16 @@ export async function POST(
     const sha256 = computeSha256(buffer);
     const mimeType = signatureCheck.detectedMime || file.type;
 
+    // Generate unique S3 key
+    const ext = file.name.split('.').pop() || 'bin';
+    const s3Key = `participants/${id}/documents/${randomUUID()}.${ext}`;
+
+    // Upload to Neon Object Storage (S3-compatible)
+    await uploadToS3(s3Key, buffer, mimeType);
+
     // Check if document of this type already exists for participant -> replace or insert
     const existingDoc = await db.query`
-      SELECT id, file_name FROM public.participant_documents 
+      SELECT id, s3_key, file_name FROM public.participant_documents 
       WHERE participant_id = ${id} AND document_type_id = ${documentTypeId}
       LIMIT 1;
     `;
@@ -117,11 +127,12 @@ export async function POST(
           mime_type = ${mimeType},
           file_size_bytes = ${file.size},
           sha256_hash = ${sha256},
-          file_data = ${buffer},
+          s3_key = ${s3Key},
+          file_data = NULL,
           status_code = 'VALID',
           updated_at = NOW()
         WHERE id = ${existingDoc[0].id}
-        RETURNING id, participant_id, document_type_id, file_name, mime_type, file_size_bytes, sha256_hash, status_code, created_at;
+        RETURNING id, participant_id, document_type_id, file_name, mime_type, file_size_bytes, sha256_hash, s3_key, status_code, created_at;
       `;
       docResult = updated[0];
 
@@ -130,16 +141,16 @@ export async function POST(
         actionCode: 'REPLACE_DOCUMENT',
         entityType: 'document',
         entityId: docResult.id,
-        newData: { file_name: file.name, size: file.size, sha256 },
+        newData: { file_name: file.name, size: file.size, sha256, s3_key: s3Key },
       });
     } else {
       const inserted = await db.query`
         INSERT INTO public.participant_documents (
-          participant_id, document_type_id, file_name, mime_type, file_size_bytes, sha256_hash, file_data, status_code
+          participant_id, document_type_id, file_name, mime_type, file_size_bytes, sha256_hash, s3_key, status_code
         ) VALUES (
-          ${id}, ${documentTypeId}, ${file.name}, ${mimeType}, ${file.size}, ${sha256}, ${buffer}, 'VALID'
+          ${id}, ${documentTypeId}, ${file.name}, ${mimeType}, ${file.size}, ${sha256}, ${s3Key}, 'VALID'
         )
-        RETURNING id, participant_id, document_type_id, file_name, mime_type, file_size_bytes, sha256_hash, status_code, created_at;
+        RETURNING id, participant_id, document_type_id, file_name, mime_type, file_size_bytes, sha256_hash, s3_key, status_code, created_at;
       `;
       docResult = inserted[0];
 
@@ -148,7 +159,7 @@ export async function POST(
         actionCode: 'UPLOAD_DOCUMENT',
         entityType: 'document',
         entityId: docResult.id,
-        newData: { file_name: file.name, size: file.size, sha256 },
+        newData: { file_name: file.name, size: file.size, sha256, s3_key: s3Key },
       });
     }
 

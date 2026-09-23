@@ -1,0 +1,85 @@
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const BUCKET = process.env.S3_BUCKET || 'assets';
+const ENDPOINT = process.env.AWS_ENDPOINT_URL_S3;
+const REGION = process.env.AWS_REGION || 'ap-southeast-1';
+
+if (!ENDPOINT) {
+  throw new Error('AWS_ENDPOINT_URL_S3 is not defined');
+}
+
+const s3Client = new S3Client({
+  endpoint: ENDPOINT,
+  region: REGION,
+  forcePathStyle: true,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+/**
+ * Upload a file buffer to Neon Object Storage (S3-compatible).
+ * Returns the S3 key.
+ */
+export async function uploadToS3(
+  key: string,
+  body: Buffer | Uint8Array,
+  contentType: string
+): Promise<string> {
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    })
+  );
+  return key;
+}
+
+/**
+ * Generate a time-limited presigned URL to download a private file.
+ * Default expiry: 1 hour (3600s).
+ */
+export async function getPresignedDownloadUrl(
+  key: string,
+  expiresInSeconds = 3600
+): Promise<string> {
+  const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+  return getSignedUrl(s3Client, command, { expiresIn: expiresInSeconds });
+}
+
+/**
+ * Delete a single file from S3 storage.
+ */
+export async function deleteFromS3(key: string): Promise<void> {
+  await s3Client.send(
+    new DeleteObjectCommand({ Bucket: BUCKET, Key: key })
+  );
+}
+
+/**
+ * Bulk delete files from S3 storage (max 1000 per call).
+ */
+export async function bulkDeleteFromS3(keys: string[]): Promise<void> {
+  if (keys.length === 0) return;
+  await s3Client.send(
+    new DeleteObjectsCommand({
+      Bucket: BUCKET,
+      Delete: {
+        Objects: keys.map((Key) => ({ Key })),
+        Quiet: true,
+      },
+    })
+  );
+}
+
+export { s3Client, BUCKET };

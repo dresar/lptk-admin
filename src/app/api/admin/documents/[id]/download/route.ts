@@ -3,6 +3,7 @@ import { db } from '@/server/db/client';
 import { errorResponse, handleServerError } from '@/server/utils/response';
 import { requirePermission, AuthError } from '@/server/middlewares/auth';
 import { recordAuditLog } from '@/server/utils/audit';
+import { getPresignedDownloadUrl } from '@/server/utils/s3';
 
 export async function GET(
   req: NextRequest,
@@ -14,7 +15,7 @@ export async function GET(
 
     const rows = await db.query`
       SELECT 
-        pd.id, pd.file_name, pd.mime_type, pd.file_size_bytes, pd.file_data,
+        pd.id, pd.file_name, pd.mime_type, pd.file_size_bytes, pd.s3_key, pd.file_data,
         p.lptk_id, p.name AS participant_name
       FROM public.participant_documents pd
       JOIN public.participants p ON pd.participant_id = p.id
@@ -33,10 +34,6 @@ export async function GET(
       return errorResponse('FORBIDDEN', 'Anda tidak berhak mengunduh dokumen peserta ini.', 403);
     }
 
-    if (!doc.file_data) {
-      return errorResponse('DATA_CORRUPTED', 'Konten berkas tidak tersedia dalam database.', 404);
-    }
-
     await recordAuditLog({
       userId: user.id,
       actionCode: 'DOWNLOAD_DOCUMENT',
@@ -44,6 +41,17 @@ export async function GET(
       entityId: id,
       newData: { file_name: doc.file_name, size: doc.file_size_bytes },
     });
+
+    // Prefer S3 presigned URL (new storage method)
+    if (doc.s3_key) {
+      const presignedUrl = await getPresignedDownloadUrl(doc.s3_key, 3600);
+      return NextResponse.redirect(presignedUrl);
+    }
+
+    // Fallback: serve from BYTEA (legacy documents)
+    if (!doc.file_data) {
+      return errorResponse('DATA_CORRUPTED', 'Konten berkas tidak tersedia.', 404);
+    }
 
     const fileBuffer = Buffer.from(doc.file_data);
 

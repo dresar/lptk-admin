@@ -149,6 +149,18 @@ async function runSeed() {
       ON CONFLICT (email) DO NOTHING;
     `;
 
+    // 4b. Create Primary Admin Account (eka)
+    const ekaPasswordHash = await bcrypt.hash('admin123', 10);
+    await sql`
+      INSERT INTO auth.users (email, password_hash, full_name, role_id, active, must_change_password)
+      VALUES ('eka.ckp16799@gmail.com', ${ekaPasswordHash}, 'Eka Syarif Maulana', ${superAdminRole.id}, true, false)
+      ON CONFLICT (email) DO UPDATE SET
+        password_hash = ${ekaPasswordHash},
+        full_name = 'Eka Syarif Maulana',
+        role_id = ${superAdminRole.id},
+        active = true;
+    `;
+
     // 5. Seed Default Document Types
     const documentTypes = [
       { code: 'KTP', name: 'KTP / Kartu Identitas', is_required: true },
@@ -185,6 +197,7 @@ async function runSeed() {
 
     console.log('✅ Seeding completed successfully!');
     console.log('👤 Default Account: admin@mail.com / password123');
+    console.log('👤 Primary Account: eka.ckp16799@gmail.com / admin123');
   } catch (err) {
     console.error('❌ Seeding failed:', err);
     process.exit(1);
