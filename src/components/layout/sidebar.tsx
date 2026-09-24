@@ -147,8 +147,15 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
             prefetch={true}
             className="flex items-center gap-2.5 font-bold tracking-wider text-xs uppercase"
           >
-            <div className="w-7 h-7 rounded bg-white text-black flex items-center justify-center font-black text-xs shadow-sm">
-              L
+            <div className="w-8 h-8 rounded bg-white p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+              <img
+                src="/images/lptq-logo.png"
+                alt="Logo LPTQ"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-white font-bold leading-none">LPTK MAHATO</span>

@@ -2,11 +2,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { MoreVertical, Eye, Edit2, Trash2 } from 'lucide-react';
+import { MoreVertical, Eye, Edit2, Trash2, Printer } from 'lucide-react';
 
 export interface ActionMenuProps {
   detailHref?: string;
   onDetail?: () => void;
+  cardHref?: string;
+  onCard?: () => void;
   editHref?: string;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -16,6 +18,8 @@ export interface ActionMenuProps {
 export function ActionMenu({
   detailHref,
   onDetail,
+  cardHref,
+  onCard,
   editHref,
   onEdit,
   onDelete,
@@ -75,6 +79,31 @@ export function ActionMenu({
               >
                 <Eye className="w-3.5 h-3.5 text-neutral-500" />
                 <span>Lihat</span>
+              </button>
+            )
+          )}
+
+          {(cardHref || onCard) && (
+            cardHref ? (
+              <Link
+                href={cardHref}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-800 hover:bg-neutral-100 font-medium"
+              >
+                <Printer className="w-3.5 h-3.5 text-neutral-500" />
+                <span>Kartu</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onCard?.();
+                }}
+                className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-neutral-800 hover:bg-neutral-100 font-medium"
+              >
+                <Printer className="w-3.5 h-3.5 text-neutral-500" />
+                <span>Kartu</span>
               </button>
             )
           )}

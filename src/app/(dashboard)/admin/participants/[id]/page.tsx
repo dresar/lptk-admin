@@ -16,10 +16,12 @@ import {
   Edit2,
   Info,
   Check,
+  Printer,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { Participant, DocumentType, ParticipantDocument, Verification } from '@/types/database';
+import { ParticipantCard } from '@/components/modules/participant-card';
 
 const JUKNIS_DOC_HINTS: Record<string, string> = {
   SURAT_MANDAT: 'Surat tugas/mandat resmi dari Kepala Desa atau Ketua LPTK Desa setempat.',
@@ -47,6 +49,7 @@ export default function ParticipantDetailPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
   const fetchParticipant = useCallback(async () => {
     try {
@@ -236,6 +239,17 @@ export default function ParticipantDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Kartu Peserta Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCardModalOpen(true)}
+            className="gap-1.5 font-bold"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            Kartu
+          </Button>
+
           {canEditOrSubmit && (
             <>
               <Link href={`/admin/participants/${participant.id}/edit`}>
@@ -601,6 +615,29 @@ export default function ParticipantDetailPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Official Kartu Peserta Modal */}
+      <Modal
+        isOpen={isCardModalOpen}
+        onClose={() => setIsCardModalOpen(false)}
+        title="Kartu Peserta"
+      >
+        <ParticipantCard
+          participant={participant}
+          photoUrl={
+            participant.documents?.find(
+              (d: any) => d.document_type_code === 'PAS_FOTO' || d.mime_type?.startsWith('image/')
+            )
+              ? `/api/admin/documents/${
+                  participant.documents.find(
+                    (d: any) => d.document_type_code === 'PAS_FOTO' || d.mime_type?.startsWith('image/')
+                  ).id
+                }/download`
+              : null
+          }
+          onClose={() => setIsCardModalOpen(false)}
+        />
       </Modal>
     </div>
   );

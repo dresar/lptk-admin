@@ -122,6 +122,25 @@ export default function SettingsPage() {
                   className="w-full px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black font-mono"
                 />
               )}
+
+              {item.key === 'app_logo_url' && item.value && (
+                <div className="flex items-center gap-3 mt-2 p-2 bg-neutral-50 border border-neutral-200 rounded">
+                  <div className="w-12 h-12 bg-white p-1 rounded border border-neutral-300 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={item.value}
+                      alt="Preview Logo"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                  <div className="text-[11px] text-neutral-600">
+                    <div className="font-semibold text-black">Pratinjau Logo Aktif</div>
+                    <div className="text-neutral-500 font-mono text-[10px]">{item.value}</div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 

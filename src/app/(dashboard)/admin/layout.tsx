@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { AuthUser } from '@/types/auth';
+import { AuthProvider } from '@/components/providers/auth-context';
 
 export default function AdminLayout({
   children,
@@ -89,26 +90,28 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-black flex">
-      {/* Sidebar Navigation (Mobile Drawer & Desktop Fixed) */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-      />
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-60">
-        <Header
-          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+    <AuthProvider user={currentUser}>
+      <div className="min-h-screen bg-neutral-50 text-black flex">
+        {/* Sidebar Navigation (Mobile Drawer & Desktop Fixed) */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
           currentUser={currentUser}
           onLogout={handleLogout}
         />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {children}
-        </main>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 lg:pl-60">
+          <Header
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+          />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </AuthProvider>
   );
 }

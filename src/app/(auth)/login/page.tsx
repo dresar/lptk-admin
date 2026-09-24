@@ -93,8 +93,15 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white border border-neutral-300 rounded-lg shadow-sm p-6 sm:p-7">
         {/* Brand Header */}
         <div className="text-center mb-5">
-          <div className="w-10 h-10 mx-auto bg-black text-white rounded flex items-center justify-center font-black text-base mb-2 shadow-sm">
-            L
+          <div className="w-14 h-14 mx-auto bg-white p-1 rounded-full border border-neutral-300 flex items-center justify-center mb-2 shadow-sm overflow-hidden">
+            <img
+              src="/images/lptq-logo.png"
+              alt="Logo LPTQ"
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
           </div>
           <h1 className="text-base font-bold text-black tracking-tight uppercase">
             LPTK Mahato

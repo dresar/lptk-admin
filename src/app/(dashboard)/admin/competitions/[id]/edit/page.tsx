@@ -3,11 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { CompetitionForm } from '@/components/modules/competition-form';
 import { Competition } from '@/types/database';
+import { useAuth } from '@/components/providers/auth-context';
 
 export default function EditCompetitionPage() {
+  const { canManageCompetition } = useAuth();
   const params = useParams();
   const id = params?.id as string;
   const [data, setData] = useState<Competition | null>(null);
@@ -34,6 +37,25 @@ export default function EditCompetitionPage() {
     }
     if (id) loadData();
   }, [id]);
+
+  if (!canManageCompetition) {
+    return (
+      <div className="p-8 text-center bg-white border border-neutral-200 rounded max-w-lg mx-auto my-8 space-y-3">
+        <div className="w-10 h-10 mx-auto rounded-full bg-neutral-100 flex items-center justify-center text-black">
+          <ShieldAlert className="w-5 h-5" />
+        </div>
+        <h2 className="text-base font-bold text-black">Akses Dibatasi</h2>
+        <p className="text-xs text-neutral-600 leading-relaxed">
+          Akun Operator LPTK Desa hanya berwenang melihat agenda musabaqah. Pengubahan atau pembuatan agenda lomba hanya dapat dilakukan oleh Panitia / Administrator Tingkat Kecamatan dan Super Admin.
+        </p>
+        <div className="pt-2">
+          <Link href="/admin/competitions">
+            <Button variant="outline" size="sm">Kembali</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="p-8 text-xs text-neutral-500">Memuat data lomba...</div>;

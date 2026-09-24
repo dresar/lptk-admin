@@ -12,6 +12,7 @@ import {
   Eye,
   Edit2,
   Trash2,
+  Printer,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -464,6 +465,7 @@ export default function ParticipantsPage() {
                         <div className="sm:hidden flex justify-end">
                           <ActionMenu
                             detailHref={`/admin/participants/${item.id}`}
+                            cardHref={`/admin/participants/${item.id}/card`}
                             editHref={`/admin/participants/${item.id}/edit`}
                             onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
                           />
@@ -475,6 +477,12 @@ export default function ParticipantsPage() {
                             <Button variant="outline" size="sm" className="gap-1 font-bold">
                               <Eye className="w-3.5 h-3.5" />
                               Lihat
+                            </Button>
+                          </Link>
+                          <Link href={`/admin/participants/${item.id}/card`}>
+                            <Button variant="outline" size="sm" className="gap-1 font-bold">
+                              <Printer className="w-3.5 h-3.5" />
+                              Kartu
                             </Button>
                           </Link>
                           <Link href={`/admin/participants/${item.id}/edit`}>
@@ -533,6 +541,7 @@ export default function ParticipantsPage() {
                         <ActionMenu
                           className="sm:hidden"
                           detailHref={`/admin/participants/${item.id}`}
+                          cardHref={`/admin/participants/${item.id}/card`}
                           editHref={`/admin/participants/${item.id}/edit`}
                           onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
                         />
@@ -593,6 +602,11 @@ export default function ParticipantsPage() {
                       </Button>
                     </Link>
                     <div className="flex items-center gap-1">
+                      <Link href={`/admin/participants/${item.id}/card`}>
+                        <Button variant="outline" size="sm" className="p-1 h-6 w-6" aria-label="Kartu" title="Cetak Kartu">
+                          <Printer className="w-3 h-3" />
+                        </Button>
+                      </Link>
                       <Link href={`/admin/participants/${item.id}/edit`}>
                         <Button variant="outline" size="sm" className="p-1 h-6 w-6" aria-label="Ubah">
                           <Edit2 className="w-3 h-3" />

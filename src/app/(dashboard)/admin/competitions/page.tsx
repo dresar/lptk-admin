@@ -22,6 +22,7 @@ import { ColumnToggle } from '@/components/ui/column-toggle';
 import { ActionMenu } from '@/components/ui/action-menu';
 import { Competition } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
+import { useAuth } from '@/components/providers/auth-context';
 
 const COMPETITION_COLUMNS = [
   { id: 'tahun', label: 'Tahun' },
@@ -30,6 +31,7 @@ const COMPETITION_COLUMNS = [
 ];
 
 export default function CompetitionsPage() {
+  const { canManageCompetition } = useAuth();
   const [items, setItems] = useState<Competition[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>();
   const [page, setPage] = useState(1);
@@ -152,15 +154,17 @@ export default function CompetitionsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant={isSelectMode ? 'primary' : 'outline'}
-            size="sm"
-            onClick={handleToggleSelectMode}
-            className="gap-1.5 font-bold text-xs"
-          >
-            <CheckSquare className="w-3.5 h-3.5" />
-            {isSelectMode ? 'Batal' : 'Pilih'}
-          </Button>
+          {canManageCompetition && (
+            <Button
+              variant={isSelectMode ? 'primary' : 'outline'}
+              size="sm"
+              onClick={handleToggleSelectMode}
+              className="gap-1.5 font-bold text-xs"
+            >
+              <CheckSquare className="w-3.5 h-3.5" />
+              {isSelectMode ? 'Batal' : 'Pilih'}
+            </Button>
+          )}
           {viewMode === 'list' && (
             <ColumnToggle
               columns={COMPETITION_COLUMNS}
@@ -169,12 +173,14 @@ export default function CompetitionsPage() {
             />
           )}
           <ViewToggle mode={viewMode} onChange={setViewMode} />
-          <Link href="/admin/competitions/new">
-            <Button size="sm" className="gap-1.5 font-bold">
-              <Plus className="w-3.5 h-3.5" />
-              Tambah
-            </Button>
-          </Link>
+          {canManageCompetition && (
+            <Link href="/admin/competitions/new">
+              <Button size="sm" className="gap-1.5 font-bold">
+                <Plus className="w-3.5 h-3.5" />
+                Tambah
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -285,8 +291,8 @@ export default function CompetitionsPage() {
                       <div className="sm:hidden flex justify-end">
                         <ActionMenu
                           detailHref={`/admin/competitions/${item.id}`}
-                          editHref={`/admin/competitions/${item.id}/edit`}
-                          onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
+                          editHref={canManageCompetition ? `/admin/competitions/${item.id}/edit` : undefined}
+                          onDelete={canManageCompetition ? () => setDeleteTarget({ id: item.id, name: item.name }) : undefined}
                         />
                       </div>
 
@@ -298,20 +304,24 @@ export default function CompetitionsPage() {
                             Lihat
                           </Button>
                         </Link>
-                        <Link href={`/admin/competitions/${item.id}/edit`}>
-                          <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                          className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
-                          aria-label="Hapus"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        {canManageCompetition && (
+                          <>
+                            <Link href={`/admin/competitions/${item.id}/edit`}>
+                              <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                              className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
+                              aria-label="Hapus"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -360,7 +370,7 @@ export default function CompetitionsPage() {
                       <span className="font-mono text-[9px] sm:text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded border border-neutral-300 bg-neutral-100 text-black">
                         {item.status_code}
                       </span>
-                      {isSelectMode ? (
+                      {isSelectMode && canManageCompetition ? (
                         <input
                           type="checkbox"
                           checked={selectedIds.includes(item.id)}
@@ -371,8 +381,8 @@ export default function CompetitionsPage() {
                         <ActionMenu
                           className="sm:hidden"
                           detailHref={`/admin/competitions/${item.id}`}
-                          editHref={`/admin/competitions/${item.id}/edit`}
-                          onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
+                          editHref={canManageCompetition ? `/admin/competitions/${item.id}/edit` : undefined}
+                          onDelete={canManageCompetition ? () => setDeleteTarget({ id: item.id, name: item.name }) : undefined}
                         />
                       )}
                     </div>
@@ -400,22 +410,24 @@ export default function CompetitionsPage() {
                         Lihat
                       </Button>
                     </Link>
-                    <div className="flex items-center gap-1">
-                      <Link href={`/admin/competitions/${item.id}/edit`}>
-                        <Button variant="outline" size="sm" className="p-1 h-6 w-6" aria-label="Ubah">
-                          <Edit2 className="w-3 h-3" />
+                    {canManageCompetition && (
+                      <div className="flex items-center gap-1">
+                        <Link href={`/admin/competitions/${item.id}/edit`}>
+                          <Button variant="outline" size="sm" className="p-1 h-6 w-6" aria-label="Ubah">
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                          className="p-1 h-6 w-6 text-neutral-600 hover:text-black"
+                          aria-label="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                        className="p-1 h-6 w-6 text-neutral-600 hover:text-black"
-                        aria-label="Hapus"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -428,7 +440,7 @@ export default function CompetitionsPage() {
       )}
 
       {/* Floating Bulk Toolbar (only active when in selection mode) */}
-      {isSelectMode && (
+      {isSelectMode && canManageCompetition && (
         <BulkToolbar
           selectedCount={selectedIds.length}
           onClear={() => setSelectedIds([])}
