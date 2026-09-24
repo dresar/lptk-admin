@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, Shield, Building2, User, Check, ArrowRight } from 'lucide-react';
+import { Lock, Mail, Shield, Building2, User, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DemoAccount {
@@ -103,6 +104,20 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-100 selection:bg-black selection:text-white">
       <div className="w-full max-w-md bg-white border border-neutral-300 rounded-lg shadow-sm p-6 sm:p-7">
+        {/* Top Back to Home Navigation */}
+        <div className="flex items-center justify-between mb-4 pb-2.5 border-b border-neutral-200">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-700 hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Kembali ke Beranda</span>
+          </Link>
+          <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
+            MTQ XIX 2026
+          </span>
+        </div>
+
         {/* Brand Header */}
         <div className="text-center mb-5">
           <div className="w-14 h-14 mx-auto bg-white p-1 rounded-full border border-neutral-300 flex items-center justify-center mb-2 shadow-sm overflow-hidden">
@@ -242,8 +257,19 @@ export default function LoginPage() {
           </Button>
         </form>
 
+        {/* Bottom Back to Home Link */}
+        <div className="mt-4 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Kembali ke Halaman Beranda Publik</span>
+          </Link>
+        </div>
+
         {/* Footer info */}
-        <div className="mt-5 pt-3 border-t border-neutral-200 text-center text-[10px] text-neutral-400 font-mono">
+        <div className="mt-4 pt-3 border-t border-neutral-200 text-center text-[10px] text-neutral-400 font-mono">
           Kecamatan Tambusai Utara • Rokan Hulu, Riau
         </div>
       </div>

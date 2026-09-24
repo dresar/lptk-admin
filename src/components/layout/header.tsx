@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, LogOut, User, Globe, ExternalLink } from 'lucide-react';
 import { Button } from '../ui/button';
 import { AuthUser } from '@/types/auth';
 
@@ -60,7 +60,20 @@ export function Header({ onToggleSidebar, currentUser, onLogout }: HeaderProps) 
       </div>
 
       {/* Right: Desktop User Profile & Logout */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2.5 sm:gap-4">
+        {/* Link to Public Website (Opens in new tab) */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-neutral-800 hover:text-black bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 rounded transition-colors"
+          title="Buka Website Publik di Tab Baru"
+        >
+          <Globe className="w-3.5 h-3.5 text-black" />
+          <span className="hidden sm:inline">Web Publik</span>
+          <ExternalLink className="w-3 h-3 text-neutral-500" />
+        </a>
+
         {currentUser && (
           <Link
             href="/admin/profile"
