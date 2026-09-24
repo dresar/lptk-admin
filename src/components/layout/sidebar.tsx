@@ -78,6 +78,19 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
   const [menuItems, setMenuItems] = useState<MenuItem[]>(DEFAULT_MENU_ITEMS);
   const [loggingOut, setLoggingOut] = useState(false);
 
+  const [logoUrl, setLogoUrl] = useState<string>('/api/cdn/cdn/logos/lptq-logo.png');
+  const [appName, setAppName] = useState<string>('LPTK MAHATO');
+
+  useEffect(() => {
+    fetch('/api/meta/branding')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url);
+        if (json?.data?.app_name) setAppName(json.data.app_name);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     async function fetchMenu() {
       try {
@@ -149,8 +162,8 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
           >
             <div className="w-8 h-8 rounded bg-white p-0.5 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
               <img
-                src="/images/lptq-logo.png"
-                alt="Logo LPTQ"
+                src={logoUrl}
+                alt={appName}
                 className="w-full h-full object-contain"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
@@ -158,7 +171,7 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-white font-bold leading-none">LPTK MAHATO</span>
+              <span className="text-white font-bold leading-none">{appName}</span>
               <span className="text-[9px] text-neutral-400 font-mono tracking-tight lowercase">
                 kecamatan panel
               </span>

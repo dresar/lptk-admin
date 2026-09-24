@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, Shield, Building2, User, Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,6 +52,18 @@ export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<string>('Super Admin');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('/api/cdn/cdn/logos/lptq-logo.png');
+  const [appName, setAppName] = useState('LPTK Mahato');
+
+  useEffect(() => {
+    fetch('/api/meta/branding')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url);
+        if (json?.data?.app_name) setAppName(json.data.app_name);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,8 +107,8 @@ export default function LoginPage() {
         <div className="text-center mb-5">
           <div className="w-14 h-14 mx-auto bg-white p-1 rounded-full border border-neutral-300 flex items-center justify-center mb-2 shadow-sm overflow-hidden">
             <img
-              src="/images/lptq-logo.png"
-              alt="Logo LPTQ"
+              src={logoUrl}
+              alt={appName}
               className="w-full h-full object-contain"
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
@@ -104,7 +116,7 @@ export default function LoginPage() {
             />
           </div>
           <h1 className="text-base font-bold text-black tracking-tight uppercase">
-            LPTK Mahato
+            {appName}
           </h1>
           <p className="text-xs text-neutral-500 mt-0.5">
             Sistem Pendataan & Verifikasi Peserta Lomba

@@ -10,6 +10,8 @@ import { getCategoryBranchInfo } from '@/data/juknis-official-data';
 export interface ParticipantCardProps {
   participant: Participant;
   photoUrl?: string | null;
+  logoUrl?: string | null;
+  stampUrl?: string | null;
   onClose?: () => void;
   standalone?: boolean;
 }
@@ -42,11 +44,32 @@ function calculateAgeAtMTQ(birthDateStr: string) {
 export function ParticipantCard({
   participant,
   photoUrl,
+  logoUrl,
+  stampUrl,
   onClose,
   standalone = false,
 }: ParticipantCardProps) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [dynamicLogo, setDynamicLogo] = useState<string>('/api/cdn/cdn/logos/lptq-logo.png');
+  const [dynamicStamp, setDynamicStamp] = useState<string>('/api/cdn/cdn/logos/lptq-stempel.png');
   const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!logoUrl || !stampUrl) {
+      fetch('/api/meta/branding')
+        .then((res) => res.json())
+        .then((json) => {
+          if (json?.data) {
+            if (!logoUrl && json.data.app_logo_url) setDynamicLogo(json.data.app_logo_url);
+            if (!stampUrl && json.data.app_stamp_url) setDynamicStamp(json.data.app_stamp_url);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [logoUrl, stampUrl]);
+
+  const activeLogoUrl = logoUrl || dynamicLogo;
+  const activeStampUrl = stampUrl || dynamicStamp;
 
   const category = participant.categories?.[0];
   const categoryName = category?.name || 'Cabang Belum Ditentukan';
@@ -55,10 +78,12 @@ export function ParticipantCard({
 
   const registrationNo = `MTQ19-${participant.nik ? participant.nik.slice(-6) : participant.id.slice(0, 6).toUpperCase()}`;
 
-  // Generate verification QR code
+  // Generate verification QR code dynamically based on window.location
   useEffect(() => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://lptk-mahato.vercel.app';
-    const verifyUrl = `${origin}/admin/participants/${participant.id}`;
+    const origin = typeof window !== 'undefined' && window.location.origin
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_URL || '');
+    const verifyUrl = origin ? `${origin}/admin/participants/${participant.id}` : `/admin/participants/${participant.id}`;
 
     QRCode.toDataURL(verifyUrl, {
       width: 160,
@@ -119,7 +144,7 @@ export function ParticipantCard({
           <div className="flex items-center justify-between gap-3 border-b-2 border-black pb-3">
             <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 flex items-center justify-center p-1 bg-white border border-neutral-300 rounded overflow-hidden">
               <img
-                src="/images/lptq-logo.png"
+                src={activeLogoUrl}
                 alt="Logo LPTQ"
                 className="w-full h-full object-contain"
                 onError={(e) => {
@@ -324,7 +349,7 @@ export function ParticipantCard({
                 {/* Stempel image overlay */}
                 <div className="absolute right-6 w-20 h-20 opacity-80 pointer-events-none select-none">
                   <img
-                    src="/images/lptq-stempel.png"
+                    src={activeStampUrl}
                     alt="Stempel LPTQ"
                     className="w-full h-full object-contain"
                     onError={(e) => {

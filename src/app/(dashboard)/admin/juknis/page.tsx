@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,18 @@ export default function JuknisPage() {
   const [viewMode, setViewMode] = useState<'dokumen' | 'ringkasan'>('dokumen');
   const [selectedCabangFilter, setSelectedCabangFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [logoUrl, setLogoUrl] = useState('/api/cdn/cdn/logos/lptq-logo.png');
+  const [stampUrl, setStampUrl] = useState('/api/cdn/cdn/logos/lptq-stempel.png');
+
+  useEffect(() => {
+    fetch('/api/meta/branding')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url);
+        if (json?.data?.app_stamp_url) setStampUrl(json.data.app_stamp_url);
+      })
+      .catch(() => {});
+  }, []);
 
   const handlePrint = () => {
     window.print();
@@ -145,14 +157,14 @@ export default function JuknisPage() {
               {page.page_number === 1 && (
                 <div className="mb-6 w-full">
                   <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 sm:gap-4 pb-3">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 relative shrink-0">
-                      <Image
-                        src="/images/lptq-logo.png"
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 relative shrink-0 flex items-center justify-center">
+                      <img
+                        src={logoUrl}
                         alt="Logo LPTQ"
-                        width={80}
-                        height={80}
-                        className="object-contain w-full h-full"
-                        priority
+                        className="object-contain w-full h-full max-h-20"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
                       />
                     </div>
                     <div className="text-center flex-1 min-w-0">
@@ -297,12 +309,13 @@ export default function JuknisPage() {
                     
                     {/* Gambar Stempel & Tanda Tangan Resmi */}
                     <div className="py-1 flex justify-center">
-                      <Image
-                        src="/images/lptq-stempel.png"
+                      <img
+                        src={stampUrl}
                         alt="Stempel LPTQ & Tanda Tangan Rahmat Saputra"
-                        width={160}
-                        height={110}
-                        className="object-contain max-w-full h-auto"
+                        className="object-contain max-w-full h-24"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
                       />
                     </div>
 

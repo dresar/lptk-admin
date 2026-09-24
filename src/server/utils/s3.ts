@@ -82,4 +82,32 @@ export async function bulkDeleteFromS3(keys: string[]): Promise<void> {
   );
 }
 
+/**
+ * List objects from S3 storage with optional prefix.
+ */
+export async function listObjectsFromS3(prefix = 'cdn/'): Promise<Array<{ key: string; size: number; lastModified?: Date }>> {
+  const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
+  const res = await s3Client.send(
+    new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: prefix,
+    })
+  );
+  return (res.Contents || [])
+    .filter((item) => Boolean(item.Key && !item.Key.endsWith('/')))
+    .map((item) => ({
+      key: item.Key!,
+      size: item.Size || 0,
+      lastModified: item.LastModified,
+    }));
+}
+
+/**
+ * Get object stream and metadata from S3 storage.
+ */
+export async function getObjectFromS3(key: string) {
+  const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+  return s3Client.send(command);
+}
+
 export { s3Client, BUCKET };
