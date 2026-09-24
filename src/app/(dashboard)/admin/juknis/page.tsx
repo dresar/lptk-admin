@@ -1,427 +1,439 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
-  BookOpen,
   Printer,
   Download,
-  Calendar,
-  MapPin,
-  FileCheck,
-  Award,
-  Users,
-  AlertTriangle,
-  Scale,
-  Music,
-  CheckCircle2,
+  FileText,
+  ListFilter,
+  Search,
+  Check,
 } from 'lucide-react';
-
-const SYARHIL_THEMES = [
-  'Optimalisasi Pengelolaan Zakat untuk Pemberdayaan Ekonomi Umat',
-  'Toleransi Umat Beragama dalam Kehidupan Berbangsa',
-  'Optimalisasi Fungsi Masjid dalam Pembangunan Bangsa',
-  'Perspektif Islam Tentang Lingkungan Hidup',
-  'Literasi Waqaf untuk Kemandirian Umat',
-  'Narkoba Musuh Bersama Umat dan Bangsa',
-  'Pendidikan Ramah Anak Menurut Al-Qur\'an',
-  'Generasi Muda Beradab untuk Indonesia Emas 2045',
-  'Pemberantasan Korupsi Menurut Al-Qur\'an',
-];
-
-const CABANG_LIST = [
-  {
-    kategori: 'Cabang Seni Baca Al-Qur\'an',
-    items: [
-      { nama: 'Golongan Tartil Al-Qur\'an Putra & Putri', umur: 'Maks. 12 thn 11 bln 29 hr', durasi: '5 - 7 Menit', maqra: 'Juz 1 s/d Juz 10 (Ditentukan 16 jam sebelum tampil)' },
-      { nama: 'Golongan Tilawah Anak-Anak Putra & Putri', umur: 'Maks. 14 thn 11 bln 29 hr', durasi: '6 - 8 Menit', maqra: 'Juz 1 s/d Juz 20 (Ditentukan 16 jam sebelum tampil)' },
-      { nama: 'Golongan Tilawah Remaja Putra & Putri', umur: 'Maks. 24 thn 11 bln 29 hr', durasi: '7 - 9 Menit', maqra: 'Juz 1 s/d Juz 20 (Ditentukan 16 jam sebelum tampil)' },
-      { nama: 'Golongan Tilawah Dewasa Putra & Putri', umur: 'Maks. 40 thn 11 bln 29 hr', durasi: '9 - 10 Menit', maqra: 'Juz 1 s/d Juz 30 (Ditentukan saat peserta naik mimbar tilawah)' },
-    ],
-  },
-  {
-    kategori: 'Cabang Hafalan Al-Qur\'an (Hifzhil Qur\'an)',
-    items: [
-      { nama: 'Golongan 1 Juz dan Tilawah Putra & Putri', umur: 'Maks. 15 thn 11 bln 29 hr', durasi: '6 - 7 Menit (Tilawah) + 3 Soal Tahfidz', maqra: 'Tilawah: Juz 1-10 (min 3 lagu); Tahfidz: Juz 1 atau Juz 30 (5-8 baris Bahriyyah)' },
-      { nama: 'Golongan 5 Juz dan Tilawah Putra & Putri', umur: 'Maks. 20 thn 11 bln 29 hr', durasi: '7 - 8 Menit (Tilawah) + 3 Soal Tahfidz', maqra: 'Tilawah: Juz 1-20 (min 3 lagu); Tahfidz: Juz 1 s/d Juz 5 (6-10 baris Bahriyyah)' },
-      { nama: 'Golongan 10 Juz Putra & Putri', umur: 'Maks. 22 thn 11 bln 29 hr', durasi: '3 Pertanyaan Hafalan', maqra: 'Materi hafalan Juz 1 s/d Juz 10' },
-    ],
-  },
-  {
-    kategori: 'Cabang Fahmil Al-Qur\'an (MFQ)',
-    items: [
-      { nama: 'Golongan Remaja Putra & Putri (Regu 3 Orang)', umur: 'Maks. 18 thn 11 bln 29 hr', durasi: 'Babak Penyisihan & Final', maqra: 'Kurikulum Madrasah Aliyah & Ponpes, wawasan Al-Qur\'an & wawasan kebangsaan (10-12 soal regu & 10-15 soal rebutan)' },
-      { nama: 'Golongan Anak-anak Campuran (Regu 3 Orang Pa/Pi)', umur: 'Maks. 13 thn 11 bln 29 hr', durasi: 'Babak Penyisihan & Final', maqra: 'Materi dasar keislaman, tajwid, terjemah ayat pilihan, dan pemahaman nilai Al-Qur\'an' },
-    ],
-  },
-  {
-    kategori: 'Cabang Syarhil Al-Qur\'an (MSQ)',
-    items: [
-      { nama: 'Golongan Remaja Putra & Putri (Regu 3 Orang)', umur: 'Maks. 18 thn 11 bln 29 hr', durasi: '15 - 20 Menit', maqra: '3 Unsur (Tilawah, Deklamasi/Terjemah, Pidato Retorika tanpa teks). Mengacu pada 9 Tema Resmi Juknis.' },
-      { nama: 'Golongan Anak-anak Campuran (Regu 3 Orang Pa/Pi)', umur: 'Maks. 13 thn 11 bln 29 hr', durasi: '15 - 20 Menit', maqra: '3 Unsur sinergis. Mengacu pada 9 Tema Resmi Juknis MTQ XIX.' },
-    ],
-  },
-  {
-    kategori: 'Cabang Seni Kaligrafi Al-Qur\'an (MKQ)',
-    items: [
-      { nama: 'Golongan Naskah Putra & Putri', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: 'Khat Naskhi wajib (5-10 baris) & 4 jenis khat pilihan (4-5 baris) diundi. Media 2 lembar karton penuh.' },
-      { nama: 'Golongan Hiasan Mushaf Putra & Putri', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: 'Teks Al-Qur\'an 4-5 baris mushaf dengan ornamen bingkai iluminasi khas nusantara/Al-Fatihah/Al-Baqarah. Media 1 karton penuh.' },
-      { nama: 'Golongan Dekorasi Putra & Putri', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: 'Khat dekoratif (5 dari 7 gaya khat diundi). Media triplek berukuran 122 cm x 80 cm.' },
-      { nama: 'Golongan Kontemporer Putra & Putri', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: '4 Gaya kontemporer (Tradisional, Figural, Ekspresionis, Abstrak). Media kanvas 60 x 80 cm berspanram. Dilarang menggambar makhluk bernyawa.' },
-    ],
-  },
-  {
-    kategori: 'Cabang Rebana Klasik',
-    items: [
-      { nama: 'Rebana Klasik Campuran / Putra / Putri (Regu 11 Orang)', umur: 'Maks. 38 thn 11 bln 29 hr', durasi: 'Maks. 15 Menit', maqra: '1 Lagu Wajib: "Al-Qur\'an" (Cipt. Hj. Nur Asiah Djamil). 1 Lagu Pilihan: Magadir, Perdamaian, Kasih sayangnya bunda, Jilbab putih. Alat musik perkusi tradisional tanpa tangga nada / elektrik.' },
-    ],
-  },
-];
-
-const BERKAS_LIST = [
-  { no: 1, kode: 'SURAT_MANDAT', nama: 'Surat Mandat dari Desa', ket: 'Surat mandat resmi yang ditandatangani oleh Kepala Desa atau Pengurus LPTK Desa setempat.' },
-  { no: 2, kode: 'SURAT_DOMISILI', nama: 'Surat Keterangan Berdomisili', ket: 'Surat keterangan domisili sah yang membuktikan peserta bertempat tinggal di wilayah Kecamatan Tambusai Utara.' },
-  { no: 3, kode: 'IJAZAH', nama: 'Photo Copy Ijazah Sekolah', ket: 'Fotokopi ijazah pendidikan formal terakhir atau rapor/surat keterangan aktif sekolah yang telah dilegalisir.' },
-  { no: 4, kode: 'AKTE_KELAHIRAN', nama: 'Photo Copy Akte Kelahiran', ket: 'Fotokopi akta kelahiran resmi untuk verifikasi batas usia musabaqah per 09 November 2026.' },
-  { no: 5, kode: 'KARTU_KELUARGA', nama: 'Photo Copy Kartu Keluarga yang Memakai NIK', ket: 'Fotokopi KK nasional terbaru yang mencantumkan Nomor Induk Kependudukan (NIK) 16 digit.' },
-  { no: 6, kode: 'SURAT_PERNYATAAN', nama: 'Surat Pernyataan Kebenaran Dokumen', ket: 'Surat pernyataan keaslian dan kesiapan mematuhi tata tertib Juknis bermaterai Rp 10.000,-.' },
-];
+import {
+  JUKNIS_OFFICIAL_HEADER,
+  JUKNIS_PAGES,
+} from '@/data/juknis-official-data';
 
 export default function JuknisPage() {
-  const [activeTab, setActiveTab] = useState<'umum' | 'cabang' | 'materi' | 'berkas' | 'penilaian'>('umum');
+  const [viewMode, setViewMode] = useState<'dokumen' | 'ringkasan'>('dokumen');
+  const [selectedCabangFilter, setSelectedCabangFilter] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handlePrint = () => {
     window.print();
   };
 
   const handleDownload = () => {
-    // Generate text/csv copy of Juknis summary
-    const content = `PETUNJUK TEKNIS RESMI MTQ KE-XIX TINGKAT KECAMATAN TAMBUSAI UTARA TAHUN 2026 DI DESA MAHATO
-Nomor: 09/LPTQ-T.U/MTQ/IX/2026
-Tanggal: 10 September 2026
-Ketua Umum LPTQ: Rahmat Saputra
-Sekretariat: Kantor KUA Kec. Tambusai Utara, Rantau Kasai, Rokan Hulu, Riau
-Pelaksanaan: 09 – 13 November 2026 di Desa Mahato
-
-KETENTUAN UMUM:
-1. Peserta adalah warga asli atau berdomisili di Kecamatan Tambusai Utara.
-2. Peserta hanya diperbolehkan mengikuti 1 (satu) cabang musabaqah.
-3. Seluruh berkas pendaftaran wajib dimasukkan ke dalam Map Warna Biru.
-4. Batas usia dihitung secara sah per 09 November 2026.
-5. Peserta yang memalsukan identitas atau berasal dari luar wilayah langsung didiskualifikasi.`;
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
+    // Download the authentic official PDF directly
     const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'Juknis_MTQ_XIX_Tambusai_Utara_2026_Desa_Mahato.txt');
+    link.href = '/documents/juknis-mtq-xix-tambusai-utara-2026.pdf';
+    link.download = 'Juknis_MTQ_XIX_Tambusai_Utara_2026_Desa_Mahato.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  // Data ringkasan cabang musabaqah untuk mode administratif
+  const CABANG_DATA = [
+    { cabang: 'Seni Baca', golongan: "Tartil Al-Qur'an Pa/Pi", umur: 'Maks. 12 thn 11 bln 29 hr', durasi: '5 - 7 Menit', maqra: 'Juz 1 s/d Juz 10 (16 jam sebelum tampil)' },
+    { cabang: 'Seni Baca', golongan: 'Tilawah Anak-Anak Pa/Pi', umur: 'Maks. 14 thn 11 bln 29 hr', durasi: '6 - 8 Menit', maqra: 'Juz 1 s/d Juz 20 (16 jam sebelum tampil)' },
+    { cabang: 'Seni Baca', golongan: 'Tilawah Remaja Pa/Pi', umur: 'Maks. 24 thn 11 bln 29 hr', durasi: '7 - 9 Menit', maqra: 'Juz 1 s/d Juz 20 (16 jam sebelum tampil)' },
+    { cabang: 'Seni Baca', golongan: 'Tilawah Dewasa Pa/Pi', umur: 'Maks. 40 thn 11 bln 29 hr', durasi: '9 - 10 Menit', maqra: 'Juz 1 s/d 30 (Saat naik mimbar tilawah)' },
+    { cabang: 'Hafalan', golongan: '1 Juz dan Tilawah Pa/Pi', umur: 'Maks. 15 thn 11 bln 29 hr', durasi: '6 - 7 Mnt + 3 Soal', maqra: 'Tilawah Juz 1-10; Tahfidz Juz 1 atau Juz 30' },
+    { cabang: 'Hafalan', golongan: '5 Juz dan Tilawah Pa/Pi', umur: 'Maks. 20 thn 11 bln 29 hr', durasi: '7 - 8 Mnt + 3 Soal', maqra: 'Tilawah Juz 1-20; Tahfidz Juz 1 s/d Juz 5' },
+    { cabang: 'Hafalan', golongan: '10 Juz Pa/Pi', umur: 'Maks. 22 thn 11 bln 29 hr', durasi: '3 Pertanyaan', maqra: 'Materi hafalan Juz 1 s/d Juz 10' },
+    { cabang: 'Fahmil', golongan: 'Gol. Anak Campuran (Regu 3 Org)', umur: 'Maks. 13 thn 11 bln 29 hr', durasi: 'Penyisihan & Final', maqra: 'Kurikulum MA, Ponpes, wawasan Al-Qur\'an & kebangsaan' },
+    { cabang: 'Fahmil', golongan: 'Gol. Remaja Putra (Regu 3 Org)', umur: 'Maks. 18 thn 11 bln 29 hr', durasi: 'Penyisihan & Final', maqra: 'Paket regu 10-12 soal & rebutan 10-15 soal' },
+    { cabang: 'Fahmil', golongan: 'Gol. Remaja Putri (Regu 3 Org)', umur: 'Maks. 18 thn 11 bln 29 hr', durasi: 'Penyisihan & Final', maqra: 'Paket regu 10-12 soal & rebutan 10-15 soal' },
+    { cabang: 'Syarhil', golongan: 'Gol. Anak Campuran (Regu 3 Org)', umur: 'Maks. 13 thn 11 bln 29 hr', durasi: '15 - 20 Menit', maqra: '3 Unsur (Tilawah, Deklamasi, Pidato). 9 Tema Resmi.' },
+    { cabang: 'Syarhil', golongan: 'Gol. Remaja Putra (Regu 3 Org)', umur: 'Maks. 18 thn 11 bln 29 hr', durasi: '15 - 20 Menit', maqra: '3 Unsur. Penentuan judul 24 jam (penyisihan) / 60 mnt (final)' },
+    { cabang: 'Syarhil', golongan: 'Gol. Remaja Putri (Regu 3 Org)', umur: 'Maks. 18 thn 11 bln 29 hr', durasi: '15 - 20 Menit', maqra: '3 Unsur. Penentuan judul 24 jam (penyisihan) / 60 mnt (final)' },
+    { cabang: 'Kaligrafi', golongan: 'Gol. Naskah Pa/Pi', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: 'Khat Naskhi wajib & 4 pilihan. Media 2 karton penuh.' },
+    { cabang: 'Kaligrafi', golongan: 'Gol. Hiasan Mushaf Pa/Pi', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: 'Teks 4-5 baris, ornamen Al-Fatihah/Al-Baqarah. 1 karton.' },
+    { cabang: 'Kaligrafi', golongan: 'Gol. Dekorasi Pa/Pi', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: '5 dari 7 khat diundi. Media triplek 122 x 80 cm.' },
+    { cabang: 'Kaligrafi', golongan: 'Gol. Kontemporer Pa/Pi', umur: 'Maks. 34 thn 11 bln 29 hr', durasi: '480 Menit (8 Jam)', maqra: '4 Gaya kontemporer. Kanvas 60 x 80 cm. Tanpa makhluk bernyawa.' },
+    { cabang: 'Rebana', golongan: 'Rebana Klasik (Regu 11 Orang)', umur: 'Maks. 38 thn 11 bln 29 hr', durasi: 'Maks. 15 Menit', maqra: 'Lagu Wajib: "Al-Qur\'an" (Hj. Nur Asiah Djamil). 4 Lagu Pilihan.' },
+  ];
+
+  const filteredCabang = CABANG_DATA.filter((item) => {
+    const matchCabang = selectedCabangFilter === 'ALL' || item.cabang === selectedCabangFilter;
+    const matchSearch =
+      searchQuery === '' ||
+      item.golongan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.maqra.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCabang && matchSearch;
+  });
+
   return (
     <div className="space-y-6">
-      {/* Top Action Bar */}
+      {/* Top Bar Navigation (Hidden on Print) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-300 print:hidden">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-black">Juknis</h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            Petunjuk Teknis Resmi MTQ ke-XIX Kecamatan Tambusai Utara Tahun 2026 di Desa Mahato
+          <p className="text-xs text-neutral-600 mt-0.5">
+            Petunjuk Teknis Resmi MTQ ke-XIX Tingkat Kecamatan Tambusai Utara Tahun 2026 di Desa Mahato
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleDownload} className="text-xs">
-            <Download className="w-3.5 h-3.5 mr-1.5" />
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* View Mode Toggle: Dokumen vs Ringkasan */}
+          <div className="flex items-center border border-neutral-300 rounded overflow-hidden p-0.5 bg-neutral-100">
+            <button
+              type="button"
+              onClick={() => setViewMode('dokumen')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors ${
+                viewMode === 'dokumen'
+                  ? 'bg-black text-white shadow-sm'
+                  : 'text-neutral-700 hover:text-black'
+              }`}
+            >
+              Dokumen
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('ringkasan')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors ${
+                viewMode === 'ringkasan'
+                  ? 'bg-black text-white shadow-sm'
+                  : 'text-neutral-700 hover:text-black'
+              }`}
+            >
+              Ringkasan
+            </button>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDownload}
+            className="text-xs font-semibold gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
             Unduh
           </Button>
-          <Button size="sm" onClick={handlePrint} className="text-xs">
-            <Printer className="w-3.5 h-3.5 mr-1.5" />
+
+          <Button
+            type="button"
+            size="sm"
+            onClick={handlePrint}
+            className="text-xs font-semibold gap-1.5"
+          >
+            <Printer className="w-3.5 h-3.5" />
             Cetak
           </Button>
         </div>
       </div>
 
-      {/* Official Header Card (Letterhead style) */}
-      <div className="p-6 bg-white border border-neutral-300 rounded shadow-sm print:border-none print:shadow-none print:p-0">
-        <div className="text-center pb-5 border-b-2 border-black space-y-1">
-          <h2 className="text-xs tracking-widest uppercase font-semibold text-neutral-600">
-            Lembaga Pengembangan Tilawatil Qur'an (LPTQ)
-          </h2>
-          <h1 className="text-base sm:text-lg font-black tracking-tight text-black uppercase">
-            Kecamatan Tambusai Utara — Kabupaten Rokan Hulu
-          </h1>
-          <p className="text-[11px] text-neutral-600 italic">
-            Sekretariat: Kantor KUA - Jl. Raya Rantau Kasai Desa Rantau Kasai, Kec. Tambusai Utara, Kab. Rokan Hulu - Riau
-          </p>
-        </div>
-
-        {/* Decree & Event Subheader */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-xs bg-neutral-50 p-4 rounded mt-4 border border-neutral-200 print:bg-white print:border-neutral-400">
-          <div>
-            <div className="text-neutral-500 text-[10px] uppercase font-bold">Surat Keputusan / Edaran</div>
-            <div className="font-mono font-semibold text-black mt-0.5">09/LPTQ-T.U/MTQ/IX/2026</div>
-            <div className="text-[11px] text-neutral-600 mt-0.5">Tertanggal: 10 September 2026</div>
+      {/* MODE 1: DOKUMEN RESMI (Persis seperti dokumen fisik Surat Edaran 8 Halaman) */}
+      {viewMode === 'dokumen' && (
+        <div className="space-y-8">
+          {/* Helper notice on web screen */}
+          <div className="p-3 bg-neutral-100 border border-neutral-300 text-xs text-neutral-700 rounded print:hidden flex items-center justify-between">
+            <span>
+              Tampilan format naskah dinas resmi sesuai fisik dokumen <strong>09/LPTQ-T.U/MTQ/IX/2026</strong>. Klik <strong>Cetak</strong> untuk langsung print atau save as PDF standar A4.
+            </span>
+            <span className="font-mono text-[11px] text-neutral-500 font-bold ml-2">8 Halaman Lengkap</span>
           </div>
-          <div>
-            <div className="text-neutral-500 text-[10px] uppercase font-bold">Penyelenggaraan & Tuan Rumah</div>
-            <div className="font-semibold text-black mt-0.5 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
-              Desa Mahato, Tambusai Utara
-            </div>
-            <div className="text-[11px] text-neutral-600 mt-0.5 flex items-center gap-1">
-              <Calendar className="w-3 h-3 shrink-0" />
-              09 – 13 November 2026
-            </div>
-          </div>
-          <div>
-            <div className="text-neutral-500 text-[10px] uppercase font-bold">Penanggung Jawab LPTQ</div>
-            <div className="font-semibold text-black mt-0.5">Rahmat Saputra</div>
-            <div className="text-[11px] text-neutral-600 mt-0.5">Ketua Umum LPTQ Kec. Tambusai Utara</div>
-          </div>
-        </div>
-      </div>
 
-      {/* Interactive Tabs (Hidden in Print) */}
-      <div className="flex border-b border-neutral-200 overflow-x-auto print:hidden">
-        {[
-          { key: 'umum', label: 'Umum' },
-          { key: 'cabang', label: 'Cabang' },
-          { key: 'materi', label: 'Materi' },
-          { key: 'berkas', label: 'Berkas' },
-          { key: 'penilaian', label: 'Penilaian' },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
-            className={`px-4 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'border-black text-black font-bold'
-                : 'border-transparent text-neutral-500 hover:text-black'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+          {/* Render all 8 pages as official paper sheets */}
+          {JUKNIS_PAGES.map((page) => (
+            <div
+              key={page.page_number}
+              className="max-w-4xl mx-auto bg-white border border-neutral-300 shadow-sm p-8 sm:p-14 font-serif text-black leading-relaxed relative print:border-none print:shadow-none print:p-0 print:m-0 print:break-after-page mb-8"
+              style={{ minHeight: '1000px' }}
+            >
+              {/* Header Kop Surat Resmi (Halaman 1) */}
+              {page.page_number === 1 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-4 pb-3">
+                    <div className="w-20 h-20 relative shrink-0">
+                      <Image
+                        src="/images/lptq-logo.png"
+                        alt="Logo LPTQ"
+                        width={80}
+                        height={80}
+                        className="object-contain"
+                        priority
+                      />
+                    </div>
+                    <div className="text-center flex-1">
+                      <h2 className="text-xs sm:text-sm font-bold tracking-tight uppercase leading-snug">
+                        {JUKNIS_OFFICIAL_HEADER.instansi_baris1}
+                      </h2>
+                      <h1 className="text-base sm:text-lg font-black tracking-tight uppercase leading-tight mt-0.5">
+                        {JUKNIS_OFFICIAL_HEADER.instansi_baris2}
+                      </h1>
+                      <h3 className="text-xs font-bold leading-tight mt-0.5">
+                        {JUKNIS_OFFICIAL_HEADER.instansi_baris3}
+                      </h3>
+                      <p className="text-[10px] sm:text-[11px] font-sans text-neutral-700 leading-tight mt-1 italic">
+                        {JUKNIS_OFFICIAL_HEADER.alamat_sekretariat}
+                      </p>
+                    </div>
+                  </div>
 
-      {/* Tab 1: Ketentuan Umum */}
-      {(activeTab === 'umum' || typeof window === 'undefined') && (
-        <div className="space-y-4">
-          <div className="bg-white border border-neutral-300 rounded p-6 space-y-4">
-            <h2 className="text-sm font-bold text-black uppercase tracking-wider flex items-center gap-2">
-              <Scale className="w-4 h-4" />
-              Ketentuan Umum Peserta & Kafilah
-            </h2>
-            <div className="space-y-3 text-xs text-neutral-800 leading-relaxed">
-              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
-                <strong>1. Asal Usul Peserta:</strong> Peserta MTQ ke-XIX adalah putra-putri yang berdomisili di desa-desa dalam wilayah administratif Kecamatan Tambusai Utara, dibuktikan dengan Surat Mandat Kepala Desa, KTP/Surat Keterangan Domisili, dan Kartu Keluarga ber-NIK.
-              </div>
-              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
-                <strong>2. Pembatasan Cabang (Aturan Ketat):</strong> Setiap peserta hanya diperbolehkan mengikuti <strong>1 (satu) cabang musabaqah</strong> saja. Peserta yang terbukti merangkap cabang akan didiskualifikasi dari seluruh cabang lomba.
-              </div>
-              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
-                <strong>3. Penentuan Usia:</strong> Batas umur maksimal peserta dihitung secara tepat per tanggal pelaksanaan pembukaan MTQ, yaitu <strong>09 November 2026</strong>. Bukti umur wajib didasarkan pada Akta Kelahiran dan Ijazah asli/fotokopi legalisir.
-              </div>
-              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
-                <strong>4. Wadah Pengumpulan Berkas Fisik:</strong> Seluruh berkas pendaftaran peserta wajib diserahkan dalam <strong>Map Berwarna Biru</strong> ke Sekretariat LPTQ Kecamatan Tambusai Utara atau Panitia Pendaftaran MTQ di Desa Mahato.
-              </div>
-              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
-                <strong>5. Sanksi Diskualifikasi:</strong> Peserta yang terbukti menggunakan identitas palsu, berasal dari luar Kecamatan Tambusai Utara tanpa legalitas mutasi sah, atau memanipulasi usia akan langsung <strong>didiskualifikasi</strong> dan hak kejuaraannya dicabut.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                  {/* Garis Ganda Kop Surat Resmi */}
+                  <div className="border-b-2 border-black pb-0.5"></div>
+                  <div className="border-b border-black mt-0.5 mb-6"></div>
 
-      {/* Tab 2: Cabang & Batasan Umur */}
-      {activeTab === 'cabang' && (
-        <div className="space-y-6">
-          {CABANG_LIST.map((c, idx) => (
-            <div key={idx} className="bg-white border border-neutral-300 rounded p-5 space-y-3">
-              <h2 className="text-xs font-bold text-black uppercase tracking-wider flex items-center gap-2 border-b border-neutral-200 pb-2">
-                <Award className="w-4 h-4" />
-                {c.kategori}
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-neutral-300 bg-neutral-50 text-[11px] font-semibold text-neutral-700 uppercase">
-                      <th className="py-2.5 px-3">Golongan Musabaqah</th>
-                      <th className="py-2.5 px-3">Batasan Umur (Per 09 Nov 2026)</th>
-                      <th className="py-2.5 px-3">Durasi</th>
-                      <th className="py-2.5 px-3">Materi / Maqra</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-200 text-neutral-800">
-                    {c.items.map((it, i) => (
-                      <tr key={i} className="hover:bg-neutral-50 transition-colors">
-                        <td className="py-2.5 px-3 font-semibold text-black">{it.nama}</td>
-                        <td className="py-2.5 px-3 font-mono text-[11px]">{it.umur}</td>
-                        <td className="py-2.5 px-3">{it.durasi}</td>
-                        <td className="py-2.5 px-3 text-neutral-600 leading-tight">{it.maqra}</td>
-                      </tr>
+                  {/* Atribut Surat Resmi */}
+                  <div className="grid grid-cols-12 gap-2 text-xs font-serif mb-6">
+                    <div className="col-span-8 space-y-1">
+                      <div className="flex">
+                        <span className="w-16">No</span>
+                        <span className="w-3">:</span>
+                        <span className="font-sans font-bold">{JUKNIS_OFFICIAL_HEADER.nomor_surat}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="w-16">Lamp</span>
+                        <span className="w-3">:</span>
+                        <span>{JUKNIS_OFFICIAL_HEADER.lampiran}</span>
+                      </div>
+                      <div className="flex items-start">
+                        <span className="w-16">Hal</span>
+                        <span className="w-3">:</span>
+                        <div className="font-bold font-sans">
+                          Petunjuk Teknis Cabang Lomba<br />
+                          Pelaksanaan MTQ ke-XIX 2026
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-span-12 sm:col-span-4 mt-3 sm:mt-0 font-serif text-xs">
+                      <div className="font-bold">Kepada Yth</div>
+                      <ol className="list-decimal pl-4 space-y-0.5 mt-1 font-sans text-xs">
+                        {JUKNIS_OFFICIAL_HEADER.tujuan.map((t, idx) => (
+                          <li key={idx}>{t}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Judul Halaman Dokumen jika ada (Halaman 2, 8, dll) */}
+              {page.title && (
+                <div className="text-center font-bold text-xs sm:text-sm tracking-wide uppercase mb-6 pb-2 border-b border-neutral-300">
+                  {page.title}
+                </div>
+              )}
+
+              {/* Isi Bagian Dokumen Per Halaman */}
+              <div className="space-y-4 text-xs sm:text-sm text-neutral-900 leading-relaxed font-serif">
+                {page.sections.map((sec, sIdx) => (
+                  <div key={sIdx} className="space-y-2">
+                    {sec.heading && (
+                      <div className="font-bold text-xs sm:text-sm text-black tracking-tight">
+                        {sec.heading}
+                      </div>
+                    )}
+                    {sec.subheading && (
+                      <div className="font-bold text-xs text-neutral-800 pl-2">
+                        {sec.subheading}
+                      </div>
+                    )}
+
+                    {sec.paragraphs && sec.paragraphs.map((p, pIdx) => (
+                      <p key={pIdx} className="text-justify text-neutral-800">
+                        {p}
+                      </p>
                     ))}
-                  </tbody>
-                </table>
+
+                    {sec.items && (
+                      <div className="space-y-2 pl-2">
+                        {sec.items.map((it, itIdx) => (
+                          <div key={itIdx} className="space-y-1">
+                            <div className="flex items-start gap-2">
+                              {it.label && (
+                                <span className="font-bold shrink-0">{it.label}</span>
+                              )}
+                              {it.text && (
+                                <span className="text-justify">{it.text}</span>
+                              )}
+                            </div>
+                            {it.subitems && (
+                              <ul className="list-disc pl-6 space-y-1 text-xs">
+                                {it.subitems.map((sub, subIdx) => (
+                                  <li key={subIdx} className="text-justify">
+                                    {sub}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Blok Tanda Tangan & Stempel Resmi (Halaman 1 & 8) */}
+              {page.show_signature && (
+                <div className="mt-10 flex justify-end font-serif">
+                  <div className="w-64 text-center text-xs space-y-1">
+                    <div>Tambusai Utara, 10 September 2026</div>
+                    <div className="font-bold uppercase">Ketua Umum</div>
+                    <div className="font-sans text-[11px] text-neutral-700">LPTQ Kec.Tambusai Utara</div>
+                    
+                    {/* Gambar Stempel & Tanda Tangan Resmi */}
+                    <div className="py-1 flex justify-center">
+                      <Image
+                        src="/images/lptq-stempel.png"
+                        alt="Stempel LPTQ & Tanda Tangan Rahmat Saputra"
+                        width={180}
+                        height={120}
+                        className="object-contain"
+                      />
+                    </div>
+
+                    <div className="font-bold font-sans tracking-wide uppercase border-b border-black inline-block px-2 text-xs">
+                      RAHMAT SAPUTRA
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Footer Garis Merah Marun Resmi Sesuai PDF Asli */}
+              <div className="mt-16 pt-3 border-t border-neutral-300 flex items-center gap-3 text-[11px] text-neutral-600 font-sans">
+                <div className="bg-[#8B1E1E] text-white font-bold px-2 py-0.5 text-[10px] rounded-xs">
+                  {page.page_number}
+                </div>
+                <div className="italic">
+                  MTQ ke-XIX Tingkat Kecamatan Tambusai Utara
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Tab 3: Materi & Ketentuan Khusus (9 Tema Syarhil & Rebana Klasik) */}
-      {activeTab === 'materi' && (
+      {/* MODE 2: RINGKASAN TEKNIS (Matriks Cepat untuk Verifikator & Administrator) */}
+      {viewMode === 'ringkasan' && (
         <div className="space-y-6">
-          {/* 9 Tema Syarhil Al-Qur'an */}
-          <div className="bg-white border border-neutral-300 rounded p-6 space-y-4">
-            <h2 className="text-xs font-bold text-black uppercase tracking-wider flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              9 Tema Resmi Cabang Syarhil Al-Qur'an (MSQ)
-            </h2>
-            <p className="text-xs text-neutral-600">
-              Setiap regu Syarhil Al-Qur'an (3 orang) membawakan materi syarahan berdasarkan salah satu dari sembilan tema resmi yang ditetapkan LPTQ Kecamatan Tambusai Utara berikut ini:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {SYARHIL_THEMES.map((theme, i) => (
-                <div key={i} className="p-3.5 border border-neutral-200 rounded bg-neutral-50 text-xs flex items-start gap-2.5">
-                  <span className="font-bold text-black font-mono text-xs">{i + 1}.</span>
-                  <span className="text-neutral-800 font-medium leading-snug">{theme}</span>
-                </div>
+          {/* Filter Bar */}
+          <div className="bg-white border border-neutral-300 rounded p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                { key: 'ALL', label: 'Semua' },
+                { key: 'Seni Baca', label: 'Seni Baca' },
+                { key: 'Hafalan', label: 'Hafalan' },
+                { key: 'Fahmil', label: 'Fahmil' },
+                { key: 'Syarhil', label: 'Syarhil' },
+                { key: 'Kaligrafi', label: 'Kaligrafi' },
+                { key: 'Rebana', label: 'Rebana' },
+              ].map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => setSelectedCabangFilter(c.key)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded border transition-colors ${
+                    selectedCabangFilter === c.key
+                      ? 'border-black bg-black text-white'
+                      : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-500'
+                  }`}
+                >
+                  {c.label}
+                </button>
               ))}
+            </div>
+
+            <div className="relative w-full md:w-64">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Cari golongan atau maqra..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              />
             </div>
           </div>
 
-          {/* Ketentuan Khusus Rebana Klasik */}
-          <div className="bg-white border border-neutral-300 rounded p-6 space-y-4">
-            <h2 className="text-xs font-bold text-black uppercase tracking-wider flex items-center gap-2">
-              <Music className="w-4 h-4" />
-              Ketentuan Khusus Cabang Rebana Klasik
-            </h2>
-            <div className="space-y-3 text-xs text-neutral-800 leading-relaxed">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border border-neutral-200 rounded bg-neutral-50 space-y-2">
-                  <div className="font-bold text-black uppercase text-[11px]">Format & Personel</div>
-                  <ul className="list-disc pl-4 space-y-1 text-neutral-700">
-                    <li>Jumlah personel: <strong>11 (sebelas) orang</strong> per regu.</li>
-                    <li>Komposisi: Putra, Putri, atau Campuran.</li>
-                    <li>Batas usia: Maksimal <strong>38 tahun 11 bulan 29 hari</strong> per 09 Nov 2026.</li>
-                    <li>Waktu tampil maksimal: <strong>15 (lima belas) menit</strong>.</li>
-                  </ul>
-                </div>
+          {/* Tabel Matriks Cepat */}
+          <div className="bg-white border border-neutral-300 rounded overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-neutral-300 bg-neutral-100 text-[11px] font-bold text-neutral-800 uppercase">
+                    <th className="py-3 px-4">Cabang</th>
+                    <th className="py-3 px-4">Golongan Musabaqah</th>
+                    <th className="py-3 px-4">Batasan Usia (Per 09 Nov 2026)</th>
+                    <th className="py-3 px-4">Durasi</th>
+                    <th className="py-3 px-4">Materi & Maqra</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200">
+                  {filteredCabang.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-6 text-center text-xs text-neutral-500">
+                        Tidak ada golongan musabaqah yang sesuai kriteria pencarian.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCabang.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-neutral-50 transition-colors">
+                        <td className="py-3 px-4 font-bold text-black whitespace-nowrap">
+                          {row.cabang}
+                        </td>
+                        <td className="py-3 px-4 font-semibold text-black">
+                          {row.golongan}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-[11px] text-neutral-700 whitespace-nowrap">
+                          {row.umur}
+                        </td>
+                        <td className="py-3 px-4 text-neutral-700 whitespace-nowrap">
+                          {row.durasi}
+                        </td>
+                        <td className="py-3 px-4 text-neutral-600 leading-snug">
+                          {row.maqra}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-                <div className="p-4 border border-neutral-200 rounded bg-neutral-50 space-y-2">
-                  <div className="font-bold text-black uppercase text-[11px]">Lagu & Instrumen</div>
-                  <ul className="list-disc pl-4 space-y-1 text-neutral-700">
-                    <li><strong>Lagu Wajib:</strong> "Al-Qur'an" (Cipt. Hj. Nur Asiah Djamil).</li>
-                    <li><strong>Lagu Pilihan (Pilih 1):</strong> Magadir, Perdamaian, Kasih sayangnya bunda, Jilbab putih.</li>
-                    <li>Alat musik rebana dibawa sendiri oleh masing-masing regu.</li>
-                    <li><strong>Dilarang:</strong> Alat nada ber-notasi melodi (keyboard, gitar, suling) atau alat bertenaga elektrik.</li>
-                  </ul>
-                </div>
+          {/* Ringkasan 6 Dokumen & Ketentuan Map Biru */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-5 bg-white border border-neutral-300 rounded space-y-3">
+              <h2 className="text-xs font-bold text-black uppercase tracking-wider border-b border-neutral-200 pb-2">
+                6 Dokumen Persyaratan Administrasi
+              </h2>
+              <ol className="list-decimal pl-4 space-y-1.5 text-xs text-neutral-800">
+                <li><strong>Surat Mandat dari Desa:</strong> Ditandatangani Kepala Desa atau LPTK Desa setempat.</li>
+                <li><strong>Surat Keterangan Berdomisili:</strong> Membuktikan berdomisili di Kecamatan Tambusai Utara.</li>
+                <li><strong>Fotokopi Ijazah Sekolah:</strong> Berkas ijazah formal terakhir dilegalisir.</li>
+                <li><strong>Fotokopi Akte Kelahiran:</strong> Verifikasi batas umur musabaqah per 09 Nov 2026.</li>
+                <li><strong>Fotokopi Kartu Keluarga:</strong> Wajib memuat NIK 16 digit.</li>
+                <li><strong>Surat Pernyataan Kebenaran Dokumen:</strong> Bermaterai Rp 10.000,-.</li>
+              </ol>
+            </div>
+
+            <div className="p-5 bg-white border border-neutral-300 rounded space-y-3">
+              <h2 className="text-xs font-bold text-black uppercase tracking-wider border-b border-neutral-200 pb-2">
+                Ketentuan Pengumpulan & Sanksi
+              </h2>
+              <div className="space-y-2 text-xs text-neutral-800 leading-relaxed">
+                <p>
+                  <strong>Wadah Berkas:</strong> Berkas pendaftaran beserta dokumen asli dan fotokopi rangkap 1 (satu) dimasukkan ke dalam <strong>Map Warna Biru</strong> dan disampaikan di Sekretariat LPTQ Kecamatan / Bagian Administrasi MTQ Desa Mahato.
+                </p>
+                <p>
+                  <strong>Batasan Cabang:</strong> Setiap peserta hanya boleh mengikuti <strong>1 cabang musabaqah</strong>.
+                </p>
+                <p>
+                  <strong>Sanksi:</strong> Peserta yang tidak memenuhi persyaratan tidak berhak tampil. Manipulasi umur atau membawa peserta dari luar Tambusai Utara langsung dikenakan sanksi <strong>diskualifikasi</strong>.
+                </p>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Tab 4: Persyaratan Berkas */}
-      {activeTab === 'berkas' && (
-        <div className="bg-white border border-neutral-300 rounded p-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
-            <h2 className="text-xs font-bold text-black uppercase tracking-wider flex items-center gap-2">
-              <FileCheck className="w-4 h-4" />
-              6 Dokumen Persyaratan Administrasi Peserta
-            </h2>
-            <span className="text-[11px] font-semibold text-black bg-neutral-100 px-2.5 py-1 rounded border border-neutral-300">
-              Wadah: Map Warna Biru
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr className="border-b border-neutral-300 bg-neutral-50 text-[11px] font-semibold text-neutral-700 uppercase">
-                  <th className="py-2.5 px-3 w-12 text-center">No</th>
-                  <th className="py-2.5 px-3">Kode Dokumen</th>
-                  <th className="py-2.5 px-3">Nama Berkas Persyaratan</th>
-                  <th className="py-2.5 px-3">Uraian & Ketentuan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-200 text-neutral-800">
-                {BERKAS_LIST.map((b) => (
-                  <tr key={b.no} className="hover:bg-neutral-50 transition-colors">
-                    <td className="py-3 px-3 text-center font-mono font-bold">{b.no}</td>
-                    <td className="py-3 px-3 font-mono text-[11px] text-neutral-600">{b.kode}</td>
-                    <td className="py-3 px-3 font-semibold text-black">{b.nama}</td>
-                    <td className="py-3 px-3 text-neutral-600">{b.ket}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 5: Kriteria Penilaian */}
-      {activeTab === 'penilaian' && (
-        <div className="bg-white border border-neutral-300 rounded p-6 space-y-4">
-          <h2 className="text-xs font-bold text-black uppercase tracking-wider flex items-center gap-2 border-b border-neutral-200 pb-3">
-            <Scale className="w-4 h-4" />
-            Unsur Penilaian Dewan Hakim MTQ XIX
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div className="p-4 border border-neutral-200 rounded bg-neutral-50 space-y-2">
-              <div className="font-bold text-black uppercase text-[11px]">Seni Baca (Tilawah & Tartil)</div>
-              <ul className="list-disc pl-4 space-y-1 text-neutral-700">
-                <li><strong>Tajwid (30 Poin):</strong> Makharijul huruf, shifatul huruf, ahkamul mad wal qashr.</li>
-                <li><strong>Fashahah & Adab (30 Poin):</strong> Ahkamul waqaf wal ibtida, mura'atul huruf wal harakat.</li>
-                <li><strong>Lagu & Suara (40 Poin):</strong> Keutuhan tempo, peralihan nada, variasi irama minimal 3 maqam lagu.</li>
-              </ul>
-            </div>
-
-            <div className="p-4 border border-neutral-200 rounded bg-neutral-50 space-y-2">
-              <div className="font-bold text-black uppercase text-[11px]">Hafalan (Hifzhil Qur'an)</div>
-              <ul className="list-disc pl-4 space-y-1 text-neutral-700">
-                <li><strong>Tahfidz (50 Poin):</strong> Kelancaran hafalan, tidak ada tawaqquf/ragu berlebih, tepat menyambung ayat.</li>
-                <li><strong>Tajwid (25 Poin):</strong> Ketepatan hukum tajwid dan makhraj dalam tartil hafalan.</li>
-                <li><strong>Fashahah & Adab (25 Poin):</strong> Kesopanan, pakaian islami, dan ketegasan menjawab soal dewan juri.</li>
-              </ul>
-            </div>
-
-            <div className="p-4 border border-neutral-200 rounded bg-neutral-50 space-y-2">
-              <div className="font-bold text-black uppercase text-[11px]">Syarhil & Fahmil Qur'an</div>
-              <ul className="list-disc pl-4 space-y-1 text-neutral-700">
-                <li><strong>Materi / Syarah (40 Poin):</strong> Kedalaman isi sesuai tema, referensi ayat dan hadits yang relevan.</li>
-                <li><strong>Penghayatan & Retorika (30 Poin):</strong> Intonasi, gesture, mimik wajah, dan kekompakan trio penyaji.</li>
-                <li><strong>Tilawah & Terjemah (30 Poin):</strong> Kualitas tilawah pembuka dan puitisasi terjemahan ayat Al-Qur'an.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Official Sign-off Footer */}
-      <div className="p-6 bg-white border border-neutral-300 rounded text-xs space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-neutral-600 gap-2 border-b border-neutral-200 pb-3">
-          <div>Ditetapkan di: Rantau Kasai, Tambusai Utara</div>
-          <div>Pada tanggal: 10 September 2026</div>
-        </div>
-        <div className="flex justify-end pt-2">
-          <div className="text-center w-64 space-y-12">
-            <div>
-              <div className="font-semibold text-black uppercase text-[11px]">Lembaga Pengembangan Tilawatil Qur'an</div>
-              <div className="text-neutral-600">Kecamatan Tambusai Utara</div>
-              <div className="font-bold text-black mt-1">Ketua Umum,</div>
-            </div>
-            <div>
-              <div className="font-bold text-black text-sm underline">RAHMAT SAPUTRA</div>
-              <div className="text-[11px] text-neutral-500 font-mono">LPTQ KEC. TAMBUSAI UTARA</div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
