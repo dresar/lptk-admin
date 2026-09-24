@@ -39,7 +39,7 @@ export default function ParticipantsPage() {
   const [selectedLptk, setSelectedLptk] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   // Selective Bulk Selection Mode (disabled by default)
   const [isSelectMode, setIsSelectMode] = useState(false);

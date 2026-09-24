@@ -20,16 +20,30 @@ export default function AdminLayout({
     let isMounted = true;
 
     async function verifyAuth() {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       try {
-        const res = await fetch('/api/auth/me', { cache: 'no-store' });
+        const res = await fetch('/api/auth/me', {
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
         if (!res.ok) {
-          router.replace('/login');
+          try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+          } catch {}
+          window.location.href = '/login?expired=1';
           return;
         }
 
         const json = await res.json();
         if (!json.success || !json.data?.user) {
-          router.replace('/login');
+          try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+          } catch {}
+          window.location.href = '/login?expired=1';
           return;
         }
 
@@ -38,7 +52,11 @@ export default function AdminLayout({
           setCheckingAuth(false);
         }
       } catch {
-        router.replace('/login');
+        clearTimeout(timeoutId);
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch {}
+        window.location.href = '/login?expired=1';
       }
     }
 

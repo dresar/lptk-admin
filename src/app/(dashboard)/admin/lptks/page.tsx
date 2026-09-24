@@ -38,7 +38,7 @@ export default function LptksPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   // Selective Bulk Selection Mode (disabled by default)
   const [isSelectMode, setIsSelectMode] = useState(false);
