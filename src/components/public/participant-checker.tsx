@@ -136,7 +136,7 @@ export function ParticipantChecker() {
             </p>
           )}
 
-          <p className="mt-2 text-[11px] text-neutral-500">
+          <p className="mt-2 text-[11px] text-neutral-400">
             Privasi terlindungi: NIK peserta ditampilkan dalam format sensor (contoh: 140608******0001).
           </p>
         </form>
@@ -148,7 +148,7 @@ export function ParticipantChecker() {
           </div>
         ) : searched && results.length === 0 ? (
           <div className="p-8 text-center bg-neutral-950 border border-neutral-800 rounded space-y-2">
-            <FileQuestion className="w-8 h-8 text-neutral-500 mx-auto" />
+            <FileQuestion className="w-8 h-8 text-neutral-400 mx-auto" />
             <div className="text-sm font-semibold text-white">Peserta Tidak Ditemukan</div>
             <p className="text-xs text-neutral-400 max-w-md mx-auto">
               Tidak ada data peserta yang cocok dengan kata kunci &quot;{query}&quot;. Pastikan ejaan nama atau NIK sudah benar, atau konfirmasi ke pengurus LPTQ desa Anda.
@@ -191,11 +191,11 @@ export function ParticipantChecker() {
 
                     <div className="text-xs space-y-1 pt-2 border-t border-neutral-800/80 text-neutral-300">
                       <div>
-                        <span className="text-neutral-500">Kafilah: </span>
+                        <span className="text-neutral-400">Kafilah: </span>
                         <span className="font-medium text-white">{item.village_name}</span>
                       </div>
                       <div>
-                        <span className="text-neutral-500">Cabang Lomba: </span>
+                        <span className="text-neutral-400">Cabang Lomba: </span>
                         <span className="font-medium text-white">
                           {item.categories.length > 0 ? item.categories.join(', ') : 'Belum Ditentukan'}
                         </span>

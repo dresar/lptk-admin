@@ -251,6 +251,24 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Berita & Warta Publik
+CREATE TABLE IF NOT EXISTS public.posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    excerpt TEXT NOT NULL,
+    content TEXT NOT NULL,
+    cover_image_url TEXT,
+    author_name VARCHAR(150) NOT NULL DEFAULT 'Sekretariat LPTQ',
+    is_published BOOLEAN DEFAULT true,
+    published_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
 -- Indeks Kinerja
 CREATE INDEX IF NOT EXISTS idx_participants_status ON public.participants(status_code);
 CREATE INDEX IF NOT EXISTS idx_participants_lptk ON public.participants(lptk_id);
@@ -258,3 +276,6 @@ CREATE INDEX IF NOT EXISTS idx_participants_comp ON public.participants(competit
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON public.audit_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON public.audit_logs(action_code);
 CREATE INDEX IF NOT EXISTS idx_participant_documents_part ON public.participant_documents(participant_id);
+CREATE INDEX IF NOT EXISTS idx_posts_slug ON public.posts(slug);
+CREATE INDEX IF NOT EXISTS idx_posts_published ON public.posts(is_published, published_at DESC);
+

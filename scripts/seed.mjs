@@ -75,7 +75,10 @@ async function runSeed() {
       { code: 'setting.write', group: 'setting', name: 'Kelola Pengaturan' },
       // CDN
       { code: 'cdn.read', group: 'cdn', name: 'Lihat CDN Asset' },
-      { code: 'cdn.write', group: 'cdn', name: 'Kelola CDN Asset' }
+      { code: 'cdn.write', group: 'cdn', name: 'Kelola CDN Asset' },
+      // Berita / Post
+      { code: 'post.read', group: 'post', name: 'Lihat Berita' },
+      { code: 'post.write', group: 'post', name: 'Kelola Berita' }
     ];
 
     for (const p of permissions) {
@@ -108,7 +111,7 @@ async function runSeed() {
       'document.read', 'document.download',
       'verification.read', 'verification.decide',
       'report.read', 'report.export', 'audit.read',
-      'setting.read', 'cdn.read'
+      'setting.read', 'cdn.read', 'post.read', 'post.write'
     ];
     for (const code of kecamatanPermCodes) {
       const [perm] = await sql`SELECT id FROM auth.permissions WHERE code = ${code}`;

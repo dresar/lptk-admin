@@ -13,13 +13,8 @@ interface EventStats {
 }
 
 export function PublicHero() {
-  const [stats, setStats] = useState<EventStats>({
-    total_participants: 28,
-    verified_participants: 22,
-    total_villages: 11,
-    total_branches: 6,
-    total_categories: 25,
-  });
+  const [stats, setStats] = useState<EventStats | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -29,18 +24,18 @@ export function PublicHero() {
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
+    setMounted(true);
     fetch('/api/public/stats')
       .then((res) => res.json())
       .then((json) => {
         if (json?.data) {
-          setStats((prev) => ({
-            ...prev,
-            total_participants: json.data.total_participants ?? prev.total_participants,
-            verified_participants: json.data.verified_participants ?? prev.verified_participants,
-            total_villages: json.data.total_villages ?? prev.total_villages,
-            total_branches: json.data.total_branches ?? prev.total_branches,
-            total_categories: json.data.total_categories ?? prev.total_categories,
-          }));
+          setStats({
+            total_participants: json.data.total_participants ?? 0,
+            verified_participants: json.data.verified_participants ?? 0,
+            total_villages: json.data.total_villages ?? 11,
+            total_branches: json.data.total_branches ?? 6,
+            total_categories: json.data.total_categories ?? 25,
+          });
         }
       })
       .catch(() => {});
@@ -97,7 +92,7 @@ export function PublicHero() {
             <div className="flex flex-wrap gap-2.5 pt-2">
               <a
                 href="#cek-status"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-semibold text-xs rounded hover:bg-neutral-200 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-semibold text-xs rounded hover:bg-neutral-200 transition-colors min-h-[44px]"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>Cek Status</span>
@@ -105,7 +100,7 @@ export function PublicHero() {
 
               <a
                 href="#cabang"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-white font-medium text-xs border border-neutral-700 rounded hover:bg-neutral-800 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-white font-medium text-xs border border-neutral-700 rounded hover:bg-neutral-800 transition-colors min-h-[44px]"
               >
                 <Layers className="w-3.5 h-3.5" />
                 <span>Lihat Cabang</span>
@@ -113,7 +108,7 @@ export function PublicHero() {
 
               <a
                 href="#dokumen"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-white font-medium text-xs border border-neutral-700 rounded hover:bg-neutral-800 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-white font-medium text-xs border border-neutral-700 rounded hover:bg-neutral-800 transition-colors min-h-[44px]"
               >
                 <FileDown className="w-3.5 h-3.5" />
                 <span>Unduh Juknis</span>
@@ -121,9 +116,9 @@ export function PublicHero() {
 
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center px-4 py-2.5 bg-neutral-900 text-white font-medium text-xs border border-neutral-700 rounded hover:bg-neutral-800 transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2.5 bg-neutral-900 text-white font-medium text-xs border border-neutral-700 rounded hover:bg-neutral-800 transition-colors min-h-[44px]"
               >
-                <span>Masuk Portal</span>
+                <span>Masuk</span>
               </Link>
             </div>
 
@@ -135,25 +130,25 @@ export function PublicHero() {
               <div className="grid grid-cols-4 gap-2 max-w-sm text-center">
                 <div className="bg-neutral-900 border border-neutral-800 p-2 rounded">
                   <span className="block text-lg sm:text-xl font-bold font-mono text-white">
-                    {timeLeft.days}
+                    {mounted ? timeLeft.days : '-'}
                   </span>
                   <span className="text-[10px] text-neutral-400 uppercase font-mono">Hari</span>
                 </div>
                 <div className="bg-neutral-900 border border-neutral-800 p-2 rounded">
                   <span className="block text-lg sm:text-xl font-bold font-mono text-white">
-                    {timeLeft.hours}
+                    {mounted ? timeLeft.hours : '-'}
                   </span>
                   <span className="text-[10px] text-neutral-400 uppercase font-mono">Jam</span>
                 </div>
                 <div className="bg-neutral-900 border border-neutral-800 p-2 rounded">
                   <span className="block text-lg sm:text-xl font-bold font-mono text-white">
-                    {timeLeft.minutes}
+                    {mounted ? timeLeft.minutes : '-'}
                   </span>
                   <span className="text-[10px] text-neutral-400 uppercase font-mono">Menit</span>
                 </div>
                 <div className="bg-neutral-900 border border-neutral-800 p-2 rounded">
                   <span className="block text-lg sm:text-xl font-bold font-mono text-white">
-                    {timeLeft.seconds}
+                    {mounted ? timeLeft.seconds : '-'}
                   </span>
                   <span className="text-[10px] text-neutral-400 uppercase font-mono">Detik</span>
                 </div>
@@ -198,7 +193,7 @@ export function PublicHero() {
               <Trophy className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-xl sm:text-2xl font-bold text-white font-mono">
-              {stats.total_branches} Cabang
+              {stats ? `${stats.total_branches} Cabang` : '- Cabang'}
             </div>
             <div className="text-[11px] text-neutral-400 mt-0.5">Seni Baca s.d Rebana</div>
           </div>
@@ -209,7 +204,7 @@ export function PublicHero() {
               <Layers className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-xl sm:text-2xl font-bold text-white font-mono">
-              {stats.total_categories} Golongan
+              {stats ? `${stats.total_categories} Golongan` : '- Golongan'}
             </div>
             <div className="text-[11px] text-neutral-400 mt-0.5">Kategori Putra & Putri</div>
           </div>
@@ -220,7 +215,7 @@ export function PublicHero() {
               <MapPin className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-xl sm:text-2xl font-bold text-white font-mono">
-              {stats.total_villages} Desa
+              {stats ? `${stats.total_villages} Desa` : '- Desa'}
             </div>
             <div className="text-[11px] text-neutral-400 mt-0.5">Se-Tambusai Utara</div>
           </div>
@@ -231,10 +226,10 @@ export function PublicHero() {
               <Users className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-xl sm:text-2xl font-bold text-white font-mono">
-              {stats.total_participants} Terdaftar
+              {stats ? `${stats.total_participants} Terdaftar` : '- Terdaftar'}
             </div>
             <div className="text-[11px] text-emerald-400 mt-0.5 font-medium">
-              {stats.verified_participants} Terverifikasi
+              {stats ? `${stats.verified_participants} Terverifikasi` : '- Terverifikasi'}
             </div>
           </div>
         </div>

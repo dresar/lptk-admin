@@ -55,7 +55,7 @@ async function seedMahato() {
     // -------------------------------------------------------------------------
     // 3. 10 Real Villages in Tambusai Utara / Mahato, Rokan Hulu, Riau
     // -------------------------------------------------------------------------
-    console.log('3. Seeding real villages of Mahato & Tambusai Utara...');
+    console.log('3. Seeding real 11 villages of Mahato & Tambusai Utara...');
     const villagesData = [
       { code: 'DESA-MAHATO', name: 'Desa Mahato' },
       { code: 'DESA-MAHATO-SAKTI', name: 'Desa Mahato Sakti' },
@@ -67,6 +67,7 @@ async function seedMahato() {
       { code: 'DESA-SUKA-DAMAI', name: 'Desa Suka Damai' },
       { code: 'DESA-MEKAR-JAYA', name: 'Desa Mekar Jaya' },
       { code: 'DESA-PAYUNG-SEKAKI', name: 'Desa Payung Sekaki' },
+      { code: 'DESA-TANJUNG-MEDAN', name: 'Desa Tanjung Medan' },
     ];
 
     const villageMap = {};
@@ -164,6 +165,14 @@ async function seedMahato() {
         leader: 'H. Burhanuddin Lubis',
         phone: '081374556677',
         address: 'Jl. Swakarsa Payung Sekaki',
+      },
+      {
+        villageCode: 'DESA-TANJUNG-MEDAN',
+        code: 'LPTK-TANJUNG-MEDAN',
+        name: 'LPTK Desa Tanjung Medan',
+        leader: 'Ust. H. Syarifuddin',
+        phone: '081270992211',
+        address: 'Jl. Raya Tanjung Medan, Tambusai Utara',
       },
     ];
 

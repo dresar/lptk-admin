@@ -32,7 +32,7 @@ export function DocumentsSection() {
               </div>
 
               <div>
-                <span className="text-[11px] font-mono text-neutral-500 block mb-1">
+                <span className="text-[11px] font-mono text-neutral-400 block mb-1">
                   SK NO. 09/LPTQ-T.U/MTQ/IX/2026
                 </span>
                 <h3 className="font-bold text-base text-white">

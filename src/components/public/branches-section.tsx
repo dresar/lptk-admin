@@ -233,7 +233,7 @@ export function BranchesSection() {
                       </span>
                       <span>{cat.name}</span>
                     </div>
-                    <span className="font-mono text-[11px] text-neutral-500 bg-neutral-50 px-2 py-0.5 rounded border border-neutral-200">
+                    <span className="font-mono text-[11px] text-neutral-700 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-300">
                       {cat.ageLimit}
                     </span>
                   </div>

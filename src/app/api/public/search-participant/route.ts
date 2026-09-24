@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
     }
 
     const searchPattern = `%${q}%`;
+    const digitsOnly = q.replace(/[^0-9]/g, '');
+    const digitPattern = digitsOnly.length >= 3 ? `%${digitsOnly}%` : searchPattern;
 
     const sqlQuery = `
       SELECT 
@@ -43,7 +45,9 @@ export async function GET(req: NextRequest) {
       WHERE p.deleted_at IS NULL
         AND (
           p.nik ILIKE $1 
+          OR p.nik ILIKE $2
           OR p.name ILIKE $1 
+          OR v.name ILIKE $1
           OR p.id::text ILIKE $1
         )
       GROUP BY p.id, l.name, v.name, c.name
@@ -51,7 +55,7 @@ export async function GET(req: NextRequest) {
       LIMIT 15;
     `;
 
-    const rawRows = await db.raw(sqlQuery, [searchPattern]);
+    const rawRows = await db.raw(sqlQuery, [searchPattern, digitPattern]);
 
     const results = rawRows.map((r: any) => ({
       id: r.id,

@@ -57,29 +57,29 @@ export function PublicFooter() {
             </h4>
             <ul className="space-y-2 text-xs text-neutral-400">
               <li>
-                <a href="#cek-status" className="hover:text-white transition-colors">
+                <Link href="/#cek-status" className="hover:text-white transition-colors focus:outline-none focus:underline">
                   Cek Status Peserta
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#cabang" className="hover:text-white transition-colors">
+                <Link href="/#cabang" className="hover:text-white transition-colors focus:outline-none focus:underline">
                   Cabang & Golongan
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#kafilah" className="hover:text-white transition-colors">
+                <Link href="/#kafilah" className="hover:text-white transition-colors focus:outline-none focus:underline">
                   Profil Kafilah 11 Desa
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#berita" className="hover:text-white transition-colors">
+                <Link href="/#berita" className="hover:text-white transition-colors focus:outline-none focus:underline">
                   Warta & Pengumuman
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#dokumen" className="hover:text-white transition-colors">
+                <Link href="/#dokumen" className="hover:text-white transition-colors focus:outline-none focus:underline">
                   Unduh Petunjuk Teknis
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -95,9 +95,9 @@ export function PublicFooter() {
             <div>
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-neutral-900 border border-neutral-700 text-white rounded text-xs font-semibold hover:bg-neutral-800 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-neutral-900 border border-neutral-700 text-white rounded text-xs font-semibold hover:bg-neutral-800 transition-colors min-h-[44px]"
               >
-                <span>Masuk Portal</span>
+                <span>Masuk</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -105,7 +105,7 @@ export function PublicFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-neutral-500 font-mono">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-neutral-400 font-mono">
           <div>
             &copy; 2026 LPTQ Kecamatan Tambusai Utara. Hak Cipta Dilindungi.
           </div>

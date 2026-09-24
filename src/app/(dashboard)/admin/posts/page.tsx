@@ -397,7 +397,7 @@ export default function PostsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenEdit(item)}
-                        className="p-1.5"
+                        className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
                         aria-label="Ubah"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -406,7 +406,7 @@ export default function PostsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(item.id)}
-                        className="p-1.5"
+                        className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
                         aria-label="Hapus"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -481,7 +481,8 @@ export default function PostsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleOpenEdit(item)}
-                      className="p-1.5"
+                      className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
+                      aria-label="Ubah"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </Button>
@@ -489,7 +490,8 @@ export default function PostsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(item.id)}
-                      className="p-1.5"
+                      className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
+                      aria-label="Hapus"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

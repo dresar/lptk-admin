@@ -37,7 +37,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
         <div className="mb-6">
           <Link
             href="/#berita"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 hover:text-black transition-colors min-h-[44px] py-2 focus:outline-none focus:underline"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Kembali ke Beranda</span>

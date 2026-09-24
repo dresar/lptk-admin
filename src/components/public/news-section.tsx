@@ -74,11 +74,11 @@ export function NewsSection() {
 
         {/* Posts Grid */}
         {loading ? (
-          <div className="p-8 text-center text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded">
+          <div className="p-8 text-center text-xs text-neutral-600 bg-neutral-50 border border-neutral-200 rounded">
             Memuat warta terbaru...
           </div>
         ) : posts.length === 0 ? (
-          <div className="p-8 text-center text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded">
+          <div className="p-8 text-center text-xs text-neutral-600 bg-neutral-50 border border-neutral-200 rounded">
             Belum ada warta terbit.
           </div>
         ) : (
@@ -106,8 +106,8 @@ export function NewsSection() {
                   )}
 
                   <div className="p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-[11px] text-neutral-500 font-mono">
-                      <Calendar className="w-3 h-3 text-neutral-400" />
+                    <div className="flex items-center gap-2 text-[11px] text-neutral-600 font-mono">
+                      <Calendar className="w-3 h-3 text-neutral-500" />
                       <span>
                         {new Date(post.published_at).toLocaleDateString('id-ID', {
                           day: 'numeric',
@@ -160,7 +160,7 @@ export function NewsSection() {
                 <button
                   type="button"
                   onClick={() => setReadingPost(null)}
-                  className="p-1.5 text-neutral-500 hover:text-black hover:bg-neutral-100 rounded"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-700 hover:text-black hover:bg-neutral-100 rounded focus:outline-none focus:ring-1 focus:ring-black"
                   aria-label="Tutup"
                 >
                   <X className="w-5 h-5" />
@@ -182,14 +182,14 @@ export function NewsSection() {
                   {readingPost.title}
                 </h3>
 
-                <div className="flex items-center gap-4 text-xs text-neutral-500 font-mono">
+                <div className="flex items-center gap-4 text-xs text-neutral-600 font-mono">
                   <span className="flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-neutral-400" />
+                    <User className="w-3.5 h-3.5 text-neutral-500" />
                     {readingPost.author_name}
                   </span>
                   <span>•</span>
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-neutral-400" />
+                    <Calendar className="w-3.5 h-3.5 text-neutral-500" />
                     {new Date(readingPost.published_at).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'long',
@@ -206,7 +206,7 @@ export function NewsSection() {
               <div className="flex justify-between items-center pt-4 border-t border-neutral-200">
                 <Link
                   href={`/berita/${readingPost.slug}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 hover:text-black"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-800 hover:text-black min-h-[44px] py-2 focus:outline-none focus:underline"
                 >
                   <span>Buka Halaman Lengkap</span>
                   <ExternalLink className="w-3 h-3" />
