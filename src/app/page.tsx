@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { PublicHeader } from '@/components/public/public-header';
 import { PublicHero } from '@/components/public/public-hero';
