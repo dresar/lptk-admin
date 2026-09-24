@@ -90,11 +90,11 @@ export function ParticipantChecker() {
   };
 
   return (
-    <section id="cek-status" className="bg-stone-50 text-neutral-900 py-14 border-b border-stone-200 scroll-mt-14">
+    <section id="cek-status" className="bg-stone-50 text-neutral-900 py-12 border-b border-neutral-300 scroll-mt-14">
       <div className="max-w-4xl mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center max-w-xl mx-auto mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800">
+        <div className="text-center max-w-xl mx-auto mb-6 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-md text-emerald-800">
             <span className="text-amber-600 font-bold">۞</span>
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
             <span>Verifikasi Mandiri Kafilah Desa</span>
@@ -107,11 +107,11 @@ export function ParticipantChecker() {
           </p>
         </div>
 
-        {/* Search Box */}
+        {/* Search Box: Rectangular with subtle rounded corners */}
         <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
-          <div className="bg-white p-1.5 border-2 border-emerald-700 rounded-2xl shadow-xs flex flex-col sm:flex-row gap-2">
+          <div className="bg-white p-2 border border-neutral-300 rounded-md shadow-xs flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1 flex items-center">
-              <Search className="w-4 h-4 absolute left-3.5 text-emerald-700 pointer-events-none" />
+              <Search className="w-4 h-4 absolute left-3.5 text-neutral-500 pointer-events-none" />
               <input
                 type="text"
                 value={query}
@@ -126,7 +126,7 @@ export function ParticipantChecker() {
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-xs disabled:opacity-50 min-h-[42px] flex items-center justify-center gap-2"
+              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs sm:text-sm rounded-md transition-colors shadow-xs disabled:opacity-50 min-h-[42px] flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -143,7 +143,7 @@ export function ParticipantChecker() {
           </div>
 
           {errorMsg && (
-            <div className="mt-2.5 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
+            <div className="mt-2.5 p-3 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-700 font-medium">
               {errorMsg}
             </div>
           )}
@@ -156,16 +156,16 @@ export function ParticipantChecker() {
 
         {/* Results Area */}
         {loading ? (
-          <div className="p-8 text-center bg-white border border-emerald-100 rounded-2xl shadow-sm text-xs text-neutral-500 space-y-2">
-            <div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="p-8 text-center bg-white border border-neutral-300 rounded-md shadow-xs text-xs text-neutral-500 space-y-2">
+            <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
             <p>Menghubungkan ke basis data verifikasi MTQ XIX...</p>
           </div>
         ) : searched && results.length === 0 ? (
-          <div className="p-8 text-center bg-white border border-stone-200 rounded-2xl shadow-sm space-y-3">
+          <div className="p-8 text-center bg-white border border-neutral-300 rounded-md shadow-xs space-y-3">
             <FileQuestion className="w-10 h-10 text-neutral-400 mx-auto" />
             <div className="text-base font-bold text-neutral-900">Data Peserta Tidak Ditemukan</div>
             <p className="text-xs text-neutral-600 max-w-md mx-auto leading-relaxed">
-              Tidak ditemukan data peserta dengan kata kunci &quot;<span className="font-semibold text-neutral-900">{query}</span>&quot;. Pastikan penulisan NIK atau nama sudah sesuai, atau hubungi operator LPTQ desa Anda.
+              Tidak ditemukan data peserta dengan kata kunci &quot;<span className="font-semibold text-neutral-900">{query}</span>&quot;. Pastikan penulisan NIK atau nama sudah sesuai.
             </p>
           </div>
         ) : results.length > 0 ? (
@@ -175,7 +175,7 @@ export function ParticipantChecker() {
               <span className="text-[11px] font-mono text-neutral-500">KUA Tambusai Utara</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {results.map((item) => {
                 const badge = getStatusBadge(item.status_code);
                 const IconComp = badge.icon;
@@ -184,16 +184,16 @@ export function ParticipantChecker() {
                 return (
                   <div
                     key={item.id}
-                    className={`bg-white border-2 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all space-y-3 relative overflow-hidden ${
+                    className={`bg-white border rounded-md p-4 sm:p-5 shadow-xs transition-all space-y-3 relative overflow-hidden ${
                       isVerified
-                        ? 'border-emerald-600'
-                        : 'border-stone-200 hover:border-emerald-400'
+                        ? 'border-emerald-600 ring-1 ring-emerald-600/20'
+                        : 'border-neutral-300 hover:border-neutral-400'
                     }`}
                   >
-                    {/* Top Islamic Accent Bar */}
+                    {/* Top Info */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-0.5">
-                        <div className="font-bold text-base text-neutral-900 flex items-center gap-1.5">
+                        <div className="font-bold text-sm sm:text-base text-neutral-900 flex items-center gap-1.5">
                           <User className="w-4 h-4 text-emerald-700 flex-shrink-0" />
                           <span>{item.name}</span>
                         </div>
@@ -203,7 +203,7 @@ export function ParticipantChecker() {
                       </div>
 
                       <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-bold border rounded-full ${badge.className}`}
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold border rounded-sm ${badge.className}`}
                       >
                         <IconComp className="w-3.5 h-3.5" />
                         <span>{badge.label}</span>
@@ -211,16 +211,16 @@ export function ParticipantChecker() {
                     </div>
 
                     {/* Participant Details */}
-                    <div className="text-xs space-y-2 pt-3 border-t border-stone-100">
-                      <div className="flex items-center justify-between bg-stone-50 p-2 rounded-lg">
-                        <span className="text-neutral-500">Asal Kafilah Desa:</span>
+                    <div className="text-xs space-y-2 pt-3 border-t border-neutral-100">
+                      <div className="flex items-center justify-between bg-neutral-50 p-2 rounded-sm border border-neutral-200">
+                        <span className="text-neutral-500">Asal Kafilah:</span>
                         <span className="font-bold text-emerald-900 flex items-center gap-1">
                           <span className="text-amber-500">۞</span>
                           <span>{item.village_name}</span>
                         </span>
                       </div>
 
-                      <div className="bg-stone-50 p-2 rounded-lg space-y-1">
+                      <div className="bg-neutral-50 p-2 rounded-sm border border-neutral-200 space-y-1">
                         <span className="text-neutral-500 block text-[11px]">Golongan Musabaqah:</span>
                         <div className="font-semibold text-neutral-900">
                           {item.categories.length > 0 ? (
@@ -228,7 +228,7 @@ export function ParticipantChecker() {
                               {item.categories.map((c, i) => (
                                 <span
                                   key={i}
-                                  className="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-[11px]"
+                                  className="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-sm text-[11px]"
                                 >
                                   {c}
                                 </span>
@@ -243,7 +243,7 @@ export function ParticipantChecker() {
 
                     {/* Verification Status Notes */}
                     {isVerified && (
-                      <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
+                      <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-sm text-xs text-emerald-800 flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                         <span className="font-medium text-[11px]">
                           Berkas dinyatakan sah & memenuhi syarat Juknis MTQ XIX.
@@ -252,8 +252,8 @@ export function ParticipantChecker() {
                     )}
 
                     {item.status_code === 'REVISION_REQUIRED' && item.rejection_note && (
-                      <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
-                        <span className="font-bold block mb-0.5">Catatan Perbaikan Administrasi:</span>
+                      <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-sm text-xs text-rose-800">
+                        <span className="font-bold block mb-0.5">Catatan Perbaikan:</span>
                         <span>{item.rejection_note}</span>
                       </div>
                     )}

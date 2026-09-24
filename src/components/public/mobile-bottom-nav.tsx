@@ -32,13 +32,13 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Navigasi Bawah Layar Smartphone"
-      className="lg:hidden fixed bottom-3 left-3 right-3 z-50 bg-neutral-900/95 backdrop-blur-md border border-emerald-800/60 rounded-2xl shadow-2xl px-2 py-1.5 flex items-center justify-around text-neutral-400"
+      className="lg:hidden fixed bottom-3 left-3 right-3 z-50 bg-neutral-900/95 backdrop-blur-md border border-neutral-700 rounded-md shadow-2xl px-2 py-1.5 flex items-center justify-around text-neutral-400"
     >
       {/* 1. Beranda */}
       <a
         href="#"
         onClick={() => setActiveSection('beranda')}
-        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-md transition-all ${
           activeSection === 'beranda'
             ? 'text-amber-400 font-bold scale-105'
             : 'hover:text-neutral-200'
@@ -52,13 +52,13 @@ export function MobileBottomNav() {
       <a
         href="#cek-status"
         onClick={() => setActiveSection('cek-status')}
-        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-md transition-all relative ${
           activeSection === 'cek-status'
             ? 'text-emerald-400 font-bold scale-105'
             : 'hover:text-neutral-200'
         }`}
       >
-        <span className="absolute -top-1 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+        <span className="absolute -top-1 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-xs animate-ping" />
         <Search className="w-4 h-4 mb-0.5" />
         <span className="text-[10px] leading-tight">Cek NIK</span>
       </a>
@@ -67,7 +67,7 @@ export function MobileBottomNav() {
       <a
         href="#cabang"
         onClick={() => setActiveSection('cabang')}
-        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-md transition-all ${
           activeSection === 'cabang'
             ? 'text-amber-400 font-bold scale-105'
             : 'hover:text-neutral-200'
@@ -81,7 +81,7 @@ export function MobileBottomNav() {
       <a
         href="#kafilah"
         onClick={() => setActiveSection('kafilah')}
-        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-md transition-all ${
           activeSection === 'kafilah'
             ? 'text-amber-400 font-bold scale-105'
             : 'hover:text-neutral-200'
@@ -95,7 +95,7 @@ export function MobileBottomNav() {
       <a
         href="#berita"
         onClick={() => setActiveSection('berita')}
-        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-md transition-all ${
           activeSection === 'berita'
             ? 'text-amber-400 font-bold scale-105'
             : 'hover:text-neutral-200'
@@ -108,7 +108,7 @@ export function MobileBottomNav() {
       {/* 6. Masuk */}
       <Link
         href="/login"
-        className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-neutral-400 hover:text-white transition-colors"
+        className="flex flex-col items-center justify-center py-1 px-2.5 rounded-md hover:text-white transition-all text-neutral-400"
       >
         <Lock className="w-4 h-4 mb-0.5" />
         <span className="text-[10px] leading-tight">Masuk</span>

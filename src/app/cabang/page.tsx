@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { PublicHeader } from '@/components/public/public-header';
 import { PublicFooter } from '@/components/public/public-footer';
 import { MobileBottomNav } from '@/components/public/mobile-bottom-nav';
-import { Award, ArrowLeft, BookOpen, Users, Clock, CheckCircle2, Search, Sparkles } from 'lucide-react';
+import { Award, ArrowLeft, BookOpen, Clock, CheckCircle2, Search } from 'lucide-react';
 
 interface BranchDetail {
   id: string;
@@ -194,8 +194,8 @@ export default function CabangPage() {
           </span>
         </div>
 
-        {/* Header Section */}
-        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
+        {/* Header Section: Rectangular with rounded-md */}
+        <div className="bg-white border border-neutral-300 rounded-md p-6 sm:p-7 shadow-xs mb-8">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-amber-500 text-xs">۞</span>
             <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-800">
@@ -217,21 +217,21 @@ export default function CabangPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Cari cabang atau nama golongan..."
-              className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:bg-white transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 border border-neutral-300 rounded-md text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:bg-white transition-colors"
             />
           </div>
         </div>
 
-        {/* Branch Selection Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-8">
+        {/* Branch Selection Buttons: Rectangular with rounded-md */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
           {filteredBranches.map((b) => (
             <button
               key={b.id}
               onClick={() => setActiveTab(b.id)}
-              className={`p-3 rounded-xl border text-left transition-all text-xs font-semibold ${
+              className={`p-3 rounded-md border text-left transition-colors text-xs font-semibold ${
                 activeTab === b.id
-                  ? 'bg-emerald-800 text-white border-emerald-900 shadow-sm'
-                  : 'bg-white text-neutral-700 border-stone-200 hover:border-emerald-300 hover:bg-stone-50'
+                  ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs'
+                  : 'bg-white text-neutral-700 border-neutral-300 hover:bg-neutral-50'
               }`}
             >
               <div className="text-[10px] font-mono opacity-80 uppercase">{b.format}</div>
@@ -243,12 +243,12 @@ export default function CabangPage() {
           ))}
         </div>
 
-        {/* Active Branch Detail Card */}
-        <div className="bg-white border border-stone-200 rounded-3xl p-6 sm:p-10 shadow-xs space-y-8">
+        {/* Active Branch Detail Card: Rectangular with rounded-md */}
+        <div className="bg-white border border-neutral-300 rounded-md p-5 sm:p-7 shadow-xs space-y-6">
           {/* Top Title */}
-          <div className="pb-6 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="pb-5 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800 mb-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-mono font-semibold bg-emerald-100 border border-emerald-300 rounded-md text-emerald-800 mb-2">
                 <Award className="w-3.5 h-3.5 text-emerald-700" />
                 <span>Format: {activeBranch.format} ({activeBranch.personel})</span>
               </span>
@@ -257,8 +257,9 @@ export default function CabangPage() {
               </h2>
             </div>
             <a
-              href="/#dokumen"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-neutral-800 text-xs font-semibold rounded-xl transition-colors border border-stone-200 self-start sm:self-auto"
+              href="/documents/juknis-mtq-xix-tambusai-utara-2026.pdf"
+              download="juknis-mtq-xix-tambusai-utara-2026.pdf"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs font-semibold rounded-md transition-colors border border-neutral-300 self-start sm:self-auto"
             >
               <span>Unduh Juknis PDF</span>
             </a>
@@ -266,21 +267,21 @@ export default function CabangPage() {
 
           {/* Golongan Grid */}
           <div>
-            <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-600" />
+            <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-xs bg-emerald-600" />
               <span>Daftar Golongan Perlombaan ({activeBranch.categories.length})</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
               {activeBranch.categories.map((cat, idx) => (
                 <div
                   key={idx}
-                  className="bg-stone-50 border border-stone-200 rounded-xl p-4 hover:border-emerald-400 transition-colors"
+                  className="bg-neutral-50 border border-neutral-300 rounded-md p-3.5 hover:border-emerald-600 transition-colors"
                 >
                   <div className="text-xs font-bold text-neutral-900 leading-snug">{cat.name}</div>
                   <div className="mt-2 flex items-center justify-between text-[11px] font-mono">
                     <span className="text-neutral-500">Batas Usia:</span>
-                    <span className="px-2 py-0.5 bg-white border border-stone-300 rounded text-emerald-800 font-semibold">
+                    <span className="px-2 py-0.5 bg-white border border-neutral-300 rounded-sm text-emerald-800 font-semibold">
                       {cat.ageLimit}
                     </span>
                   </div>
@@ -290,9 +291,9 @@ export default function CabangPage() {
           </div>
 
           {/* Rules & Requirements */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-neutral-200">
             {/* Age Rules */}
-            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-5 space-y-3">
+            <div className="bg-neutral-50 border border-neutral-300 rounded-md p-4 sm:p-5 space-y-3">
               <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
                 <Clock className="w-4 h-4 text-emerald-700" />
                 <span>Ketentuan Batasan Usia</span>
@@ -308,7 +309,7 @@ export default function CabangPage() {
             </div>
 
             {/* Technical Specs */}
-            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-5 space-y-3">
+            <div className="bg-neutral-50 border border-neutral-300 rounded-md p-4 sm:p-5 space-y-3">
               <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-amber-600" />
                 <span>Materi & Durasi Penampilan</span>

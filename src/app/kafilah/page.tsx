@@ -65,7 +65,7 @@ export default function KafilahPage() {
         </div>
 
         {/* Header Section */}
-        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
+        <div className="bg-white border border-stone-200 rounded-md p-6 sm:p-8 shadow-xs mb-8">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-amber-500 text-xs">۞</span>
             <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-800">
@@ -87,18 +87,18 @@ export default function KafilahPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama desa, LPTK, atau pimpinan..."
-              className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:bg-white transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-md text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:bg-white transition-colors"
             />
           </div>
         </div>
 
         {/* Villages Grid */}
         {loading ? (
-          <div className="p-12 text-center text-xs text-neutral-500 bg-white border border-stone-200 rounded-2xl shadow-xs">
+          <div className="p-12 text-center text-xs text-neutral-500 bg-white border border-stone-200 rounded-md shadow-xs">
             Memuat direktori 11 kafilah desa...
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-xs text-neutral-500 bg-white border border-stone-200 rounded-2xl shadow-xs">
+          <div className="p-12 text-center text-xs text-neutral-500 bg-white border border-stone-200 rounded-md shadow-xs">
             Tidak ada kafilah desa yang sesuai pencarian.
           </div>
         ) : (
@@ -111,9 +111,9 @@ export default function KafilahPage() {
               return (
                 <div
                   key={k.code}
-                  className={`bg-white rounded-2xl border p-5 transition-all flex flex-col justify-between shadow-xs ${
+                  className={`bg-white rounded-md border p-5 transition-all flex flex-col justify-between shadow-xs ${
                     isMahatoHost
-                      ? 'border-2 border-amber-400 shadow-md ring-2 ring-amber-400/20'
+                      ? 'border-2 border-amber-400 shadow-md ring-1 ring-amber-400/20'
                       : 'border-stone-200 hover:border-emerald-400'
                   }`}
                 >
@@ -128,7 +128,7 @@ export default function KafilahPage() {
                         </h3>
                       </div>
                       {isMahatoHost && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-900 font-bold text-[10px] rounded-full border border-amber-300 flex-shrink-0">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-900 font-bold text-[10px] rounded-sm border border-amber-300 flex-shrink-0">
                           <Sparkles className="w-3 h-3 text-amber-600" />
                           <span>Tuan Rumah</span>
                         </span>
@@ -156,7 +156,7 @@ export default function KafilahPage() {
                       Peserta:{' '}
                       <strong className="text-neutral-900 font-bold">{k.participants_count}</strong>
                     </span>
-                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-sm border border-emerald-200">
                       <CheckCircle2 className="w-3 h-3" />
                       <span>{k.verified_count} Lolos</span>
                     </span>

@@ -195,7 +195,7 @@ export default function WebsiteSettingsPage() {
 
   if (loading) {
     return (
-      <div className="p-12 text-center text-xs text-neutral-500 bg-white border border-neutral-200 rounded-2xl">
+      <div className="p-12 text-center text-xs text-neutral-500 bg-white border border-neutral-200 rounded-md">
         Memuat konfigurasi website...
       </div>
     );
@@ -210,7 +210,7 @@ export default function WebsiteSettingsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold tracking-tight text-neutral-900">Pengaturan Tampilan Website</h1>
-            <span className="text-[11px] font-mono px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold">
+            <span className="text-[11px] font-mono px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-sm font-semibold">
               Live CMS
             </span>
           </div>
@@ -223,7 +223,7 @@ export default function WebsiteSettingsPage() {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-lg text-xs font-semibold border border-neutral-300 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-md text-xs font-semibold border border-neutral-300 transition-colors"
           >
             <span>Lihat Website</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -233,14 +233,14 @@ export default function WebsiteSettingsPage() {
 
       {/* Notifications */}
       {successMsg && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in duration-200">
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-md text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in duration-200">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span className="font-semibold">{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-800 flex items-center gap-2">
+        <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-md text-xs text-rose-800 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
           <span>{errorMsg}</span>
         </div>
@@ -248,7 +248,7 @@ export default function WebsiteSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-8">
         {/* SECTION 1: HERO SLIDER MANAGEMENT (MAX 5 SLIDES) */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-6">
+        <div className="bg-white border border-neutral-200 rounded-md p-5 sm:p-6 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-200">
             <div>
               <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
@@ -264,7 +264,7 @@ export default function WebsiteSettingsPage() {
               type="button"
               onClick={handleAddSlide}
               disabled={slides.length >= 5}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white rounded-lg text-xs font-semibold transition-colors self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white rounded-md text-xs font-semibold transition-colors self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Tambah Slide</span>
@@ -278,7 +278,7 @@ export default function WebsiteSettingsPage() {
                 key={s.id || idx}
                 type="button"
                 onClick={() => setActiveSlideIndex(idx)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border ${
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border ${
                   activeSlideIndex === idx
                     ? 'bg-neutral-900 text-white border-neutral-900 shadow-xs'
                     : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100'
@@ -315,7 +315,7 @@ export default function WebsiteSettingsPage() {
                       type="button"
                       onClick={() => handleMoveSlide(activeSlideIndex, 'up')}
                       disabled={activeSlideIndex === 0}
-                      className="p-1 text-neutral-500 hover:text-black disabled:opacity-30 border rounded"
+                      className="p-1 text-neutral-500 hover:text-black disabled:opacity-30 border rounded-sm"
                       title="Geser ke kiri/atas"
                     >
                       <ChevronUp className="w-3.5 h-3.5" />
@@ -324,7 +324,7 @@ export default function WebsiteSettingsPage() {
                       type="button"
                       onClick={() => handleMoveSlide(activeSlideIndex, 'down')}
                       disabled={activeSlideIndex === slides.length - 1}
-                      className="p-1 text-neutral-500 hover:text-black disabled:opacity-30 border rounded"
+                      className="p-1 text-neutral-500 hover:text-black disabled:opacity-30 border rounded-sm"
                       title="Geser ke kanan/bawah"
                     >
                       <ChevronDown className="w-3.5 h-3.5" />
@@ -343,9 +343,9 @@ export default function WebsiteSettingsPage() {
                       value={currentSlide.image_url}
                       onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'image_url', e.target.value)}
                       placeholder="/api/cdn/hero/nama-foto.jpg atau URL gambar..."
-                      className="flex-1 px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                      className="flex-1 px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
                     />
-                    <label className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors flex-shrink-0">
+                    <label className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors flex-shrink-0">
                       <Upload className="w-3.5 h-3.5" />
                       <span>{uploadingSlideIndex === activeSlideIndex ? 'Mengunggah...' : 'Unggah CDN'}</span>
                       <input
@@ -369,7 +369,7 @@ export default function WebsiteSettingsPage() {
                     value={currentSlide.info}
                     onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'info', e.target.value)}
                     placeholder="Contoh: 09 – 13 November 2026 • Mimbar Utama Desa Mahato"
-                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
                   />
                 </div>
 
@@ -383,7 +383,7 @@ export default function WebsiteSettingsPage() {
                     value={currentSlide.title}
                     onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'title', e.target.value)}
                     placeholder="Judul banner hero..."
-                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-semibold"
+                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-semibold"
                   />
                 </div>
 
@@ -397,7 +397,7 @@ export default function WebsiteSettingsPage() {
                     value={currentSlide.subtitle}
                     onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'subtitle', e.target.value)}
                     placeholder="Deskripsi singkat tentang kegiatan..."
-                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
                   />
                 </div>
               </div>
@@ -408,7 +408,7 @@ export default function WebsiteSettingsPage() {
                   Pratinjau Tampilan Slide #{activeSlideIndex + 1}
                 </span>
 
-                <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-neutral-950 text-white border border-neutral-800 shadow-sm flex flex-col justify-end p-4">
+                <div className="relative aspect-[16/10] rounded-md overflow-hidden bg-neutral-950 text-white border border-neutral-800 shadow-sm flex flex-col justify-end p-4">
                   <img
                     src={currentSlide.image_url}
                     alt={currentSlide.title}
@@ -444,7 +444,7 @@ export default function WebsiteSettingsPage() {
         </div>
 
         {/* SECTION 2: COUNTDOWN & EVENT INFO */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="bg-white border border-neutral-200 rounded-md p-5 sm:p-6 shadow-xs space-y-4">
           <div>
             <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
               <Clock className="w-4 h-4 text-emerald-700" />
@@ -465,7 +465,7 @@ export default function WebsiteSettingsPage() {
                 value={formData.website_countdown_target}
                 onChange={(e) => setFormData({ ...formData, website_countdown_target: e.target.value })}
                 placeholder="2026-11-09T08:00:00+07:00"
-                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
               />
               <span className="text-[11px] text-neutral-500">
                 Default: 09 November 2026 pukul 08:00 WIB
@@ -481,14 +481,14 @@ export default function WebsiteSettingsPage() {
                 value={formData.website_host_village}
                 onChange={(e) => setFormData({ ...formData, website_host_village: e.target.value })}
                 placeholder="Desa Mahato"
-                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
               />
             </div>
           </div>
         </div>
 
         {/* SECTION 3: SECRETARIAT & CONTACTS */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="bg-white border border-neutral-200 rounded-md p-5 sm:p-6 shadow-xs space-y-4">
           <div>
             <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
               <Phone className="w-4 h-4 text-emerald-700" />
@@ -509,7 +509,7 @@ export default function WebsiteSettingsPage() {
                 value={formData.website_contact_phone}
                 onChange={(e) => setFormData({ ...formData, website_contact_phone: e.target.value })}
                 placeholder="0812-6845-1120 / 0813-7123-9988"
-                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
               />
             </div>
 
@@ -522,7 +522,7 @@ export default function WebsiteSettingsPage() {
                 value={formData.website_contact_address}
                 onChange={(e) => setFormData({ ...formData, website_contact_address: e.target.value })}
                 placeholder="Kantor KUA, Jl. Raya Rantau Kasai..."
-                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
               />
             </div>
           </div>
@@ -533,7 +533,7 @@ export default function WebsiteSettingsPage() {
           <Button
             type="submit"
             disabled={saving}
-            className="gap-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs px-6 py-2.5 rounded-xl shadow-xs"
+            className="gap-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs px-6 py-2.5 rounded-md shadow-xs"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Menyimpan Perubahan...' : 'Simpan Semua Pengaturan'}</span>

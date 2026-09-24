@@ -6,11 +6,11 @@ import { JUKNIS_REQUIRED_DOCUMENTS } from '@/data/juknis-official-data';
 
 export function DocumentsSection() {
   return (
-    <section id="dokumen" className="bg-white text-neutral-900 py-12 sm:py-16 border-b border-stone-200 scroll-mt-14">
+    <section id="dokumen" className="bg-white text-neutral-900 py-12 border-b border-neutral-300 scroll-mt-14">
       <div className="max-w-6xl mx-auto px-4">
         {/* Section Header */}
         <div className="max-w-xl mb-6 sm:mb-8 space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-md text-emerald-800">
             <span className="text-amber-600 font-bold">۞</span>
             <FileText className="w-3.5 h-3.5 text-emerald-700" />
             <span>Dokumen Resmi MTQ XIX</span>
@@ -23,13 +23,13 @@ export function DocumentsSection() {
           </p>
         </div>
 
-        {/* Two-Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-          {/* Download Juknis PDF Card (Emerald Card) */}
-          <div className="lg:col-span-5 bg-emerald-950 text-white p-6 sm:p-7 rounded-3xl flex flex-col justify-between space-y-5 shadow-xs border border-emerald-800">
+        {/* Two-Column Layout: Rectangular Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+          {/* Download Juknis PDF Card (Rectangular with subtle rounded corners) */}
+          <div className="lg:col-span-5 bg-emerald-950 text-white p-5 sm:p-6 rounded-md flex flex-col justify-between space-y-5 shadow-xs border border-emerald-800">
             <div className="space-y-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-900 border border-emerald-700 flex items-center justify-center text-amber-400 shadow-xs">
-                <FileText className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-md bg-emerald-900 border border-emerald-700 flex items-center justify-center text-amber-400 shadow-xs">
+                <FileText className="w-5 h-5" />
               </div>
 
               <div>
@@ -44,9 +44,9 @@ export function DocumentsSection() {
                 </p>
               </div>
 
-              <div className="p-3.5 bg-emerald-900/60 border border-emerald-800 rounded-xl space-y-1.5 text-xs font-mono text-emerald-200">
+              <div className="p-3 bg-emerald-900/60 border border-emerald-800 rounded-md space-y-1.5 text-xs font-mono text-emerald-200">
                 <div className="flex justify-between border-b border-emerald-800/80 pb-1">
-                  <span className="text-emerald-400">Format Berkas:</span>
+                  <span className="text-emerald-400">Format:</span>
                   <span className="text-white font-bold">PDF Dokumen</span>
                 </div>
                 <div className="flex justify-between border-b border-emerald-800/80 pb-1">
@@ -54,7 +54,7 @@ export function DocumentsSection() {
                   <span className="text-white font-bold">340 KB</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-emerald-400">Ditetapkan di:</span>
+                  <span className="text-emerald-400">Ditetapkan:</span>
                   <span className="text-amber-300 font-bold">Rantau Kasai</span>
                 </div>
               </div>
@@ -64,7 +64,7 @@ export function DocumentsSection() {
               <a
                 href="/documents/juknis-mtq-xix-tambusai-utara-2026.pdf"
                 download="juknis-mtq-xix-tambusai-utara-2026.pdf"
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs sm:text-sm rounded-xl transition-all shadow-sm min-h-[42px]"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs sm:text-sm rounded-md transition-colors shadow-xs min-h-[42px]"
               >
                 <Download className="w-4 h-4" />
                 <span>Unduh Juknis Resmi PDF</span>
@@ -72,8 +72,8 @@ export function DocumentsSection() {
             </div>
           </div>
 
-          {/* Registration Documents Requirements (Clean Stone Card) */}
-          <div className="lg:col-span-7 bg-stone-50 border border-stone-200 p-6 sm:p-7 rounded-3xl space-y-4 shadow-xs">
+          {/* Registration Documents Requirements: Rectangular Card */}
+          <div className="lg:col-span-7 bg-stone-50 border border-neutral-300 p-5 sm:p-6 rounded-md space-y-4 shadow-xs">
             <div>
               <h3 className="font-bold text-base sm:text-lg text-neutral-900 flex items-center gap-2">
                 <FolderArchive className="w-4 h-4 text-emerald-800" />
@@ -88,9 +88,9 @@ export function DocumentsSection() {
               {JUKNIS_REQUIRED_DOCUMENTS.map((doc, idx) => (
                 <div
                   key={doc.code}
-                  className="p-3 bg-white border border-stone-200 rounded-xl flex items-start gap-3 shadow-2xs"
+                  className="p-3 bg-white border border-neutral-300 rounded-md flex items-start gap-3 shadow-2xs"
                 >
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[11px] font-mono font-bold flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-sm bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-mono font-bold flex-shrink-0 mt-0.5">
                     {idx + 1}
                   </div>
                   <div className="flex-1 min-w-0">

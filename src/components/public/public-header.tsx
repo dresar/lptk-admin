@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, ArrowUpRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { Menu, X, ArrowUpRight, ShieldCheck } from 'lucide-react';
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -53,20 +53,19 @@ export function PublicHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md text-neutral-900 border-b border-stone-200 shadow-xs">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md text-neutral-900 border-b border-neutral-200 shadow-xs">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 group focus:outline-none focus:ring-1 focus:ring-emerald-700 rounded-lg py-1"
+          className="flex items-center gap-2.5 group focus:outline-none focus:ring-1 focus:ring-emerald-700 rounded-md py-1"
         >
-          <div className="w-9 h-9 rounded-full bg-stone-50 p-1 flex items-center justify-center flex-shrink-0 shadow-xs ring-1 ring-stone-300">
+          <div className="w-9 h-9 rounded-md bg-stone-50 p-1 flex items-center justify-center flex-shrink-0 shadow-xs ring-1 ring-neutral-300">
             <img
               src={logoUrl}
               alt="LPTQ Logo"
               className="w-full h-full object-contain"
               onError={(e) => {
-                // If logo fails, show Islamic crescent star icon
                 (e.target as HTMLElement).style.display = 'none';
               }}
             />
@@ -74,7 +73,7 @@ export function PublicHeader() {
           <div>
             <div className="font-extrabold text-xs sm:text-sm tracking-wide text-neutral-900 flex items-center gap-1">
               <span>{appName}</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-semibold hidden sm:inline-block">
+              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-sm font-semibold hidden sm:inline-block">
                 DESA MAHATO
               </span>
             </div>
@@ -90,7 +89,7 @@ export function PublicHeader() {
             <Link
               key={link.label}
               href={link.href}
-              className="px-3 py-2 rounded-lg hover:text-emerald-800 hover:bg-stone-100 transition-colors"
+              className="px-3 py-2 rounded-md hover:text-emerald-800 hover:bg-neutral-100 transition-colors"
             >
               {link.label}
             </Link>
@@ -102,7 +101,7 @@ export function PublicHeader() {
           {isLoggedIn ? (
             <Link
               href="/admin/dashboard"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl shadow-xs transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-md shadow-xs transition-colors"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Admin Panel</span>
@@ -110,7 +109,7 @@ export function PublicHeader() {
           ) : (
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-neutral-800 rounded-xl border border-stone-300 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 text-neutral-900 rounded-md border border-neutral-300 transition-colors"
             >
               <span>Masuk Portal</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -120,7 +119,7 @@ export function PublicHeader() {
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-neutral-700 hover:bg-stone-100 border border-stone-200 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+            className="md:hidden p-2 rounded-md text-neutral-700 hover:bg-neutral-100 border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-emerald-700"
             aria-label="Buka Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -130,26 +129,26 @@ export function PublicHeader() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-stone-200 px-4 pt-3 pb-6 space-y-2 text-xs shadow-lg animate-in slide-in-from-top duration-200">
+        <div className="md:hidden bg-white border-b border-neutral-200 px-4 pt-3 pb-6 space-y-2 text-xs shadow-md animate-in slide-in-from-top duration-200">
           <div className="space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
                 onClick={handleLinkClick}
-                className="block px-3 py-2.5 rounded-lg text-neutral-800 font-semibold hover:bg-stone-100 transition-colors"
+                className="block px-3 py-2.5 rounded-md text-neutral-800 font-semibold hover:bg-neutral-100 transition-colors"
               >
                 {link.label}
               </Link>
             ))}
           </div>
 
-          <div className="pt-3 border-t border-stone-200 flex flex-col gap-2">
+          <div className="pt-3 border-t border-neutral-200 flex flex-col gap-2">
             {isLoggedIn ? (
               <Link
                 href="/admin/dashboard"
                 onClick={handleLinkClick}
-                className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-xl text-xs"
+                className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-md text-xs"
               >
                 Buka Admin Panel
               </Link>
@@ -157,7 +156,7 @@ export function PublicHeader() {
               <Link
                 href="/login"
                 onClick={handleLinkClick}
-                className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-xl text-xs"
+                className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-md text-xs"
               >
                 Masuk Portal Petugas & Kafilah
               </Link>

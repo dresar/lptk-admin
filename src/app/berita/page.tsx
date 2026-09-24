@@ -64,8 +64,8 @@ export default async function BeritaIndexPage({ searchParams }: PageProps) {
           </span>
         </div>
 
-        {/* Header Section */}
-        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
+        {/* Header Section: Rectangular with rounded-md */}
+        <div className="bg-white border border-neutral-300 rounded-md p-6 sm:p-7 shadow-xs mb-8">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-amber-500 text-xs">۞</span>
             <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-800">
@@ -89,18 +89,18 @@ export default async function BeritaIndexPage({ searchParams }: PageProps) {
                   name="q"
                   defaultValue={searchQuery}
                   placeholder="Cari judul warta atau pengumuman..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:bg-white transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 border border-neutral-300 rounded-md text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:bg-white transition-colors"
                 />
               </div>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs sm:text-sm rounded-xl transition-colors min-h-[42px] flex items-center justify-center gap-2"
+                className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs sm:text-sm rounded-md transition-colors min-h-[42px] flex items-center justify-center gap-2"
               >
                 <span>Cari</span>
               </button>
             </div>
 
-            {/* Category Filter Pills */}
+            {/* Category Filter Pills: Rectangular with rounded-md */}
             <div className="flex flex-wrap gap-1.5 pt-1">
               {categories.map((cat) => {
                 const isActive = (!selectedCategory && cat === 'Semua') || selectedCategory === cat;
@@ -108,10 +108,10 @@ export default async function BeritaIndexPage({ searchParams }: PageProps) {
                   <Link
                     key={cat}
                     href={cat === 'Semua' ? '/berita' : `/berita?kategori=${encodeURIComponent(cat)}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}`}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       isActive
                         ? 'bg-emerald-800 text-white font-semibold shadow-xs'
-                        : 'bg-stone-100 text-neutral-700 hover:bg-stone-200 border border-stone-200'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border border-neutral-200'
                     }`}
                   >
                     {cat}
@@ -122,11 +122,11 @@ export default async function BeritaIndexPage({ searchParams }: PageProps) {
           </form>
         </div>
 
-        {/* News Grid */}
+        {/* News Grid: Rectangular Cards */}
         {articles.length === 0 ? (
-          <div className="bg-white border border-stone-200 rounded-2xl p-12 text-center space-y-3 shadow-xs">
-            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
-              <Sparkles className="w-6 h-6" />
+          <div className="bg-white border border-neutral-300 rounded-md p-12 text-center space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+              <Sparkles className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-bold text-neutral-800">Tidak ada warta yang ditemukan</h3>
             <p className="text-xs text-neutral-500 max-w-sm mx-auto">
@@ -135,39 +135,39 @@ export default async function BeritaIndexPage({ searchParams }: PageProps) {
             <div className="pt-2">
               <Link
                 href="/berita"
-                className="inline-flex px-4 py-2 bg-stone-100 hover:bg-stone-200 text-neutral-800 text-xs font-semibold rounded-lg transition-colors"
+                className="inline-flex px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold rounded-md transition-colors"
               >
                 Reset Filter
               </Link>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {articles.map((item: any) => (
               <article
                 key={item.id}
-                className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col group"
+                className="bg-white border border-neutral-300 rounded-md overflow-hidden shadow-xs hover:border-emerald-600 transition-all flex flex-col group"
               >
                 {/* Cover Image */}
                 {item.cover_image_url && (
-                  <div className="aspect-[16/9] w-full bg-stone-100 overflow-hidden relative border-b border-stone-100">
+                  <div className="aspect-[16/9] w-full bg-neutral-100 overflow-hidden relative border-b border-neutral-200">
                     <img
                       src={item.cover_image_url}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-3 left-3">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono font-semibold bg-white/95 backdrop-blur-xs border border-stone-200 rounded-full text-emerald-900 shadow-xs">
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-mono font-semibold bg-white/95 backdrop-blur-xs border border-neutral-200 rounded-sm text-emerald-900 shadow-xs">
                         {item.category}
                       </span>
                     </div>
                   </div>
                 )}
 
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     {!item.cover_image_url && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-800 rounded-sm border border-emerald-200">
                         {item.category}
                       </span>
                     )}
@@ -181,7 +181,7 @@ export default async function BeritaIndexPage({ searchParams }: PageProps) {
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-neutral-500 font-mono">
+                  <div className="pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-500 font-mono">
                     <div className="flex items-center gap-2">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-amber-600" />

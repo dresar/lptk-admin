@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { MapPin, Phone, Mail, ArrowUpRight } from 'lucide-react';
+import { MapPin, Phone, ArrowUpRight } from 'lucide-react';
 
 export function PublicFooter() {
   return (
@@ -24,7 +24,7 @@ export function PublicFooter() {
           {/* Col 1: Instansi & Identitas */}
           <div className="md:col-span-6 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center flex-shrink-0 ring-1 ring-amber-400 shadow-xs">
+              <div className="w-10 h-10 rounded-md bg-white p-1 flex items-center justify-center flex-shrink-0 ring-1 ring-amber-400 shadow-xs">
                 <img
                   src="/api/cdn/logos/lptq-logo.png"
                   alt="LPTQ Logo"
@@ -49,13 +49,13 @@ export function PublicFooter() {
             </p>
 
             <div className="space-y-1.5 text-xs text-neutral-300">
-              <div className="flex items-start gap-2 bg-neutral-800/60 p-2.5 rounded-xl border border-neutral-700/60">
+              <div className="flex items-start gap-2 bg-neutral-800/60 p-2.5 rounded-md border border-neutral-700/60">
                 <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="text-neutral-300 text-[11px] sm:text-xs">
                   Kantor KUA, Jl. Raya Rantau Kasai Desa Rantau Kasai, Kec. Tambusai Utara
                 </span>
               </div>
-              <div className="flex items-center gap-2 bg-neutral-800/60 p-2.5 rounded-xl border border-neutral-700/60">
+              <div className="flex items-center gap-2 bg-neutral-800/60 p-2.5 rounded-md border border-neutral-700/60">
                 <Phone className="w-4 h-4 text-amber-400 flex-shrink-0" />
                 <span className="font-mono text-neutral-300 text-[11px] sm:text-xs">
                   0812-6845-1120 / 0813-7123-9988
@@ -114,7 +114,7 @@ export function PublicFooter() {
             <div className="pt-1">
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl border border-emerald-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold rounded-md border border-emerald-700 transition-colors"
               >
                 <span>Login Operator Desa</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />

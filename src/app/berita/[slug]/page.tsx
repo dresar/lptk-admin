@@ -37,7 +37,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
         {/* Breadcrumb / Back button */}
         <div className="mb-6">
           <Link
-            href="/#berita"
+            href="/berita"
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-emerald-800 hover:text-emerald-950 transition-colors min-h-[44px] py-2 focus:outline-none"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -45,13 +45,13 @@ export default async function NewsDetailPage({ params }: PageProps) {
           </Link>
         </div>
 
-        {/* Article Container */}
-        <article className="space-y-6 bg-white border border-stone-200 rounded-3xl p-6 sm:p-10 shadow-sm">
+        {/* Article Container: Rectangular card with rounded-md */}
+        <article className="space-y-6 bg-white border border-neutral-300 rounded-md p-6 sm:p-8 shadow-xs">
           {/* Header Metadata */}
-          <div className="space-y-3 pb-6 border-b border-stone-200">
+          <div className="space-y-3 pb-6 border-b border-neutral-200">
             <div className="flex items-center gap-2">
               <span className="text-amber-600 font-bold">۞</span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-mono font-semibold bg-emerald-100 border border-emerald-300 rounded-sm text-emerald-800">
                 <Tag className="w-3.5 h-3.5 text-emerald-700" />
                 {post.category}
               </span>
@@ -82,7 +82,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
 
           {/* Cover Image */}
           {post.cover_image_url && (
-            <div className="aspect-[16/9] w-full bg-stone-100 rounded-2xl overflow-hidden border border-stone-200">
+            <div className="aspect-[16/9] w-full bg-neutral-100 rounded-md overflow-hidden border border-neutral-200">
               <img
                 src={post.cover_image_url}
                 alt={post.title}
@@ -92,7 +92,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
           )}
 
           {/* Lead Paragraph / Excerpt */}
-          <div className="text-sm sm:text-base font-semibold text-emerald-950 leading-relaxed border-l-4 border-emerald-600 bg-emerald-50/50 p-4 rounded-r-2xl shadow-xs">
+          <div className="text-sm sm:text-base font-semibold text-emerald-950 leading-relaxed border-l-4 border-emerald-600 bg-emerald-50/50 p-4 rounded-r-md shadow-xs">
             {post.excerpt}
           </div>
 
@@ -102,23 +102,23 @@ export default async function NewsDetailPage({ params }: PageProps) {
           </div>
 
           {/* Bottom Navigation */}
-          <div className="pt-8 border-t border-stone-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="pt-8 border-t border-neutral-200 flex flex-col sm:flex-row justify-between items-center gap-3">
             <Link
-              href="/#berita"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-stone-100 hover:bg-stone-200 text-neutral-800 text-xs sm:text-sm font-semibold rounded-xl transition-colors min-h-[44px]"
+              href="/berita"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs sm:text-sm font-semibold rounded-md transition-colors min-h-[42px]"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Kembali</span>
+              <span>Semua Warta & Pengumuman</span>
             </Link>
 
-            <Link
-              href="/#dokumen"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors shadow-sm min-h-[44px]"
+            <a
+              href="/documents/juknis-mtq-xix-tambusai-utara-2026.pdf"
+              download="juknis-mtq-xix-tambusai-utara-2026.pdf"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-semibold rounded-md transition-colors min-h-[42px]"
             >
-              <Download className="w-4 h-4 text-amber-300" />
+              <Download className="w-4 h-4" />
               <span>Unduh Juknis Resmi</span>
-              <span className="text-amber-300">۞</span>
-            </Link>
+            </a>
           </div>
         </article>
       </main>
