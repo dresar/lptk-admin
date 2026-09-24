@@ -65,9 +65,9 @@ export function ColumnToggle({ columns, visibleColumns, onChange }: ColumnToggle
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-48 bg-white border border-neutral-200 rounded-lg shadow-xl z-50 py-1.5 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 max-w-[calc(100vw-2rem)] bg-white border border-neutral-200 rounded-lg shadow-2xl z-50 py-1.5 animate-in fade-in zoom-in-95 duration-100">
           <div className="px-3 py-1.5 border-b border-neutral-100 flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-600">
               Pilih Kolom
             </span>
             <button

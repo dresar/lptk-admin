@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Plus, Search, Edit2, Trash2, KeyRound, UserCheck, UserX, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PaginationBar } from '@/components/ui/pagination';
-import { ViewToggle, ViewMode } from '@/components/ui/view-toggle';
+import { ViewToggle, ViewMode, useViewMode } from '@/components/ui/view-toggle';
 import { BulkToolbar } from '@/components/ui/bulk-toolbar';
 import { UserAccount } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
@@ -16,7 +16,7 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useViewMode('grid');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
 

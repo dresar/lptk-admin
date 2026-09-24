@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { PaginationBar } from '@/components/ui/pagination';
-import { ViewToggle, ViewMode } from '@/components/ui/view-toggle';
+import { ViewToggle, ViewMode, useViewMode } from '@/components/ui/view-toggle';
 import { BulkToolbar } from '@/components/ui/bulk-toolbar';
 import { ColumnToggle } from '@/components/ui/column-toggle';
 import { ActionMenu } from '@/components/ui/action-menu';
@@ -39,7 +39,7 @@ export default function ParticipantsPage() {
   const [selectedLptk, setSelectedLptk] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useViewMode('grid');
 
   // Selective Bulk Selection Mode (disabled by default)
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -248,11 +248,13 @@ export default function ParticipantsPage() {
             <CheckSquare className="w-3.5 h-3.5" />
             {isSelectMode ? 'Batal' : 'Pilih'}
           </Button>
-          <ColumnToggle
-            columns={PARTICIPANT_COLUMNS}
-            visibleColumns={visibleColumns}
-            onChange={setVisibleColumns}
-          />
+          {viewMode === 'list' && (
+            <ColumnToggle
+              columns={PARTICIPANT_COLUMNS}
+              visibleColumns={visibleColumns}
+              onChange={setVisibleColumns}
+            />
+          )}
           <ViewToggle mode={viewMode} onChange={setViewMode} />
           <Button
             variant="outline"
