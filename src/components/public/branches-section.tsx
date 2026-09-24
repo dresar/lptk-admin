@@ -163,77 +163,94 @@ export function BranchesSection() {
   const activeBranch = BRANCHES_DATA.find((b) => b.id === activeTab) || BRANCHES_DATA[0];
 
   return (
-    <section id="cabang" className="bg-white text-black py-14 border-b border-neutral-200 scroll-mt-14">
+    <section id="cabang" className="bg-white text-neutral-900 py-16 border-b border-stone-200 scroll-mt-14">
       <div className="max-w-6xl mx-auto px-4">
         {/* Section Header */}
         <div className="max-w-2xl mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 text-[11px] font-mono bg-neutral-100 border border-neutral-300 rounded text-neutral-800">
-            <Award className="w-3.5 h-3.5 text-black" />
-            Juknis Resmi No. 09/LPTQ-T.U/MTQ/IX/2026
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800">
+            <span className="text-amber-600 font-bold">۞</span>
+            <Award className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Juknis Resmi No. 09/LPTQ-T.U/MTQ/IX/2026</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-black">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
             Cabang & Golongan Musabaqah MTQ XIX
           </h2>
-          <p className="text-xs text-neutral-600">
-            6 cabang musabaqah dan 25 golongan lomba resmi yang dipertandingkan di Desa Mahato
+          <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+            6 cabang musabaqah dan 25 golongan lomba resmi yang dipertandingkan di Mimbar Utama Desa Mahato
           </p>
         </div>
 
         {/* Tab Buttons (Horizontal scrollable on mobile) */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-6 border-b border-neutral-200 custom-scrollbar">
-          {BRANCHES_DATA.map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => setActiveTab(b.id)}
-              className={`px-4 py-2.5 rounded text-xs font-semibold whitespace-nowrap transition-colors min-h-[44px] ${
-                activeTab === b.id
-                  ? 'bg-black text-white'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-              }`}
-            >
-              {b.shortName}
-            </button>
-          ))}
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 border-b border-stone-200 custom-scrollbar">
+          {BRANCHES_DATA.map((b) => {
+            const isActive = activeTab === b.id;
+            return (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setActiveTab(b.id)}
+                className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all min-h-[44px] flex items-center gap-2 border ${
+                  isActive
+                    ? 'bg-emerald-800 text-white border-emerald-900 shadow-md scale-[1.02]'
+                    : 'bg-stone-50 text-neutral-700 border-stone-200 hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-200'
+                }`}
+              >
+                {isActive && <span className="text-amber-300 font-bold">۞</span>}
+                <span>{b.shortName}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                    isActive ? 'bg-emerald-900 text-emerald-200' : 'bg-stone-200 text-neutral-600'
+                  }`}
+                >
+                  {b.categories.length}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Tab Detail Card (Solid High-Contrast) */}
-        <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-5 sm:p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-neutral-200">
+        {/* Tab Detail Card */}
+        <div className="bg-stone-50 border-2 border-emerald-600/30 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-stone-200">
             <div>
-              <h3 className="text-lg font-bold text-black">{activeBranch.name}</h3>
-              <div className="flex items-center gap-3 text-xs text-neutral-600 mt-1 font-mono">
-                <span>Format: {activeBranch.format}</span>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-amber-600 font-bold text-lg">۞</span>
+                <h3 className="text-xl sm:text-2xl font-bold text-neutral-900">{activeBranch.name}</h3>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-600 font-mono">
+                <span className="px-2 py-0.5 bg-white border border-stone-200 rounded-md">Format: {activeBranch.format}</span>
                 <span>•</span>
-                <span>Personel: {activeBranch.personel}</span>
+                <span className="px-2 py-0.5 bg-white border border-stone-200 rounded-md">Personel: {activeBranch.personel}</span>
               </div>
             </div>
 
-            <span className="self-start sm:self-auto inline-flex items-center px-3 py-1 bg-white border border-neutral-300 rounded text-xs font-mono font-medium text-black">
-              {activeBranch.categories.length} Golongan Lomba
+            <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-100 border border-amber-300 rounded-full text-xs font-bold text-amber-900 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span>{activeBranch.categories.length} Golongan Lomba</span>
             </span>
           </div>
 
           {/* Grid: Golongan on Left, Technical Requirements on Right */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* List of Golongan */}
-            <div className="md:col-span-6 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-700 font-mono">
-                Daftar Golongan yang Dilombakan:
+            <div className="lg:col-span-6 space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900 font-mono flex items-center gap-1.5">
+                <span className="text-amber-500">۞</span>
+                <span>Daftar Golongan yang Dilombakan:</span>
               </h4>
               <div className="space-y-2">
                 {activeBranch.categories.map((cat, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2.5 bg-white border border-neutral-200 rounded text-xs"
+                    className="flex items-center justify-between p-3 bg-white border border-stone-200 rounded-xl text-xs hover:border-emerald-300 transition-colors shadow-xs"
                   >
-                    <div className="flex items-center gap-2 font-medium text-black">
-                      <span className="w-5 h-5 rounded bg-neutral-100 text-neutral-700 flex items-center justify-center text-[10px] font-mono font-bold">
+                    <div className="flex items-center gap-2.5 font-medium text-neutral-900">
+                      <span className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[11px] font-mono font-bold flex-shrink-0">
                         {idx + 1}
                       </span>
-                      <span>{cat.name}</span>
+                      <span className="font-semibold">{cat.name}</span>
                     </div>
-                    <span className="font-mono text-[11px] text-neutral-700 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-300">
+                    <span className="font-mono text-[11px] font-semibold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 flex-shrink-0">
                       {cat.ageLimit}
                     </span>
                   </div>
@@ -242,30 +259,34 @@ export function BranchesSection() {
             </div>
 
             {/* Specifications & Age Limits */}
-            <div className="md:col-span-6 space-y-4">
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-700 font-mono">
-                  Batasan Usia Peserta:
+            <div className="lg:col-span-6 space-y-5">
+              <div className="space-y-2.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900 font-mono flex items-center gap-1.5">
+                  <span className="text-amber-500">۞</span>
+                  <span>Batasan Usia Peserta:</span>
                 </h4>
-                <ul className="space-y-1.5 text-xs text-neutral-700">
+                <ul className="space-y-2 text-xs text-neutral-700">
                   {activeBranch.ageRules.map((rule, idx) => (
-                    <li key={idx} className="flex items-start gap-2 bg-white p-2 rounded border border-neutral-200">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <span>{rule}</span>
+                    <li key={idx} className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-stone-200 shadow-xs">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="leading-relaxed">{rule}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-700 font-mono">
-                  Ketentuan Teknis Musabaqah:
+              <div className="space-y-2.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900 font-mono flex items-center gap-1.5">
+                  <span className="text-amber-500">۞</span>
+                  <span>Ketentuan Teknis Musabaqah:</span>
                 </h4>
-                <ul className="space-y-1.5 text-xs text-neutral-700">
+                <ul className="space-y-2 text-xs text-neutral-700">
                   {activeBranch.specs.map((spec, idx) => (
-                    <li key={idx} className="flex items-start gap-2 bg-white p-2 rounded border border-neutral-200">
-                      <span className="w-1.5 h-1.5 rounded-full bg-black mt-1.5 flex-shrink-0" />
-                      <span>{spec}</span>
+                    <li key={idx} className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-stone-200 shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                      <span className="leading-relaxed">{spec}</span>
                     </li>
                   ))}
                 </ul>

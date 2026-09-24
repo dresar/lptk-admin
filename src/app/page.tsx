@@ -7,13 +7,14 @@ import { KafilahSection } from '@/components/public/kafilah-section';
 import { NewsSection } from '@/components/public/news-section';
 import { DocumentsSection } from '@/components/public/documents-section';
 import { PublicFooter } from '@/components/public/public-footer';
+import { MobileBottomNav } from '@/components/public/mobile-bottom-nav';
 
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col font-sans selection:bg-black selection:text-white">
-      {/* Public Navigation */}
+    <div className="min-h-screen bg-stone-50 text-neutral-900 flex flex-col font-sans selection:bg-emerald-800 selection:text-amber-200">
+      {/* Public Navigation Header */}
       <PublicHeader />
 
       {/* Main Content */}
@@ -39,6 +40,9 @@ export default function HomePage() {
 
       {/* Public Footer */}
       <PublicFooter />
+
+      {/* Floating Mobile Bottom Navigation Dock (Smartphone users) */}
+      <MobileBottomNav />
     </div>
   );
 }

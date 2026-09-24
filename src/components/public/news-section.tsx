@@ -56,58 +56,59 @@ export function NewsSection() {
   }, []);
 
   return (
-    <section id="berita" className="bg-white text-black py-14 border-b border-neutral-200 scroll-mt-14">
+    <section id="berita" className="bg-stone-50 text-neutral-900 py-16 border-b border-stone-200 scroll-mt-14">
       <div className="max-w-6xl mx-auto px-4">
         {/* Section Header */}
         <div className="max-w-2xl mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 text-[11px] font-mono bg-neutral-100 border border-neutral-300 rounded text-neutral-800">
-            <Newspaper className="w-3.5 h-3.5 text-black" />
-            Informasi Terkini
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800">
+            <span className="text-amber-600 font-bold">۞</span>
+            <Newspaper className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Warta & Kabar Musabaqah</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-black">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
             Warta & Pengumuman MTQ XIX 2026
           </h2>
-          <p className="text-xs text-neutral-600">
-            Informasi resmi jadwal musabaqah, petunjuk teknis pendaftaran, dan kabar kafilah
+          <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+            Informasi resmi jadwal musabaqah, petunjuk teknis pendaftaran, dan kabar terbaru seputar kafilah
           </p>
         </div>
 
         {/* Posts Grid */}
         {loading ? (
-          <div className="p-8 text-center text-xs text-neutral-600 bg-neutral-50 border border-neutral-200 rounded">
+          <div className="p-8 text-center text-xs text-neutral-500 bg-white border border-stone-200 rounded-2xl">
             Memuat warta terbaru...
           </div>
         ) : posts.length === 0 ? (
-          <div className="p-8 text-center text-xs text-neutral-600 bg-neutral-50 border border-neutral-200 rounded">
+          <div className="p-8 text-center text-xs text-neutral-500 bg-white border border-stone-200 rounded-2xl">
             Belum ada warta terbit.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {posts.map((post) => (
               <article
                 key={post.id}
-                className="bg-white border border-neutral-200 rounded-lg overflow-hidden hover:border-black transition-colors flex flex-col justify-between"
+                className="bg-white border-2 border-stone-200 rounded-2xl overflow-hidden hover:border-emerald-600 hover:shadow-md transition-all flex flex-col justify-between group"
               >
                 <div>
                   {post.cover_image_url && (
-                    <div className="aspect-[16/10] bg-neutral-100 overflow-hidden relative border-b border-neutral-200">
+                    <div className="aspect-[16/10] bg-stone-100 overflow-hidden relative border-b border-stone-200">
                       <img
                         src={post.cover_image_url}
                         alt={post.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
                         }}
                       />
-                      <span className="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-mono font-semibold bg-black text-white rounded">
+                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 text-[10px] font-mono font-bold bg-emerald-900 text-amber-300 border border-emerald-700 rounded-full shadow-xs">
                         {post.category}
                       </span>
                     </div>
                   )}
 
-                  <div className="p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-[11px] text-neutral-600 font-mono">
-                      <Calendar className="w-3 h-3 text-neutral-500" />
+                  <div className="p-4 space-y-2.5">
+                    <div className="flex items-center gap-2 text-[11px] text-neutral-500 font-mono">
+                      <Calendar className="w-3.5 h-3.5 text-amber-600" />
                       <span>
                         {new Date(post.published_at).toLocaleDateString('id-ID', {
                           day: 'numeric',
@@ -117,7 +118,7 @@ export function NewsSection() {
                       </span>
                     </div>
 
-                    <h3 className="font-bold text-sm text-black leading-snug line-clamp-2">
+                    <h3 className="font-bold text-sm sm:text-base text-neutral-900 group-hover:text-emerald-800 transition-colors leading-snug line-clamp-2">
                       {post.title}
                     </h3>
 
@@ -131,9 +132,9 @@ export function NewsSection() {
                   <button
                     type="button"
                     onClick={() => handleOpenPost(post)}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold bg-neutral-100 hover:bg-black hover:text-white text-black border border-neutral-200 rounded transition-colors min-h-[44px]"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-700 hover:text-white text-emerald-800 border border-emerald-200 rounded-xl transition-all min-h-[44px]"
                   >
-                    <span>Baca</span>
+                    <span>Baca Warta</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -145,22 +146,25 @@ export function NewsSection() {
         {/* Article Reader Modal */}
         {readingPost && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-none"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/80 backdrop-blur-xs"
             onClick={() => setReadingPost(null)}
           >
             <div
-              className="bg-white text-black w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-neutral-300 p-6 space-y-4 shadow-xl"
+              className="bg-white text-neutral-900 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border-2 border-emerald-600 p-6 sm:p-8 space-y-5 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
-                <span className="px-2.5 py-0.5 text-[11px] font-semibold bg-neutral-100 border border-neutral-300 rounded font-mono">
-                  {readingPost.category}
-                </span>
+              <div className="flex items-center justify-between border-b border-stone-200 pb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-600 font-bold">۞</span>
+                  <span className="px-3 py-1 text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full font-mono">
+                    {readingPost.category}
+                  </span>
+                </div>
 
                 <button
                   type="button"
                   onClick={() => setReadingPost(null)}
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-700 hover:text-black hover:bg-neutral-100 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-500 hover:text-neutral-900 hover:bg-stone-100 rounded-full focus:outline-none"
                   aria-label="Tutup"
                 >
                   <X className="w-5 h-5" />
@@ -168,7 +172,7 @@ export function NewsSection() {
               </div>
 
               {readingPost.cover_image_url && (
-                <div className="aspect-[16/9] w-full bg-neutral-100 rounded overflow-hidden border border-neutral-200">
+                <div className="aspect-[16/9] w-full bg-stone-100 rounded-2xl overflow-hidden border border-stone-200">
                   <img
                     src={readingPost.cover_image_url}
                     alt={readingPost.title}
@@ -178,44 +182,46 @@ export function NewsSection() {
               )}
 
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-black leading-snug">
+                <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 leading-snug">
                   {readingPost.title}
                 </h3>
 
-                <div className="flex items-center gap-4 text-xs text-neutral-600 font-mono">
-                  <span className="flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-neutral-500" />
-                    {readingPost.author_name}
+                <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-500 font-mono">
+                  <span className="flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>{readingPost.author_name}</span>
                   </span>
                   <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-neutral-500" />
-                    {new Date(readingPost.published_at).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                    <span>
+                      {new Date(readingPost.published_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </span>
                   </span>
                 </div>
               </div>
 
-              <div className="text-xs text-neutral-800 leading-relaxed whitespace-pre-line border-t border-neutral-100 pt-4">
+              <div className="text-xs sm:text-sm text-neutral-700 leading-relaxed whitespace-pre-line border-t border-stone-100 pt-4">
                 {readingPost.content || readingPost.excerpt}
               </div>
 
-              <div className="flex justify-between items-center pt-4 border-t border-neutral-200">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-stone-200">
                 <Link
                   href={`/berita/${readingPost.slug}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-800 hover:text-black min-h-[44px] py-2 focus:outline-none focus:underline"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-950 min-h-[44px] py-2"
                 >
                   <span>Buka Halaman Lengkap</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </Link>
 
                 <button
                   type="button"
                   onClick={() => setReadingPost(null)}
-                  className="px-4 py-2 text-xs font-semibold bg-black text-white hover:bg-neutral-800 rounded min-h-[44px]"
+                  className="w-full sm:w-auto px-6 py-2.5 text-xs font-semibold bg-emerald-800 text-white hover:bg-emerald-900 rounded-xl min-h-[44px] transition-colors"
                 >
                   Tutup
                 </button>

@@ -38,117 +38,134 @@ export function KafilahSection() {
   }, []);
 
   return (
-    <section id="kafilah" className="bg-neutral-900 text-white py-14 border-b border-neutral-800 scroll-mt-14">
+    <section id="kafilah" className="bg-emerald-950 text-white py-16 border-b border-emerald-900 scroll-mt-14">
       <div className="max-w-6xl mx-auto px-4">
         {/* Section Header */}
         <div className="max-w-2xl mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 text-[11px] font-mono bg-neutral-800 border border-neutral-700 rounded text-neutral-300">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-900 border border-emerald-700 rounded-full text-amber-300">
+            <span className="text-amber-400 font-bold">۞</span>
             <Users className="w-3.5 h-3.5 text-emerald-400" />
-            11 Desa Se-Kecamatan
+            <span>11 Desa Se-Kecamatan Tambusai Utara</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-            Profil Kafilah Desa Tambusai Utara
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Profil Kafilah 11 Desa MTQ XIX 2026
           </h2>
-          <p className="text-xs text-neutral-400">
-            Sebelas kontingen desa yang mengirimkan kafilah putra dan putri pada perhelatan MTQ XIX 2026
+          <p className="text-xs sm:text-sm text-emerald-200/80 leading-relaxed">
+            Sebelas kontingen desa yang mengirimkan kafilah putra dan putri terbaik pada perhelatan akbar di Desa Mahato
           </p>
         </div>
 
         {/* 11 Villages Grid with Loading and Error States */}
         {loading ? (
-          <div className="p-8 text-center bg-neutral-950 border border-neutral-800 rounded text-xs text-neutral-400">
+          <div className="p-8 text-center bg-emerald-900/30 border border-emerald-800 rounded-2xl text-xs text-emerald-300">
             Memuat profil 11 kafilah desa...
           </div>
         ) : error ? (
-          <div className="p-8 text-center bg-neutral-950 border border-neutral-800 rounded text-xs text-rose-400">
+          <div className="p-8 text-center bg-emerald-900/30 border border-rose-800 rounded-2xl text-xs text-rose-300">
             {error}
           </div>
         ) : kafilahList.length === 0 ? (
-          <div className="p-8 text-center bg-neutral-950 border border-neutral-800 rounded text-xs text-neutral-400">
+          <div className="p-8 text-center bg-emerald-900/30 border border-emerald-800 rounded-2xl text-xs text-emerald-300">
             Belum ada data kafilah terdaftar.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {kafilahList.map((k) => (
-              <div
-                key={k.code}
-                className={`p-4 rounded border transition-colors flex flex-col justify-between ${
-                  k.village_name.toLowerCase().includes('mahato') && !k.village_name.toLowerCase().includes('sakti')
-                    ? 'bg-neutral-950 border-emerald-600'
-                    : 'bg-neutral-950 border-neutral-800 hover:border-neutral-700'
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <span className="font-mono text-[11px] text-neutral-400 block mb-0.5">
-                        {k.code}
-                      </span>
-                      <h3 className="font-bold text-sm text-white">
-                        {k.village_name}
-                      </h3>
-                    </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {kafilahList.map((k) => {
+              const isMahatoHost = k.village_name.toLowerCase().includes('mahato') && !k.village_name.toLowerCase().includes('sakti');
 
-                    {k.village_name.toLowerCase().includes('mahato') && !k.village_name.toLowerCase().includes('sakti') && (
-                      <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded text-[10px] font-semibold uppercase">
-                        Tuan Rumah
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5 text-xs text-neutral-300">
-                    <div className="flex items-center gap-2">
-                      <User className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
-                      <span className="truncate">{k.leader_name}</span>
-                    </div>
-
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-[11px] text-neutral-400 line-clamp-2">{k.address}</span>
-                    </div>
-
-                    {k.phone && (
-                      <div className="flex items-center gap-2 font-mono text-[11px] text-neutral-400">
-                        <Phone className="w-3 h-3 text-neutral-400 flex-shrink-0" />
-                        <span>{k.phone}</span>
+              return (
+                <div
+                  key={k.code}
+                  className={`p-5 rounded-2xl border transition-all flex flex-col justify-between shadow-xs ${
+                    isMahatoHost
+                      ? 'bg-emerald-900/90 border-2 border-amber-400 shadow-md ring-2 ring-amber-400/20'
+                      : 'bg-emerald-900/40 border-emerald-800 hover:border-emerald-600 hover:bg-emerald-900/60'
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-mono text-[11px] text-emerald-300/80 block mb-0.5">
+                          KODE: {k.code}
+                        </span>
+                        <h3 className="font-bold text-base sm:text-lg text-white flex items-center gap-1.5">
+                          {isMahatoHost ? (
+                            <span className="text-amber-400">۞</span>
+                          ) : (
+                            <span className="text-emerald-500">۞</span>
+                          )}
+                          <span>{k.village_name}</span>
+                        </h3>
                       </div>
-                    )}
+
+                      {isMahatoHost && (
+                        <span className="px-2.5 py-1 bg-amber-400 text-emerald-950 font-bold rounded-full text-[10px] uppercase shadow-xs flex items-center gap-1">
+                          <span>★</span>
+                          <span>Tuan Rumah</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 text-xs text-emerald-100/90">
+                      <div className="flex items-center gap-2 bg-emerald-950/60 p-2 rounded-lg">
+                        <User className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                        <span className="truncate font-medium">{k.leader_name}</span>
+                      </div>
+
+                      <div className="flex items-start gap-2 bg-emerald-950/60 p-2 rounded-lg">
+                        <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-[11px] text-emerald-200 line-clamp-2">{k.address}</span>
+                      </div>
+
+                      {k.phone && (
+                        <div className="flex items-center gap-2 font-mono text-[11px] text-emerald-300 px-2">
+                          <Phone className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                          <span>{k.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-emerald-800/80 flex items-center justify-between text-xs font-mono">
+                    <span className="text-emerald-300">Peserta Terdaftar</span>
+                    <span
+                      className={`font-bold px-2.5 py-1 rounded-lg border ${
+                        isMahatoHost
+                          ? 'bg-amber-400 text-emerald-950 border-amber-300'
+                          : 'bg-emerald-950 text-white border-emerald-700'
+                      }`}
+                    >
+                      {k.participants_count} Orang
+                    </span>
                   </div>
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-xs font-mono">
-                  <span className="text-neutral-400">Peserta Terdaftar</span>
-                  <span className="font-bold text-white px-2 py-0.5 bg-neutral-900 border border-neutral-700 rounded">
-                    {k.participants_count} Orang
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {/* Official Kafilah Rules Box (From Official Juknis SK No. 09) */}
-        <div className="mt-8 p-5 bg-neutral-950 border border-neutral-800 rounded-lg space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-white font-mono uppercase tracking-wider">
-            <ShieldAlert className="w-4 h-4 text-emerald-400" />
+        <div className="mt-10 p-6 bg-emerald-900/50 border border-emerald-700 rounded-3xl space-y-4">
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-300 font-mono uppercase tracking-wider">
+            <ShieldAlert className="w-4 h-4 text-amber-400" />
             <span>Ketentuan Wajib Kafilah (SK LPTQ No. 09/LPTQ-T.U/MTQ/IX/2026):</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-neutral-300">
-            <div className="p-2 bg-neutral-900 rounded border border-neutral-800">
-              <span className="font-semibold text-white">1. Asal Daerah: </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-emerald-100">
+            <div className="p-3 bg-emerald-950/70 rounded-xl border border-emerald-800/80">
+              <span className="font-bold text-amber-300">1. Asal Daerah: </span>
               Peserta wajib putra/putri asal Tambusai Utara. Dilarang membawa peserta dari luar kecamatan.
             </div>
-            <div className="p-2 bg-neutral-900 rounded border border-neutral-800">
-              <span className="font-semibold text-white">2. Satu Cabang: </span>
+            <div className="p-3 bg-emerald-950/70 rounded-xl border border-emerald-800/80">
+              <span className="font-bold text-amber-300">2. Satu Cabang: </span>
               Setiap peserta hanya boleh mengikuti 1 cabang musabaqah.
             </div>
-            <div className="p-2 bg-neutral-900 rounded border border-neutral-800">
-              <span className="font-semibold text-white">3. Rekomendasi LPTQ: </span>
+            <div className="p-3 bg-emerald-950/70 rounded-xl border border-emerald-800/80">
+              <span className="font-bold text-amber-300">3. Rekomendasi LPTQ: </span>
               Peminjaman peserta antar-desa se-Tambusai Utara wajib disertai surat rekomendasi resmi.
             </div>
-            <div className="p-2 bg-neutral-900 rounded border border-neutral-800">
-              <span className="font-semibold text-white">4. Sanksi Diskualifikasi: </span>
+            <div className="p-3 bg-emerald-950/70 rounded-xl border border-emerald-800/80">
+              <span className="font-bold text-amber-300">4. Sanksi Diskualifikasi: </span>
               Desa yang terbukti membawa peserta luar Tambusai Utara akan langsung didiskualifikasi.
             </div>
           </div>
