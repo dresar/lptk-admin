@@ -62,7 +62,7 @@ export default function CompetitionDetailPage() {
 
   const [data, setData] = useState<CompetitionDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'categories' | 'participants'>('categories');
+  const [activeTab, setActiveTab] = useState<'categories' | 'participants' | 'juknis'>('categories');
 
   const fetchCompetition = useCallback(async () => {
     setLoading(true);
@@ -246,6 +246,17 @@ export default function CompetitionDetailPage() {
           >
             Peserta ({data.participants.length})
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('juknis')}
+            className={`px-4 py-2 text-xs font-bold border-b-2 -mb-px transition-colors ${
+              activeTab === 'juknis'
+                ? 'border-black text-black bg-white'
+                : 'border-transparent text-neutral-500 hover:text-black'
+            }`}
+          >
+            Juknis
+          </button>
         </div>
 
         {activeTab === 'categories' ? (
@@ -285,7 +296,7 @@ export default function CompetitionDetailPage() {
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : activeTab === 'participants' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
@@ -359,6 +370,31 @@ export default function CompetitionDetailPage() {
                 )}
               </tbody>
             </table>
+          </div>
+        ) : null}
+
+        {activeTab === 'juknis' && (
+          <div className="p-6 space-y-4">
+            <div className="p-4 bg-neutral-50 border border-neutral-200 rounded space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <div className="font-bold text-black text-xs uppercase">
+                  Petunjuk Teknis Resmi MTQ ke-XIX Tambusai Utara 2026
+                </div>
+                <span className="font-mono text-[11px] text-neutral-600 bg-neutral-200 px-2 py-0.5 rounded w-fit">
+                  09/LPTQ-T.U/MTQ/IX/2026
+                </span>
+              </div>
+              <p className="text-xs text-neutral-700 leading-relaxed">
+                Pelaksanaan bertempat di <strong>Desa Mahato</strong> pada tanggal <strong>09 – 13 November 2026</strong>. Setiap peserta hanya diperbolehkan mengikuti 1 (satu) cabang musabaqah. Berkas fisik wajib diserahkan dalam <strong>Map Berwarna Biru</strong> ke Sekretariat LPTQ Kecamatan Tambusai Utara / Administrasi MTQ Desa Mahato.
+              </p>
+              <div className="pt-1">
+                <Link href="/admin/juknis">
+                  <Button size="sm" className="font-bold text-xs">
+                    Juknis
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         )}
       </div>

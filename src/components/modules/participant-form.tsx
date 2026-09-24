@@ -1,12 +1,38 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Participant, Competition, Lptk, Category } from '@/types/database';
+import { AlertCircle, CheckCircle2, FileText, Info } from 'lucide-react';
 
 export interface ParticipantFormProps {
   initialData?: Participant | null;
+}
+
+// Target cut-off date per Juknis MTQ XIX: 09 November 2026
+const MTQ_CUTOFF_DATE = new Date(2026, 10, 9); // Month is 0-indexed (10 = November)
+
+function calculateAgeAtMTQ(birthDateStr: string) {
+  if (!birthDateStr) return null;
+  const birth = new Date(birthDateStr);
+  if (isNaN(birth.getTime()) || birth > MTQ_CUTOFF_DATE) return null;
+
+  let years = MTQ_CUTOFF_DATE.getFullYear() - birth.getFullYear();
+  let months = MTQ_CUTOFF_DATE.getMonth() - birth.getMonth();
+  let days = MTQ_CUTOFF_DATE.getDate() - birth.getDate();
+
+  if (days < 0) {
+    months--;
+    const prevMonthLastDay = new Date(MTQ_CUTOFF_DATE.getFullYear(), MTQ_CUTOFF_DATE.getMonth(), 0).getDate();
+    days += prevMonthLastDay;
+  }
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  return { years, months, days };
 }
 
 export function ParticipantForm({ initialData }: ParticipantFormProps) {
@@ -34,6 +60,10 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
     mother_name: initialData?.mother_name || '',
     category_ids: initialCatIds,
   });
+
+  const ageData = useMemo(() => {
+    return calculateAgeAtMTQ(formData.birth_date);
+  }, [formData.birth_date]);
 
   useEffect(() => {
     async function loadOptions() {
@@ -78,17 +108,47 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
     loadCategories();
   }, [formData.competition_id]);
 
-  const handleToggleCategory = (catId: string) => {
-    setFormData((prev) => {
-      const exists = prev.category_ids.includes(catId);
-      return {
-        ...prev,
-        category_ids: exists
-          ? prev.category_ids.filter((id) => id !== catId)
-          : [...prev.category_ids, catId],
-      };
-    });
+  // JUKNIS RULE: strictly 1 category per participant
+  const handleSelectCategory = (catId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      category_ids: [catId],
+    }));
   };
+
+  const selectedCategory = useMemo(() => {
+    if (formData.category_ids.length === 0) return null;
+    return availableCategories.find((c) => c.id === formData.category_ids[0]) || null;
+  }, [availableCategories, formData.category_ids]);
+
+  // Validate category compatibility
+  const categoryValidation = useMemo(() => {
+    if (!selectedCategory || !ageData) return null;
+
+    const warnings: string[] = [];
+
+    // Gender check
+    if (selectedCategory.gender_code !== 'ANY') {
+      if (selectedCategory.gender_code !== formData.gender_code) {
+        warnings.push(`Cabang ini khusus peserta ${selectedCategory.gender_code === 'MALE' ? 'Putra' : 'Putri'}.`);
+      }
+    }
+
+    // Age check: Max age per Juknis is age_max years, 11 months, 29 days
+    if (ageData.years > selectedCategory.age_max) {
+      warnings.push(`Usia peserta (${ageData.years} thn ${ageData.months} bln) melebihi batas maksimal ${selectedCategory.age_max} thn 11 bln 29 hari per 09 Nov 2026.`);
+    }
+
+    // Min age check
+    if (ageData.years < selectedCategory.age_min) {
+      warnings.push(`Usia peserta di bawah batas minimal ${selectedCategory.age_min} tahun.`);
+    }
+
+    return {
+      isValid: warnings.length === 0,
+      warnings,
+    };
+  }, [selectedCategory, ageData, formData.gender_code]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +162,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
     }
 
     if (formData.category_ids.length === 0) {
-      setError('Pilih minimal satu cabang kategori lomba.');
+      setError('Pilih 1 (satu) cabang kategori lomba sesuai ketentuan Juknis.');
       setLoading(false);
       return;
     }
@@ -136,12 +196,24 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl bg-white border border-neutral-300 rounded p-6 space-y-5">
+    <form onSubmit={handleSubmit} className="max-w-4xl bg-white border border-neutral-300 rounded p-6 space-y-6">
       {error && (
-        <div className="p-3 text-xs bg-neutral-100 border border-neutral-400 text-black rounded">
-          {error}
+        <div className="p-3 text-xs bg-neutral-100 border border-neutral-400 text-black rounded flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-black" />
+          <span>{error}</span>
         </div>
       )}
+
+      {/* Info Juknis Map Biru */}
+      <div className="p-4 bg-neutral-50 border border-neutral-200 rounded flex items-start gap-3">
+        <Info className="w-4 h-4 text-black shrink-0 mt-0.5" />
+        <div className="text-xs text-neutral-700 leading-relaxed">
+          <p className="font-semibold text-black">Pedoman Juknis MTQ ke-XIX Tambusai Utara (Desa Mahato 2026):</p>
+          <p className="mt-1">
+            Peserta hanya boleh mengikuti <strong>1 cabang musabaqah</strong>. Seluruh berkas (Surat Mandat, Domisili, Ijazah, Akta, KK ber-NIK, & Surat Pernyataan) wajib dimasukkan ke dalam <strong>Map Berwarna Biru</strong> untuk diverifikasi panitia.
+          </p>
+        </div>
+      </div>
 
       {/* Kompetisi & LPTK */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-neutral-200">
@@ -164,7 +236,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-black mb-1">LPTK Pengusul</label>
+          <label className="block text-xs font-semibold text-black mb-1">LPTK / Desa Pengusul</label>
           <select
             required
             value={formData.lptk_id}
@@ -199,14 +271,14 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-black mb-1">NIK (16 Digit)</label>
+            <label className="block text-xs font-semibold text-black mb-1">NIK (16 Digit Sesuai KK)</label>
             <input
               type="text"
               required
               maxLength={16}
               value={formData.nik}
               onChange={(e) => setFormData({ ...formData, nik: e.target.value.replace(/\D/g, '') })}
-              placeholder="3201xxxxxxxxxxxx"
+              placeholder="16 digit angka"
               className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black font-mono"
             />
           </div>
@@ -221,8 +293,8 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               onChange={(e) => setFormData({ ...formData, gender_code: e.target.value as any })}
               className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             >
-              <option value="MALE">Laki-laki</option>
-              <option value="FEMALE">Perempuan</option>
+              <option value="MALE">Laki-laki (Putra)</option>
+              <option value="FEMALE">Perempuan (Putri)</option>
             </select>
           </div>
 
@@ -250,9 +322,19 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
           </div>
         </div>
 
+        {/* Live Age Calculation Display */}
+        {ageData && (
+          <div className="p-2.5 bg-neutral-100 border border-neutral-200 rounded text-xs flex items-center justify-between">
+            <span className="text-neutral-600">Usia saat musabaqah (09 Nov 2026):</span>
+            <span className="font-mono font-bold text-black">
+              {ageData.years} Tahun {ageData.months} Bulan {ageData.days} Hari
+            </span>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-black mb-1">Nomor Telepon / HP</label>
+            <label className="block text-xs font-semibold text-black mb-1">Nomor Telepon / WhatsApp</label>
             <input
               type="tel"
               required
@@ -264,12 +346,12 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-black mb-1">Sekolah / Instansi</label>
+            <label className="block text-xs font-semibold text-black mb-1">Sekolah / Instansi / Ponpes</label>
             <input
               type="text"
               value={formData.school_or_institution}
               onChange={(e) => setFormData({ ...formData, school_or_institution: e.target.value })}
-              placeholder="Asal sekolah / pesantren / umum"
+              placeholder="Nama sekolah / pesantren / madrasah"
               className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
@@ -282,7 +364,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
             rows={2}
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            placeholder="Alamat lengkap sesuai domisili..."
+            placeholder="Alamat lengkap domisili di Tambusai Utara..."
             className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
           />
         </div>
@@ -312,41 +394,69 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
         </div>
       </div>
 
-      {/* Cabang Kategori Lomba */}
+      {/* Cabang Kategori Lomba (1 Cabang Pilihan - Juknis MTQ XIX) */}
       <div className="space-y-3">
-        <h2 className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
-          Cabang Kategori Perlombaan
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
+            Pilihan Cabang Musabaqah (Maksimal 1 Cabang)
+          </h2>
+          <span className="text-[11px] text-neutral-500 font-mono">
+            {availableCategories.length} Cabang Tersedia
+          </span>
+        </div>
+
+        {/* Validation Warning Alert if any */}
+        {categoryValidation && !categoryValidation.isValid && (
+          <div className="p-3 bg-neutral-100 border border-neutral-400 rounded text-xs space-y-1">
+            <div className="font-semibold text-black flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Perhatian Ketentuan Juknis:
+            </div>
+            {categoryValidation.warnings.map((w, idx) => (
+              <div key={idx} className="text-neutral-700 pl-5 list-item">
+                {w}
+              </div>
+            ))}
+          </div>
+        )}
+
         {availableCategories.length === 0 ? (
           <div className="p-4 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded">
             Pilih event lomba terlebih dahulu untuk menampilkan cabang kategori.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-96 overflow-y-auto pr-1">
             {availableCategories.map((cat) => {
-              const isChecked = formData.category_ids.includes(cat.id);
+              const isSelected = formData.category_ids.includes(cat.id);
               return (
-                <label
+                <div
                   key={cat.id}
-                  className={`flex items-start gap-2.5 p-3 rounded border text-xs cursor-pointer transition-colors ${
-                    isChecked
-                      ? 'border-black bg-neutral-100 font-medium'
-                      : 'border-neutral-200 hover:border-neutral-400 bg-white'
+                  onClick={() => handleSelectCategory(cat.id)}
+                  className={`p-3 rounded border text-xs cursor-pointer transition-all ${
+                    isSelected
+                      ? 'border-black bg-neutral-900 text-white'
+                      : 'border-neutral-200 hover:border-neutral-400 bg-white text-black'
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => handleToggleCategory(cat.id)}
-                    className="mt-0.5 rounded border-neutral-300"
-                  />
-                  <div>
-                    <div className="text-black font-semibold">{cat.name}</div>
-                    <div className="text-[11px] text-neutral-500">
-                      Usia {cat.age_min} - {cat.age_max} th • {cat.gender_code}
-                    </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="font-semibold text-xs leading-snug">{cat.name}</div>
+                    <input
+                      type="radio"
+                      name="selected_category"
+                      checked={isSelected}
+                      onChange={() => handleSelectCategory(cat.id)}
+                      className="mt-0.5 accent-black"
+                    />
                   </div>
-                </label>
+                  <div className={`text-[11px] mt-1 ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                    Usia Maks: {cat.age_max} thn • {cat.gender_code === 'ANY' ? 'Putra/Putri' : cat.gender_code === 'MALE' ? 'Putra' : 'Putri'}
+                  </div>
+                  {cat.requirements && (
+                    <div className={`text-[10px] mt-1.5 leading-tight line-clamp-2 ${isSelected ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                      {cat.requirements}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
