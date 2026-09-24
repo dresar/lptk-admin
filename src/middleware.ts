@@ -16,15 +16,6 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Root route: redirect to /admin if logged in, otherwise /login
-  if (pathname === '/') {
-    if (sessionToken) {
-      return NextResponse.redirect(new URL('/admin', request.url));
-    } else {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
   // If visiting /login, allow access if session is expired or explicitly directed to login
   if (pathname === '/login') {
     if (request.nextUrl.searchParams.has('expired')) {
@@ -42,5 +33,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/admin/:path*', '/login'],
+  matcher: ['/admin/:path*', '/login'],
 };
+

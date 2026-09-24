@@ -18,6 +18,7 @@ import {
   History,
   Settings,
   BookOpen,
+  Newspaper,
   X,
   LogOut,
   User as UserIcon,
@@ -42,12 +43,13 @@ const ICON_MAP: Record<string, React.ElementType> = {
   UserCheck,
   CheckSquare,
   BarChart3,
+  Newspaper,
   BookOpen,
   History,
   Settings,
 };
 
-// Full 14 modules default fallback: sidebar is NEVER blank
+// Full modules default fallback: sidebar is NEVER blank
 const DEFAULT_MENU_ITEMS: MenuItem[] = [
   { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
   { title: 'Desa', href: '/admin/villages', icon: 'MapPin' },
@@ -60,6 +62,7 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
   { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck' },
   { title: 'Verifikasi', href: '/admin/verifications', icon: 'CheckSquare' },
   { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
+  { title: 'Berita', href: '/admin/posts', icon: 'Newspaper' },
   { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
   { title: 'Audit', href: '/admin/audit-logs', icon: 'History' },
   { title: 'Pengaturan', href: '/admin/settings', icon: 'Settings' },

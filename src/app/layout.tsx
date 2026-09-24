@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LPTK Mahato — Sistem Pendataan & Verifikasi Peserta',
-  description: 'Admin Panel Sistem Pendataan dan Verifikasi Peserta Lomba LPTK Kecamatan Mahato',
+  title: 'MTQ XIX Tambusai Utara 2026 : LPTQ Kecamatan',
+  description: 'Portal Informasi Publik dan Cek Status Peserta MTQ XIX Tingkat Kecamatan Tambusai Utara Tahun 2026 di Desa Mahato',
 };
 
 export default function RootLayout({

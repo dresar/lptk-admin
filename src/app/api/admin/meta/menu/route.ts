@@ -21,6 +21,7 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck', permission: 'participant.read' },
   { title: 'Verifikasi', href: '/admin/verifications', icon: 'CheckSquare', permission: 'verification.read' },
   { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3', permission: 'report.read' },
+  { title: 'Berita', href: '/admin/posts', icon: 'Newspaper', permission: 'post.read' },
   { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
   { title: 'Audit', href: '/admin/audit-logs', icon: 'History', permission: 'audit.read' },
   { title: 'Pengaturan', href: '/admin/settings', icon: 'Settings', permission: 'setting.read' },
