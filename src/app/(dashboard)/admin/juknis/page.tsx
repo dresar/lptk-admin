@@ -17,8 +17,8 @@ export default function JuknisPage() {
   const [viewMode, setViewMode] = useState<'dokumen' | 'ringkasan'>('dokumen');
   const [selectedCabangFilter, setSelectedCabangFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [logoUrl, setLogoUrl] = useState('/api/cdn/cdn/logos/lptq-logo.png');
-  const [stampUrl, setStampUrl] = useState('/api/cdn/cdn/logos/lptq-stempel.png');
+  const [logoUrl, setLogoUrl] = useState('/api/cdn/logos/lptq-logo.png');
+  const [stampUrl, setStampUrl] = useState('/api/cdn/logos/lptq-stempel.png');
 
   useEffect(() => {
     fetch('/api/meta/branding')

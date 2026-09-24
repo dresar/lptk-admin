@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BookOpen, Award, Users, Palette, Music, Check, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { BookOpen, Award, Users, Palette, Music, Check, Sparkles, ArrowRight } from 'lucide-react';
 
 interface BranchDetail {
   id: string;
@@ -166,18 +167,30 @@ export function BranchesSection() {
     <section id="cabang" className="bg-white text-neutral-900 py-16 border-b border-stone-200 scroll-mt-14">
       <div className="max-w-6xl mx-auto px-4">
         {/* Section Header */}
-        <div className="max-w-2xl mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800">
-            <span className="text-amber-600 font-bold">۞</span>
-            <Award className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Juknis Resmi No. 09/LPTQ-T.U/MTQ/IX/2026</span>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
+          <div className="max-w-xl space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800">
+              <span className="text-amber-600 font-bold">۞</span>
+              <Award className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Juknis Resmi No. 09/LPTQ-T.U/MTQ/IX/2026</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900">
+              Cabang & Golongan Musabaqah MTQ XIX
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+              6 cabang musabaqah dan 25 golongan lomba resmi di Mimbar Utama Desa Mahato.
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
-            Cabang & Golongan Musabaqah MTQ XIX
-          </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
-            6 cabang musabaqah dan 25 golongan lomba resmi yang dipertandingkan di Mimbar Utama Desa Mahato
-          </p>
+
+          <div>
+            <Link
+              href="/cabang"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-emerald-900 text-xs font-semibold rounded-xl border border-stone-300 transition-colors shadow-xs"
+            >
+              <span>Katalog Lengkap</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
 
         {/* Tab Buttons (Horizontal scrollable on mobile) */}

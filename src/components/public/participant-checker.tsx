@@ -99,19 +99,19 @@ export function ParticipantChecker() {
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
             <span>Verifikasi Mandiri Kafilah Desa</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
             Cek Keabsahan Peserta MTQ XIX
           </h2>
           <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
-            Periksa status berkas administrasi dan golongan lomba kafilah Anda secara langsung melalui NIK atau Nama Peserta
+            Periksa status verifikasi berkas kafilah desa melalui NIK atau nama lengkap peserta.
           </p>
         </div>
 
         {/* Search Box */}
         <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
-          <div className="bg-white p-2 border-2 border-emerald-600 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-2">
+          <div className="bg-white p-1.5 border-2 border-emerald-700 rounded-2xl shadow-xs flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1 flex items-center">
-              <Search className="w-5 h-5 absolute left-3.5 text-emerald-700 pointer-events-none" />
+              <Search className="w-4 h-4 absolute left-3.5 text-emerald-700 pointer-events-none" />
               <input
                 type="text"
                 value={query}
@@ -120,13 +120,13 @@ export function ParticipantChecker() {
                   if (errorMsg) setErrorMsg(null);
                 }}
                 placeholder="Ketik 16 Digit NIK atau Nama Lengkap Peserta..."
-                className="w-full pl-11 pr-4 py-3 text-sm bg-transparent text-neutral-900 placeholder-neutral-400 focus:outline-none"
+                className="w-full pl-10 pr-3 py-2.5 text-xs sm:text-sm bg-transparent text-neutral-900 placeholder-neutral-400 focus:outline-none"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-sm disabled:opacity-50 min-h-[44px] flex items-center justify-center gap-2"
+              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-xs disabled:opacity-50 min-h-[42px] flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

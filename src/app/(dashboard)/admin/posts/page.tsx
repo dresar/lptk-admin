@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Search, Edit2, Trash2, Newspaper, Eye, Upload, CheckCircle2, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Search, Edit2, Trash2, Newspaper, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/modal';
 import { PaginationBar } from '@/components/ui/pagination';
 import { ViewToggle, useViewMode } from '@/components/ui/view-toggle';
 import { BulkToolbar } from '@/components/ui/bulk-toolbar';
@@ -35,23 +35,6 @@ export default function PostsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<Post | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    slug: '',
-    category: 'Berita',
-    excerpt: '',
-    content: '',
-    cover_image_url: '',
-    author_name: 'Sekretariat LPTQ',
-    is_published: true,
-  });
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
@@ -75,130 +58,6 @@ export default function PostsPage() {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
-
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
-
-  const handleOpenCreate = () => {
-    setEditingItem(null);
-    setFormData({
-      title: '',
-      slug: '',
-      category: 'Berita',
-      excerpt: '',
-      content: '',
-      cover_image_url: '/api/cdn/cdn/posts/jadwal-mtq-xix.jpg',
-      author_name: 'Sekretariat LPTQ',
-      is_published: true,
-    });
-    setFormError(null);
-    setIsModalOpen(true);
-  };
-
-  const handleOpenEdit = async (item: Post) => {
-    setEditingItem(item);
-    setFormError(null);
-    try {
-      // Fetch full content if not present
-      const res = await fetch(`/api/admin/posts/${item.id}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) {
-          const p = json.data;
-          setFormData({
-            title: p.title,
-            slug: p.slug,
-            category: p.category,
-            excerpt: p.excerpt,
-            content: p.content || '',
-            cover_image_url: p.cover_image_url || '',
-            author_name: p.author_name || 'Sekretariat LPTQ',
-            is_published: p.is_published,
-          });
-          setIsModalOpen(true);
-          return;
-        }
-      }
-    } catch {}
-    setFormData({
-      title: item.title,
-      slug: item.slug,
-      category: item.category,
-      excerpt: item.excerpt,
-      content: item.content || '',
-      cover_image_url: item.cover_image_url || '',
-      author_name: item.author_name,
-      is_published: item.is_published,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingImage(true);
-    setFormError(null);
-
-    const body = new FormData();
-    body.append('file', file);
-    body.append('folder', 'cdn/posts');
-
-    try {
-      const res = await fetch('/api/admin/cdn/upload', {
-        method: 'POST',
-        body,
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        setFormError(json.error?.message || 'Gagal mengunggah gambar ke CDN.');
-        return;
-      }
-      setFormData((prev) => ({ ...prev, cover_image_url: json.data.url }));
-    } catch {
-      setFormError('Kendala jaringan saat mengunggah gambar.');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormSubmitting(true);
-    setFormError(null);
-
-    const isEdit = !!editingItem;
-    const url = isEdit ? `/api/admin/posts/${editingItem.id}` : '/api/admin/posts';
-    const method = isEdit ? 'PUT' : 'POST';
-
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const json = await res.json();
-
-      if (!res.ok || !json.success) {
-        setFormError(json.error?.message || 'Gagal menyimpan artikel.');
-        setFormSubmitting(false);
-        return;
-      }
-
-      setIsModalOpen(false);
-      fetchPosts();
-    } catch {
-      setFormError('Terjadi kendala jaringan.');
-    } finally {
-      setFormSubmitting(false);
-    }
-  };
 
   const handleTogglePublish = async (item: Post) => {
     try {
@@ -266,14 +125,17 @@ export default function PostsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-black">Berita & Informasi</h1>
-          <p className="text-xs text-neutral-500">Kelola artikel publik, pengumuman jadwal, dan juknis MTQ XIX</p>
+          <p className="text-xs text-neutral-500">Kelola warta publik, pengumuman jadwal, dan juknis MTQ XIX</p>
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
-          <Button size="sm" onClick={handleOpenCreate} className="gap-1.5">
+          <Link
+            href="/admin/posts/new"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg transition-colors shadow-xs"
+          >
             <Plus className="w-3.5 h-3.5" />
-            Tambah
-          </Button>
+            <span>Tambah Berita</span>
+          </Link>
         </div>
       </div>
 
@@ -393,24 +255,21 @@ export default function PostsPage() {
                       </button>
                     </td>
                     <td className="px-4 py-2.5 text-right space-x-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleOpenEdit(item)}
-                        className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
-                        aria-label="Ubah"
+                      <Link
+                        href={`/admin/posts/${item.id}/edit`}
+                        className="p-2 border border-neutral-200 hover:border-black rounded text-neutral-700 hover:text-black inline-flex items-center justify-center transition-colors"
+                        title="Ubah Berita"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      </Link>
+                      <button
+                        type="button"
                         onClick={() => handleDelete(item.id)}
-                        className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
-                        aria-label="Hapus"
+                        className="p-2 border border-neutral-200 hover:border-rose-500 rounded text-neutral-700 hover:text-rose-600 inline-flex items-center justify-center transition-colors"
+                        title="Hapus Berita"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -426,7 +285,7 @@ export default function PostsPage() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="bg-white border border-neutral-200 rounded overflow-hidden hover:border-black transition-colors flex flex-col justify-between"
+                className="bg-white border border-neutral-200 rounded-xl overflow-hidden hover:border-black transition-colors flex flex-col justify-between"
               >
                 <div>
                   {item.cover_image_url && (
@@ -476,25 +335,22 @@ export default function PostsPage() {
                     {item.is_published ? 'Terbit' : 'Draf'}
                   </button>
 
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenEdit(item)}
-                      className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
-                      aria-label="Ubah"
+                  <div className="flex items-center gap-1.5">
+                    <Link
+                      href={`/admin/posts/${item.id}/edit`}
+                      className="p-2 border border-neutral-200 hover:border-black rounded text-neutral-700 hover:text-black inline-flex items-center justify-center transition-colors"
+                      title="Ubah Berita"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    </Link>
+                    <button
+                      type="button"
                       onClick={() => handleDelete(item.id)}
-                      className="min-h-[44px] min-w-[44px] p-2 inline-flex items-center justify-center"
-                      aria-label="Hapus"
+                      className="p-2 border border-neutral-200 hover:border-rose-500 rounded text-neutral-700 hover:text-rose-600 inline-flex items-center justify-center transition-colors"
+                      title="Hapus Berita"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -513,167 +369,6 @@ export default function PostsPage() {
         onClear={() => setSelectedIds([])}
         isLoading={bulkLoading}
       />
-
-      {/* Modal Dialog */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingItem ? 'Ubah Berita' : 'Tambah Berita'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-3.5 max-h-[75vh] overflow-y-auto px-0.5">
-          {formError && (
-            <div className="p-2 text-xs bg-neutral-100 border border-neutral-300 rounded text-black">
-              {formError}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-semibold text-black mb-1">Judul Artikel</label>
-            <input
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => {
-                const title = e.target.value;
-                setFormData((prev) => ({
-                  ...prev,
-                  title,
-                  slug: editingItem ? prev.slug : generateSlug(title),
-                }));
-              }}
-              placeholder="Judul pengumuman atau berita resmi"
-              className="w-full px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-black mb-1">Slug URL</label>
-              <input
-                type="text"
-                required
-                value={formData.slug}
-                onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
-                placeholder="slug-url-artikel"
-                className="w-full px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black bg-white font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-black mb-1">Kategori</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
-              >
-                <option value="Pengumuman">Pengumuman</option>
-                <option value="Juknis">Juknis</option>
-                <option value="Kafilah">Kafilah</option>
-                <option value="Berita">Berita</option>
-                <option value="Cabang">Cabang</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-black mb-1">Foto Sampul (CDN)</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.cover_image_url}
-                onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
-                placeholder="/api/cdn/cdn/posts/nama-gambar.jpg"
-                className="flex-1 px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black bg-white font-mono"
-              />
-              <label className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium border border-neutral-300 bg-neutral-100 hover:bg-neutral-200 text-black rounded cursor-pointer">
-                <Upload className="w-3.5 h-3.5" />
-                <span>{uploadingImage ? 'Unggah...' : 'Pilih'}</span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploadingImage}
-                />
-              </label>
-            </div>
-            {formData.cover_image_url && (
-              <div className="mt-2 h-24 w-full bg-neutral-100 rounded border border-neutral-200 overflow-hidden">
-                <img
-                  src={formData.cover_image_url}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-black mb-1">Ringkasan (Excerpt)</label>
-            <textarea
-              required
-              rows={2}
-              value={formData.excerpt}
-              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-              placeholder="Ringkasan singkat berita untuk kartu publik"
-              className="w-full px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-black mb-1">Konten Lengkap</label>
-            <textarea
-              required
-              rows={6}
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              placeholder="Tuliskan isi berita, pengumuman, atau petunjuk teknis selengkapnya..."
-              className="w-full px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black bg-white font-mono text-xs"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div>
-              <label className="block text-xs font-semibold text-black mb-1">Nama Penulis</label>
-              <input
-                type="text"
-                value={formData.author_name}
-                onChange={(e) => setFormData({ ...formData, author_name: e.target.value })}
-                className="w-full px-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
-              />
-            </div>
-
-            <div className="flex items-center pt-5">
-              <label className="flex items-center gap-2 text-xs font-medium text-black cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.is_published}
-                  onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
-                  className="rounded border-neutral-300"
-                />
-                Terbitkan ke Publik
-              </label>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsModalOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button type="submit" size="sm" isLoading={formSubmitting}>
-              Simpan
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }

@@ -24,6 +24,10 @@ import {
   User as UserIcon,
   Globe,
   ExternalLink,
+  ChevronDown,
+  ChevronRight,
+  LayoutTemplate,
+  UploadCloud,
 } from 'lucide-react';
 import { AuthUser } from '@/types/auth';
 
@@ -49,6 +53,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
   BookOpen,
   History,
   Settings,
+  Globe,
+  UploadCloud,
 };
 
 // Full modules default fallback: sidebar is NEVER blank
@@ -64,7 +70,6 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
   { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck' },
   { title: 'Verifikasi', href: '/admin/verifications', icon: 'CheckSquare' },
   { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
-  { title: 'Berita', href: '/admin/posts', icon: 'Newspaper' },
   { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
   { title: 'Audit', href: '/admin/audit-logs', icon: 'History' },
   { title: 'Pengaturan', href: '/admin/settings', icon: 'Settings' },
@@ -82,9 +87,15 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
   const router = useRouter();
   const [menuItems, setMenuItems] = useState<MenuItem[]>(DEFAULT_MENU_ITEMS);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [websiteOpen, setWebsiteOpen] = useState(true);
 
-  const [logoUrl, setLogoUrl] = useState<string>('/api/cdn/cdn/logos/lptq-logo.png');
+  const [logoUrl, setLogoUrl] = useState<string>('/api/cdn/logos/lptq-logo.png');
   const [appName, setAppName] = useState<string>('LPTK MAHATO');
+
+  const isWebsiteActive =
+    pathname.startsWith('/admin/website') ||
+    pathname.startsWith('/admin/posts') ||
+    pathname.startsWith('/admin/cdn');
 
   useEffect(() => {
     fetch('/api/meta/branding')
@@ -103,7 +114,11 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data?.menu) && json.data.menu.length > 0) {
-            setMenuItems(json.data.menu);
+            // Filter out website/posts/cdn from generic list as they have a dedicated dropdown
+            const filtered = json.data.menu.filter(
+              (m: MenuItem) => !['/admin/website', '/admin/posts', '/admin/cdn'].includes(m.href)
+            );
+            setMenuItems(filtered);
           }
         }
       } catch (err) {
@@ -209,32 +224,112 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
           </a>
         </div>
 
-        {/* Navigation items - Strictly 1 Word */}
+        {/* Navigation items */}
         <nav className="flex-1 overflow-y-auto px-2.5 py-2 space-y-0.5 custom-scrollbar">
-          {menuItems.map((item) => {
-            const IconComponent = ICON_MAP[item.icon] || FileText;
-            const isActive =
-              item.href === '/admin'
-                ? pathname === '/admin'
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          {/* Main Dashboard Link */}
+          <Link
+            href="/admin"
+            prefetch={true}
+            onClick={onClose}
+            className={`flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-all ${
+              pathname === '/admin'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Dashboard</span>
+          </Link>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                prefetch={true}
-                onClick={onClose}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-all ${
-                  isActive
-                    ? 'bg-white text-black font-semibold shadow-sm'
-                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                }`}
-              >
-                <IconComponent className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{item.title}</span>
-              </Link>
-            );
-          })}
+          {/* Website Management Dropdown Section */}
+          <div className="pt-1.5 pb-1">
+            <button
+              type="button"
+              onClick={() => setWebsiteOpen(!websiteOpen)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-semibold transition-all ${
+                isWebsiteActive
+                  ? 'bg-neutral-900 text-amber-300'
+                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Globe className="w-4 h-4 text-emerald-400" />
+                <span>Website</span>
+              </div>
+              {websiteOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+              )}
+            </button>
+
+            {websiteOpen && (
+              <div className="pl-6 pr-1 pt-1 space-y-0.5 border-l border-neutral-800 ml-4 mt-1">
+                <Link
+                  href="/admin/website"
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                    pathname === '/admin/website'
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  }`}
+                >
+                  <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Tampilan & Hero</span>
+                </Link>
+                <Link
+                  href="/admin/posts"
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                    pathname.startsWith('/admin/posts')
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  }`}
+                >
+                  <Newspaper className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Berita & Warta</span>
+                </Link>
+                <Link
+                  href="/admin/cdn"
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                    pathname === '/admin/cdn'
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  }`}
+                >
+                  <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Media CDN</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Other Standard Modules */}
+          {menuItems
+            .filter((item) => item.href !== '/admin')
+            .map((item) => {
+              const IconComponent = ICON_MAP[item.icon] || FileText;
+              const isActive =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  prefetch={true}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                    isActive
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  }`}
+                >
+                  <IconComponent className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{item.title}</span>
+                </Link>
+              );
+            })}
         </nav>
 
         {/* User Profile Card & Logout in Sidebar (Mobile & Desktop) */}

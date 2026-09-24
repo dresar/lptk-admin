@@ -50,8 +50,8 @@ export function ParticipantCard({
   standalone = false,
 }: ParticipantCardProps) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
-  const [dynamicLogo, setDynamicLogo] = useState<string>('/api/cdn/cdn/logos/lptq-logo.png');
-  const [dynamicStamp, setDynamicStamp] = useState<string>('/api/cdn/cdn/logos/lptq-stempel.png');
+  const [dynamicLogo, setDynamicLogo] = useState<string>('/api/cdn/logos/lptq-logo.png');
+  const [dynamicStamp, setDynamicStamp] = useState<string>('/api/cdn/logos/lptq-stempel.png');
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

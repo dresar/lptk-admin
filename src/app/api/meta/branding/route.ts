@@ -25,8 +25,8 @@ export async function GET() {
 
     const branding: Record<string, string> = {
       app_name: 'LPTK Tambusai Utara - Mahato 2026',
-      app_logo_url: '/api/cdn/cdn/logos/lptq-logo.png',
-      app_stamp_url: '/api/cdn/cdn/logos/lptq-stempel.png',
+      app_logo_url: '/api/cdn/logos/lptq-logo.png',
+      app_stamp_url: '/api/cdn/logos/lptq-stempel.png',
       event_official_name: 'Musabaqah Tilawatil Qur’an (MTQ) ke-XIX Tingkat Kecamatan Tambusai Utara Tahun 2026 di Desa Mahato',
       event_dates: '09 – 13 November 2026',
       event_location: 'Desa Mahato, Kecamatan Tambusai Utara, Kabupaten Rokan Hulu',
@@ -41,7 +41,11 @@ export async function GET() {
       for (const row of rows) {
         if (row.key && row.value !== undefined && row.value !== null) {
           // If value is a JSON string or object, clean it
-          const raw = typeof row.value === 'string' ? row.value.replace(/^"|"$/g, '') : String(row.value);
+          let raw = typeof row.value === 'string' ? row.value.replace(/^"|"$/g, '') : String(row.value);
+          // Auto-clean any redundant /api/cdn/cdn/ to /api/cdn/
+          if (raw.includes('/api/cdn/cdn/')) {
+            raw = raw.replace('/api/cdn/cdn/', '/api/cdn/');
+          }
           branding[row.key] = raw;
         }
       }
@@ -63,8 +67,8 @@ export async function GET() {
         success: true,
         data: {
           app_name: 'LPTK Tambusai Utara - Mahato 2026',
-          app_logo_url: '/api/cdn/cdn/logos/lptq-logo.png',
-          app_stamp_url: '/api/cdn/cdn/logos/lptq-stempel.png',
+          app_logo_url: '/api/cdn/logos/lptq-logo.png',
+          app_stamp_url: '/api/cdn/logos/lptq-stempel.png',
         },
       },
       { status: 200 }

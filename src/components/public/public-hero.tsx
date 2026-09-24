@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, MapPin, Search, FileDown, Layers, Users, Trophy, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Calendar, MapPin, Search, FileDown, Layers, Users, Sparkles, ArrowRight } from 'lucide-react';
 
 interface EventStats {
   total_participants: number;
@@ -10,11 +10,28 @@ interface EventStats {
   total_villages: number;
   total_branches: number;
   total_categories: number;
+  hero_title: string;
+  hero_subtitle: string;
+  hero_image_url: string;
+  hero_image_caption: string;
+  countdown_target: string;
+  host_village: string;
 }
 
 export function PublicHero() {
-  const [stats, setStats] = useState<EventStats | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [stats, setStats] = useState<EventStats>({
+    total_participants: 0,
+    verified_participants: 0,
+    total_villages: 11,
+    total_branches: 6,
+    total_categories: 25,
+    hero_title: "MTQ XIX Tingkat Kecamatan Tambusai Utara",
+    hero_subtitle: "Portal informasi resmi dan verifikasi data peserta MTQ XIX Tahun 2026 di Desa Mahato.",
+    hero_image_url: '/api/cdn/hero/mtq-hero-mahato.jpg',
+    hero_image_caption: 'Mimbar Utama Musabaqah - Desa Mahato',
+    countdown_target: '2026-11-09T08:00:00+07:00',
+    host_village: 'Desa Mahato',
+  });
 
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -24,24 +41,31 @@ export function PublicHero() {
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    setMounted(true);
     fetch('/api/public/stats')
       .then((res) => res.json())
       .then((json) => {
         if (json?.data) {
-          setStats({
-            total_participants: json.data.total_participants ?? 0,
-            verified_participants: json.data.verified_participants ?? 0,
-            total_villages: json.data.total_villages ?? 11,
-            total_branches: json.data.total_branches ?? 6,
-            total_categories: json.data.total_categories ?? 25,
-          });
+          setStats((prev) => ({
+            ...prev,
+            total_participants: json.data.total_participants ?? prev.total_participants,
+            verified_participants: json.data.verified_participants ?? prev.verified_participants,
+            total_villages: json.data.total_villages ?? prev.total_villages,
+            total_branches: json.data.total_branches ?? prev.total_branches,
+            total_categories: json.data.total_categories ?? prev.total_categories,
+            hero_title: json.data.hero_title || prev.hero_title,
+            hero_subtitle: json.data.hero_subtitle || prev.hero_subtitle,
+            hero_image_url: json.data.hero_image_url || prev.hero_image_url,
+            hero_image_caption: json.data.hero_image_caption || prev.hero_image_caption,
+            countdown_target: json.data.countdown_target || prev.countdown_target,
+            host_village: json.data.host_village || prev.host_village,
+          }));
         }
       })
       .catch(() => {});
+  }, []);
 
-    // Target: 09 November 2026 08:00 WIB (UTC+7)
-    const targetDate = new Date('2026-11-09T08:00:00+07:00').getTime();
+  useEffect(() => {
+    const targetDate = new Date(stats.countdown_target).getTime() || new Date('2026-11-09T08:00:00+07:00').getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -59,204 +83,152 @@ export function PublicHero() {
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [stats.countdown_target]);
 
   return (
-    <section className="bg-emerald-950 text-white pt-8 pb-16 border-b border-emerald-800/80 relative overflow-hidden">
-      {/* Subtle Islamic Arch & Star Accents */}
-      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-emerald-900/30 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto px-4 relative z-10">
-        {/* Calligraphy Ornament Banner */}
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-amber-400 text-sm">۞</span>
-          <span className="text-amber-300 font-serif text-sm sm:text-base tracking-widest">
-            بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-          </span>
-          <span className="text-amber-400 text-sm">۞</span>
-        </div>
-
+    <section className="bg-white text-neutral-900 pt-6 pb-12 sm:pt-10 sm:pb-16 border-b border-stone-200">
+      <div className="max-w-6xl mx-auto px-4">
         {/* Top Badges */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 text-xs font-mono">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 font-bold">
-            <MapPin className="w-3.5 h-3.5 text-amber-400" />
-            Tuan Rumah: Desa Mahato
+        <div className="flex flex-wrap items-center gap-2 mb-3 text-xs font-mono">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-300 rounded-full text-amber-900 font-semibold text-[11px] sm:text-xs">
+            <MapPin className="w-3.5 h-3.5 text-amber-600" />
+            Tuan Rumah: {stats.host_village}
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-900 border border-emerald-700 rounded-full text-emerald-200">
-            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-800 text-[11px] sm:text-xs font-semibold">
+            <Calendar className="w-3.5 h-3.5 text-emerald-700" />
             09 – 13 November 2026
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-900/60 border border-emerald-700/80 rounded-full text-emerald-300">
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            Tingkat Kecamatan Tambusai Utara
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-stone-100 border border-stone-200 rounded-full text-neutral-600 text-[11px] sm:text-xs">
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            Tambusai Utara
           </span>
         </div>
 
-        {/* Main Grid: Headline on Left, Hero Photography on Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-7 space-y-5">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight">
-              Musabaqah Tilawatil Qur&apos;an XIX Tingkat Kecamatan Tambusai Utara
+        {/* Main Grid: Headline Left, Media Card Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 items-center">
+          {/* Left Column: Compact Typography & 1-2 Sentences Text */}
+          <div className="lg:col-span-7 space-y-4">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900 leading-tight">
+              {stats.hero_title}
             </h1>
 
-            <p className="text-sm text-emerald-100/90 max-w-xl leading-relaxed">
-              Pusat informasi resmi dan portal verifikasi data peserta MTQ XIX Tahun 2026.
-              Diikuti oleh 11 kafilah desa se-Kecamatan Tambusai Utara dengan 6 cabang dan 25 golongan musabaqah.
+            <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed max-w-xl">
+              {stats.hero_subtitle}
             </p>
 
-            {/* Quick Actions (Large Touch Targets for Mobile) */}
-            <div className="flex flex-wrap gap-2.5 pt-2">
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap gap-2 pt-1">
               <a
                 href="#cek-status"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-emerald-950 font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 min-h-[46px]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-xs min-h-[42px]"
               >
                 <Search className="w-4 h-4 stroke-[2.5]" />
-                <span>Cek Status NIK Peserta</span>
-              </a>
-
-              <a
-                href="#cabang"
-                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-900/90 text-white font-semibold text-xs border border-emerald-700/80 rounded-xl hover:bg-emerald-800 transition-colors min-h-[46px]"
-              >
-                <Layers className="w-4 h-4 text-amber-400" />
-                <span>Daftar Cabang Lomba</span>
-              </a>
-
-              <a
-                href="#dokumen"
-                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-900/90 text-white font-semibold text-xs border border-emerald-700/80 rounded-xl hover:bg-emerald-800 transition-colors min-h-[46px]"
-              >
-                <FileDown className="w-4 h-4 text-emerald-300" />
-                <span>Unduh Juknis</span>
+                <span>Cek Status Peserta</span>
               </a>
 
               <Link
-                href="/login"
-                className="inline-flex items-center justify-center px-4 py-3 bg-emerald-900/60 text-emerald-200 font-semibold text-xs border border-emerald-700/60 rounded-xl hover:bg-emerald-800 hover:text-white transition-colors min-h-[46px]"
+                href="/cabang"
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-stone-100 hover:bg-stone-200 text-neutral-800 font-semibold text-xs rounded-xl border border-stone-300 transition-colors min-h-[42px]"
               >
-                <span>Masuk Portal</span>
+                <Layers className="w-4 h-4 text-emerald-800" />
+                <span>Cabang Lomba</span>
               </Link>
+
+              <Link
+                href="/kafilah"
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-stone-100 hover:bg-stone-200 text-neutral-800 font-semibold text-xs rounded-xl border border-stone-300 transition-colors min-h-[42px]"
+              >
+                <Users className="w-4 h-4 text-amber-700" />
+                <span>11 Kafilah</span>
+              </Link>
+
+              <a
+                href="#dokumen"
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-stone-100 hover:bg-stone-200 text-neutral-800 font-semibold text-xs rounded-xl border border-stone-300 transition-colors min-h-[42px]"
+              >
+                <FileDown className="w-4 h-4 text-neutral-600" />
+                <span>Juknis</span>
+              </a>
             </div>
 
-            {/* Countdown Display (Islamic Amber-Emerald Cards) */}
-            <div className="pt-4 border-t border-emerald-800/80">
-              <div className="flex items-center justify-between max-w-sm mb-2">
-                <span className="text-[11px] font-mono text-amber-300 uppercase tracking-wider font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            {/* Compact Countdown Bar */}
+            <div className="pt-3 border-t border-stone-200">
+              <div className="flex items-center justify-between max-w-xs mb-2 text-[11px] font-mono">
+                <span className="text-emerald-800 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                   Menuju Pembukaan MTQ XIX
                 </span>
-                <span className="text-[10px] text-emerald-300/80 font-mono">09 Nov 2026</span>
+                <span className="text-neutral-500">09 Nov 2026</span>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 max-w-sm text-center">
-                <div className="bg-emerald-900/90 border border-amber-500/40 p-2.5 rounded-xl shadow-md">
-                  <span className="block text-xl sm:text-2xl font-black font-mono text-amber-400">
-                    {mounted ? timeLeft.days : '-'}
-                  </span>
-                  <span className="text-[10px] text-emerald-200 uppercase font-semibold">Hari</span>
+              <div className="grid grid-cols-4 gap-2 max-w-xs text-center font-mono">
+                <div className="bg-stone-100 border border-stone-200 rounded-lg p-2">
+                  <div className="text-base sm:text-lg font-extrabold text-neutral-900">{timeLeft.days}</div>
+                  <div className="text-[10px] text-neutral-500 uppercase">Hari</div>
                 </div>
-                <div className="bg-emerald-900/90 border border-amber-500/40 p-2.5 rounded-xl shadow-md">
-                  <span className="block text-xl sm:text-2xl font-black font-mono text-amber-400">
-                    {mounted ? timeLeft.hours : '-'}
-                  </span>
-                  <span className="text-[10px] text-emerald-200 uppercase font-semibold">Jam</span>
+                <div className="bg-stone-100 border border-stone-200 rounded-lg p-2">
+                  <div className="text-base sm:text-lg font-extrabold text-neutral-900">{timeLeft.hours}</div>
+                  <div className="text-[10px] text-neutral-500 uppercase">Jam</div>
                 </div>
-                <div className="bg-emerald-900/90 border border-amber-500/40 p-2.5 rounded-xl shadow-md">
-                  <span className="block text-xl sm:text-2xl font-black font-mono text-amber-400">
-                    {mounted ? timeLeft.minutes : '-'}
-                  </span>
-                  <span className="text-[10px] text-emerald-200 uppercase font-semibold">Menit</span>
+                <div className="bg-stone-100 border border-stone-200 rounded-lg p-2">
+                  <div className="text-base sm:text-lg font-extrabold text-neutral-900">{timeLeft.minutes}</div>
+                  <div className="text-[10px] text-neutral-500 uppercase">Mnt</div>
                 </div>
-                <div className="bg-emerald-900/90 border border-amber-500/40 p-2.5 rounded-xl shadow-md">
-                  <span className="block text-xl sm:text-2xl font-black font-mono text-amber-400">
-                    {mounted ? timeLeft.seconds : '-'}
-                  </span>
-                  <span className="text-[10px] text-emerald-200 uppercase font-semibold">Detik</span>
+                <div className="bg-stone-100 border border-stone-200 rounded-lg p-2">
+                  <div className="text-base sm:text-lg font-extrabold text-emerald-800">{timeLeft.seconds}</div>
+                  <div className="text-[10px] text-neutral-500 uppercase">Dtk</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Photographic Card from Neon S3 CDN with Islamic Frame */}
+          {/* Right Column: Emerald Card for Photography & Stats */}
           <div className="lg:col-span-5">
-            <div className="bg-emerald-900/80 border-2 border-amber-500/50 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:border-amber-400 hover:shadow-emerald-900/50">
-              <div className="relative aspect-[16/10] bg-emerald-950 overflow-hidden">
+            <div className="bg-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-emerald-800 shadow-sm space-y-4">
+              {/* Photo Frame */}
+              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden aspect-[16/10] bg-emerald-900/60 border border-emerald-700/80">
                 <img
-                  src="/api/cdn/cdn/hero/mtq-hero-mahato.jpg"
-                  alt="Arena Utama MTQ XIX Desa Mahato"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  src={stats.hero_image_url}
+                  alt={stats.hero_image_caption}
+                  className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
+                    // Fallback to elegant placeholder if custom CDN not yet uploaded
+                    (e.target as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=80';
                   }}
                 />
-                <div className="absolute top-3 left-3 px-2.5 py-1 bg-emerald-950/90 border border-amber-400/60 text-amber-300 text-[10px] font-mono font-bold rounded-full shadow-lg">
-                  Mimbar Utama Musabaqah
-                </div>
-                <div className="absolute bottom-3 right-3 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[10px] font-mono rounded">
-                  Desa Mahato 2026
-                </div>
-              </div>
-
-              <div className="p-4 space-y-1.5 bg-emerald-950/90 border-t border-emerald-800">
-                <div className="font-bold text-sm text-white flex items-center justify-between">
-                  <span>Kompleks Lapangan Utama MTQ XIX</span>
-                  <span className="text-amber-400 text-xs font-mono font-bold">Kafilah Terpadu</span>
-                </div>
-                <div className="text-xs text-emerald-200/90 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>Desa Mahato, Kecamatan Tambusai Utara, Rokan Hulu - Riau</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                <div className="absolute bottom-3 left-3 right-3 text-left">
+                  <span className="text-[10px] font-mono px-2 py-0.5 bg-amber-400 text-neutral-950 font-bold rounded">
+                    Mimbar Utama
+                  </span>
+                  <div className="text-xs font-medium text-white truncate mt-1">
+                    {stats.hero_image_caption}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Quick Stats Metric Cards (Islamic Solid Cards with Warm Accents) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mt-10">
-          <div className="bg-emerald-900/80 border border-emerald-700/80 hover:border-amber-400/60 p-4 rounded-xl shadow-md transition-all hover:-translate-y-1">
-            <div className="flex items-center justify-between text-emerald-200 mb-1">
-              <span className="text-[11px] font-mono uppercase font-bold text-amber-300">Cabang</span>
-              <Trophy className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono">
-              {stats ? `${stats.total_branches} Cabang` : '-'}
-            </div>
-            <div className="text-[11px] text-emerald-200/80 mt-1">Seni Baca s.d Rebana</div>
-          </div>
-
-          <div className="bg-emerald-900/80 border border-emerald-700/80 hover:border-amber-400/60 p-4 rounded-xl shadow-md transition-all hover:-translate-y-1">
-            <div className="flex items-center justify-between text-emerald-200 mb-1">
-              <span className="text-[11px] font-mono uppercase font-bold text-amber-300">Golongan</span>
-              <Layers className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono">
-              {stats ? `${stats.total_categories} Golongan` : '-'}
-            </div>
-            <div className="text-[11px] text-emerald-200/80 mt-1">Kategori Putra & Putri</div>
-          </div>
-
-          <div className="bg-emerald-900/80 border border-emerald-700/80 hover:border-amber-400/60 p-4 rounded-xl shadow-md transition-all hover:-translate-y-1">
-            <div className="flex items-center justify-between text-emerald-200 mb-1">
-              <span className="text-[11px] font-mono uppercase font-bold text-amber-300">Kafilah</span>
-              <MapPin className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono">
-              {stats ? `${stats.total_villages} Desa` : '-'}
-            </div>
-            <div className="text-[11px] text-emerald-200/80 mt-1">Se-Tambusai Utara</div>
-          </div>
-
-          <div className="bg-emerald-900/80 border border-emerald-700/80 hover:border-amber-400/60 p-4 rounded-xl shadow-md transition-all hover:-translate-y-1">
-            <div className="flex items-center justify-between text-emerald-200 mb-1">
-              <span className="text-[11px] font-mono uppercase font-bold text-amber-300">Peserta</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono">
-              {stats ? `${stats.total_participants} Terdaftar` : '-'}
-            </div>
-            <div className="text-[11px] text-emerald-300 font-semibold mt-1">
-              {stats ? `${stats.verified_participants} Terverifikasi Sah` : '-'}
+              {/* 3 Metric Pills */}
+              <div className="grid grid-cols-3 gap-2 text-center pt-1">
+                <div className="bg-emerald-900/70 border border-emerald-800 rounded-xl p-2.5">
+                  <div className="text-xs sm:text-sm font-bold font-mono text-amber-300">
+                    {stats.total_villages} Desa
+                  </div>
+                  <div className="text-[10px] text-emerald-200/80 mt-0.5">Kafilah Resmi</div>
+                </div>
+                <div className="bg-emerald-900/70 border border-emerald-800 rounded-xl p-2.5">
+                  <div className="text-xs sm:text-sm font-bold font-mono text-white">
+                    {stats.total_branches} Cabang
+                  </div>
+                  <div className="text-[10px] text-emerald-200/80 mt-0.5">{stats.total_categories} Golongan</div>
+                </div>
+                <div className="bg-emerald-900/70 border border-emerald-800 rounded-xl p-2.5">
+                  <div className="text-xs sm:text-sm font-bold font-mono text-emerald-300">
+                    {stats.verified_participants}
+                  </div>
+                  <div className="text-[10px] text-emerald-200/80 mt-0.5">Peserta Lolos</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

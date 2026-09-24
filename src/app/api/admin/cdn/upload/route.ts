@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    const folder = (formData.get('folder') as string) || 'cdn/uploads';
+    const rawFolder = (formData.get('folder') as string) || 'uploads';
+    const folder = rawFolder.replace(/^cdn\/?/, '').replace(/^\/+|\/+$/g, '') || 'uploads';
 
     if (!file) {
       return errorResponse('VALIDATION_ERROR', 'Berkas (file) wajib disertakan.', 400);
@@ -36,8 +37,7 @@ export async function POST(req: NextRequest) {
 
     const mimeType = signatureCheck.detectedMime || file.type;
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const cleanFolder = folder.replace(/^\/+|\/+$/g, '');
-    const s3Key = `${cleanFolder}/${Date.now()}_${sanitizedName}`;
+    const s3Key = `${folder}/${Date.now()}_${sanitizedName}`;
 
     // Upload to Neon Object Storage
     await uploadToS3(s3Key, buffer, mimeType);

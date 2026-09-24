@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, ArrowUpRight, ShieldCheck, Search, Sparkles } from 'lucide-react';
+import { Menu, X, ArrowUpRight, ShieldCheck, Sparkles } from 'lucide-react';
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('/api/cdn/cdn/logos/lptq-logo.png');
+  const [logoUrl, setLogoUrl] = useState('/api/cdn/logos/lptq-logo.png');
   const [appName, setAppName] = useState('MTQ XIX TAMBUSAI UTARA');
 
   useEffect(() => {
@@ -20,7 +20,10 @@ export function PublicHeader() {
     fetch('/api/meta/branding')
       .then((res) => res.json())
       .then((json) => {
-        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url);
+        if (json?.data?.app_logo_url) {
+          const clean = json.data.app_logo_url.replace('/api/cdn/cdn/', '/api/cdn/');
+          setLogoUrl(clean);
+        }
         if (json?.data?.app_name) setAppName(json.data.app_name);
       })
       .catch(() => {});
@@ -39,10 +42,10 @@ export function PublicHeader() {
   const navLinks = [
     { label: 'Beranda', href: '/' },
     { label: 'Cek Status', href: '/#cek-status' },
-    { label: 'Cabang Lomba', href: '/#cabang' },
-    { label: 'Kafilah 11 Desa', href: '/#kafilah' },
-    { label: 'Warta MTQ', href: '/#berita' },
-    { label: 'Juknis Resmi', href: '/#dokumen' },
+    { label: 'Cabang Lomba', href: '/cabang' },
+    { label: 'Kafilah 11 Desa', href: '/kafilah' },
+    { label: 'Berita & Warta', href: '/berita' },
+    { label: 'Juknis', href: '/#dokumen' },
   ];
 
   const handleLinkClick = () => {
@@ -50,123 +53,115 @@ export function PublicHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-emerald-950/95 backdrop-blur-md text-white border-b border-emerald-800/60 shadow-lg">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md text-neutral-900 border-b border-stone-200 shadow-xs">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link
           href="/"
-          className="flex items-center gap-3 group focus:outline-none focus:ring-1 focus:ring-amber-400 rounded-lg py-1"
+          className="flex items-center gap-2.5 group focus:outline-none focus:ring-1 focus:ring-emerald-700 rounded-lg py-1"
         >
-          <div className="w-10 h-10 rounded-full bg-white p-1 flex items-center justify-center flex-shrink-0 shadow-md ring-2 ring-amber-400/80">
+          <div className="w-9 h-9 rounded-full bg-stone-50 p-1 flex items-center justify-center flex-shrink-0 shadow-xs ring-1 ring-stone-300">
             <img
               src={logoUrl}
               alt="LPTQ Logo"
               className="w-full h-full object-contain"
               onError={(e) => {
+                // If logo fails, show Islamic crescent star icon
                 (e.target as HTMLElement).style.display = 'none';
               }}
             />
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-sm sm:text-base tracking-wide text-white leading-none group-hover:text-amber-300 transition-colors">
-                MTQ XIX TAMBUSAI UTARA
+          <div>
+            <div className="font-extrabold text-xs sm:text-sm tracking-wide text-neutral-900 flex items-center gap-1">
+              <span>{appName}</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-semibold hidden sm:inline-block">
+                DESA MAHATO
               </span>
-              <span className="hidden sm:inline-block text-[10px] text-amber-400 font-bold">۞</span>
             </div>
-            <span className="text-[10px] sm:text-[11px] text-emerald-200/90 font-medium tracking-tight mt-0.5">
-              Tahun 2026 • Tuan Rumah Desa Mahato
-            </span>
+            <div className="text-[10px] text-neutral-500 font-mono">
+              Kecamatan Tambusai Utara • Rokan Hulu
+            </div>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-emerald-100/90">
-          {navLinks.map((item) => (
+        <nav className="hidden md:flex items-center gap-1 text-xs font-semibold text-neutral-700">
+          {navLinks.map((link) => (
             <Link
-              key={item.label}
-              href={item.href}
-              className="hover:text-amber-300 transition-colors py-2 focus:outline-none focus:text-amber-300 relative group"
+              key={link.label}
+              href={link.href}
+              className="px-3 py-2 rounded-lg hover:text-emerald-800 hover:bg-stone-100 transition-colors"
             >
-              {item.label}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-200 group-hover:w-full" />
+              {link.label}
             </Link>
           ))}
         </nav>
 
-        {/* Action Button */}
-        <div className="hidden sm:flex items-center gap-2.5">
-          <a
-            href="#cek-status"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-emerald-950 rounded-lg shadow-md transition-all hover:scale-105 active:scale-95"
-          >
-            <Search className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Cek Status NIK</span>
-          </a>
-
+        {/* Right CTA */}
+        <div className="flex items-center gap-2">
           {isLoggedIn ? (
             <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-emerald-900/90 hover:bg-emerald-800 text-white border border-emerald-700/80 rounded-lg transition-colors"
+              href="/admin/dashboard"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl shadow-xs transition-colors"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-              <span>Admin</span>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Admin Panel</span>
             </Link>
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-emerald-900/90 hover:bg-emerald-800 text-white border border-emerald-700/80 rounded-lg transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-neutral-800 rounded-xl border border-stone-300 transition-colors"
             >
-              <span>Masuk</span>
+              <span>Masuk Portal</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           )}
-        </div>
 
-        {/* Mobile Hamburger Button */}
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 text-emerald-200 hover:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-400 min-h-[44px] min-w-[44px] flex items-center justify-center bg-emerald-900/60 border border-emerald-800"
-          aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu'}
-          aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5 text-amber-300" /> : <Menu className="w-5 h-5" />}
-        </button>
+          {/* Mobile Hamburger Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-neutral-700 hover:bg-stone-100 border border-stone-200 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+            aria-label="Buka Menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-emerald-950/98 border-b border-emerald-800 px-4 py-4 space-y-3 shadow-2xl backdrop-blur-xl animate-in slide-in-from-top-2 duration-200">
-          <nav className="flex flex-col space-y-1 text-sm font-semibold text-emerald-100">
-            {navLinks.map((item) => (
+        <div className="md:hidden bg-white border-b border-stone-200 px-4 pt-3 pb-6 space-y-2 text-xs shadow-lg animate-in slide-in-from-top duration-200">
+          <div className="space-y-1">
+            {navLinks.map((link) => (
               <Link
-                key={item.label}
-                href={item.href}
+                key={link.label}
+                href={link.href}
                 onClick={handleLinkClick}
-                className="px-3.5 py-2.5 rounded-lg hover:bg-emerald-900/80 hover:text-amber-300 transition-colors min-h-[44px] flex items-center justify-between"
+                className="block px-3 py-2.5 rounded-lg text-neutral-800 font-semibold hover:bg-stone-100 transition-colors"
               >
-                <span>{item.label}</span>
-                <span className="text-amber-400 text-xs">۞</span>
+                {link.label}
               </Link>
             ))}
-          </nav>
-          <div className="pt-3 border-t border-emerald-800/80 flex flex-col gap-2">
-            <a
-              href="#cek-status"
-              onClick={handleLinkClick}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-emerald-950 rounded-lg transition-colors min-h-[44px]"
-            >
-              <Search className="w-4 h-4" />
-              <span>Cek Status Peserta / NIK</span>
-            </a>
-            <Link
-              href={isLoggedIn ? '/admin' : '/login'}
-              onClick={handleLinkClick}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold bg-emerald-900 text-white border border-emerald-700 rounded-lg hover:bg-emerald-800 transition-colors min-h-[44px]"
-            >
-              {isLoggedIn ? 'Buka Dashboard Admin' : 'Masuk Portal Admin'}
-            </Link>
+          </div>
+
+          <div className="pt-3 border-t border-stone-200 flex flex-col gap-2">
+            {isLoggedIn ? (
+              <Link
+                href="/admin/dashboard"
+                onClick={handleLinkClick}
+                className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-xl text-xs"
+              >
+                Buka Admin Panel
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={handleLinkClick}
+                className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-xl text-xs"
+              >
+                Masuk Portal Petugas & Kafilah
+              </Link>
+            )}
           </div>
         </div>
       )}

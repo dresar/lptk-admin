@@ -53,7 +53,7 @@ export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<string>('Super Admin');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [logoUrl, setLogoUrl] = useState('/api/cdn/cdn/logos/lptq-logo.png');
+  const [logoUrl, setLogoUrl] = useState('/api/cdn/logos/lptq-logo.png');
   const [appName, setAppName] = useState('LPTK Mahato');
 
   useEffect(() => {
