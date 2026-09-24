@@ -130,7 +130,7 @@ export function ParticipantCard({
 
             <div className="flex-1 text-center min-w-0">
               <h2 className="text-[10px] sm:text-[11px] font-bold tracking-widest text-neutral-800 uppercase leading-none">
-                Lembaga Pengembangan Tilawatil Qur'an (LPTQ)
+                Lembaga Pengembangan Tilawatil Qur&apos;an (LPTQ)
               </h2>
               <h1 className="text-xs sm:text-sm font-black tracking-wider text-black uppercase mt-1 leading-tight">
                 Kecamatan Tambusai Utara - Rokan Hulu
