@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/server/db/client';
 import { successResponse, handleServerError } from '@/server/utils/response';
+import { DEFAULT_HERO_SLIDES, HeroSlide } from '@/types/website';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,18 +27,37 @@ export async function GET(req: NextRequest) {
       `,
     ]);
 
-    const webConfig: Record<string, string> = {};
+    const webConfig: Record<string, any> = {};
+    let customSlides: HeroSlide[] = [];
+
     if (webSettingsRows && Array.isArray(webSettingsRows)) {
       for (const row of webSettingsRows) {
         if (row.key && row.value !== undefined) {
-          let val = typeof row.value === 'string' ? row.value.replace(/^"|"$/g, '') : String(row.value);
-          if (val.includes('/api/cdn/cdn/')) {
-            val = val.replace('/api/cdn/cdn/', '/api/cdn/');
+          if (row.key === 'website_hero_slides') {
+            try {
+              let parsed = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                customSlides = parsed.slice(0, 5).map((s: any, idx: number) => ({
+                  id: s.id || `slide-${idx + 1}`,
+                  image_url: String(s.image_url || '').replace('/api/cdn/cdn/', '/api/cdn/'),
+                  title: String(s.title || ''),
+                  subtitle: String(s.subtitle || ''),
+                  info: String(s.info || ''),
+                }));
+              }
+            } catch {}
+          } else {
+            let val = typeof row.value === 'string' ? row.value.replace(/^"|"$/g, '') : String(row.value);
+            if (val.includes('/api/cdn/cdn/')) {
+              val = val.replace('/api/cdn/cdn/', '/api/cdn/');
+            }
+            webConfig[row.key] = val;
           }
-          webConfig[row.key] = val;
         }
       }
     }
+
+    const slides = customSlides.length > 0 ? customSlides : DEFAULT_HERO_SLIDES;
 
     const stats = {
       total_participants: partStats[0]?.total_participants || 0,
@@ -56,6 +76,7 @@ export async function GET(req: NextRequest) {
       host_village: webConfig.website_host_village || 'Desa Mahato',
       contact_phone: webConfig.website_contact_phone || '0812-6845-1120 / 0813-7123-9988',
       secretariat_address: webConfig.website_contact_address || 'Kantor KUA - Jl. Raya Rantau Kasai Desa Rantau Kasai, Kec. Tambusai Utara',
+      hero_slides: slides,
     };
 
     return successResponse(stats);

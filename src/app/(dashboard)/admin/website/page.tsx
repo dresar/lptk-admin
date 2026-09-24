@@ -15,15 +15,19 @@ import {
   Sparkles,
   MapPin,
   Phone,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HeroSlide, DEFAULT_HERO_SLIDES } from '@/types/website';
 
 export default function WebsiteSettingsPage() {
   const [formData, setFormData] = useState({
     website_hero_title: '',
     website_hero_subtitle: '',
-    website_hero_image_url: '',
-    website_hero_image_caption: '',
     website_countdown_target: '',
     website_announcement: '',
     website_host_village: '',
@@ -31,9 +35,12 @@ export default function WebsiteSettingsPage() {
     website_contact_address: '',
   });
 
+  const [slides, setSlides] = useState<HeroSlide[]>(DEFAULT_HERO_SLIDES);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingSlideIndex, setUploadingSlideIndex] = useState<number | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -47,14 +54,16 @@ export default function WebsiteSettingsPage() {
             setFormData({
               website_hero_title: json.data.website_hero_title || '',
               website_hero_subtitle: json.data.website_hero_subtitle || '',
-              website_hero_image_url: json.data.website_hero_image_url || '',
-              website_hero_image_caption: json.data.website_hero_image_caption || '',
               website_countdown_target: json.data.website_countdown_target || '2026-11-09T08:00:00+07:00',
               website_announcement: json.data.website_announcement || '',
               website_host_village: json.data.website_host_village || 'Desa Mahato',
               website_contact_phone: json.data.website_contact_phone || '',
               website_contact_address: json.data.website_contact_address || '',
             });
+
+            if (Array.isArray(json.data.website_hero_slides) && json.data.website_hero_slides.length > 0) {
+              setSlides(json.data.website_hero_slides.slice(0, 5));
+            }
           }
         }
       } catch (err) {
@@ -66,11 +75,11 @@ export default function WebsiteSettingsPage() {
     loadSettings();
   }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSlideImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadingImage(true);
+    setUploadingSlideIndex(index);
     setErrorMsg(null);
     setSuccessMsg(null);
 
@@ -88,13 +97,67 @@ export default function WebsiteSettingsPage() {
         setErrorMsg(json.error?.message || 'Gagal mengunggah foto ke CDN.');
         return;
       }
-      setFormData((prev) => ({ ...prev, website_hero_image_url: json.data.url }));
-      setSuccessMsg('Foto panggung berhasil diunggah ke CDN.');
+
+      setSlides((prev) => {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], image_url: json.data.url };
+        return updated;
+      });
+      setSuccessMsg(`Foto slide ${index + 1} berhasil diunggah ke CDN.`);
     } catch {
       setErrorMsg('Kendala jaringan saat mengunggah foto.');
     } finally {
-      setUploadingImage(false);
+      setUploadingSlideIndex(null);
     }
+  };
+
+  const handleAddSlide = () => {
+    if (slides.length >= 5) {
+      setErrorMsg('Maksimal 5 slide banner hero.');
+      return;
+    }
+    const newSlide: HeroSlide = {
+      id: `slide-${Date.now()}`,
+      image_url: '/api/cdn/hero/mtq-hero-mahato.jpg',
+      title: 'Judul Banner Baru MTQ XIX',
+      subtitle: 'Keterangan ringkas informasi kegiatan musabaqah di Desa Mahato.',
+      info: '09 – 13 November 2026 • Mimbar Utama Desa Mahato',
+    };
+    setSlides((prev) => [...prev, newSlide]);
+    setActiveSlideIndex(slides.length);
+  };
+
+  const handleRemoveSlide = (index: number) => {
+    if (slides.length <= 1) {
+      setErrorMsg('Minimal harus ada 1 slide banner hero.');
+      return;
+    }
+    setSlides((prev) => prev.filter((_, i) => i !== index));
+    if (activeSlideIndex >= index && activeSlideIndex > 0) {
+      setActiveSlideIndex(activeSlideIndex - 1);
+    }
+  };
+
+  const handleMoveSlide = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= slides.length) return;
+
+    setSlides((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[targetIndex];
+      copy[targetIndex] = temp;
+      return copy;
+    });
+    setActiveSlideIndex(targetIndex);
+  };
+
+  const handleUpdateSlideField = (index: number, field: keyof HeroSlide, value: string) => {
+    setSlides((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
+    });
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -104,10 +167,15 @@ export default function WebsiteSettingsPage() {
     setSuccessMsg(null);
 
     try {
+      const payload = {
+        ...formData,
+        website_hero_slides: slides.slice(0, 5),
+      };
+
       const res = await fetch('/api/admin/website/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
 
@@ -116,7 +184,7 @@ export default function WebsiteSettingsPage() {
         return;
       }
 
-      setSuccessMsg('Pengaturan website publik berhasil disimpan dan diperbarui seketika!');
+      setSuccessMsg('Pengaturan website dan slider hero berhasil disimpan!');
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch {
       setErrorMsg('Kendala jaringan saat menyimpan pengaturan.');
@@ -133,256 +201,342 @@ export default function WebsiteSettingsPage() {
     );
   }
 
+  const currentSlide = slides[activeSlideIndex] || slides[0];
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-16">
+    <div className="max-w-5xl mx-auto space-y-6 pb-16">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2">
-            <Globe className="w-5 h-5 text-emerald-600" />
-            <span>Kustomisasi Website & Hero</span>
-          </h1>
-          <p className="text-xs text-neutral-500">
-            Atur foto panggung arena MTQ, target countdown, judul utama, dan informasi publik
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900">Pengaturan Tampilan Website</h1>
+            <span className="text-[11px] font-mono px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold">
+              Live CMS
+            </span>
+          </div>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Atur slider gambar latar hero (maks. 5 slide), judul, info kecil, dan hitung mundur pembukaan MTQ XIX
           </p>
         </div>
-
         <div className="flex items-center gap-2">
           <a
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-neutral-700 hover:text-black border border-neutral-200 rounded-xl hover:bg-neutral-100 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-lg text-xs font-semibold border border-neutral-300 transition-colors"
           >
-            <span>Lihat Portal Publik</span>
+            <span>Lihat Website</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
-          <Button
-            type="submit"
-            form="website-settings-form"
-            size="sm"
-            isLoading={saving}
-            className="gap-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-xs"
-          >
-            <Save className="w-4 h-4" />
-            <span>Simpan</span>
-          </Button>
         </div>
       </div>
 
+      {/* Notifications */}
       {successMsg && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 rounded-xl flex items-center gap-2 shadow-xs">
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in duration-200">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-          <span>{successMsg}</span>
+          <span className="font-semibold">{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3 bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 rounded-xl flex items-center gap-2 shadow-xs">
+        <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-800 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* Main Settings Form */}
-      <form id="website-settings-form" onSubmit={handleSave} className="space-y-6">
-        {/* Section 1: Hero Section Customization */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-6 space-y-5 shadow-xs">
-          <div className="flex items-center gap-2 pb-3 border-b border-neutral-100">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <h2 className="text-sm font-bold text-neutral-900 uppercase font-mono tracking-wider">
-              1. Hero Section & Gambar Panggung
-            </h2>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-              Judul Utama Hero (Headline)
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.website_hero_title}
-              onChange={(e) => setFormData({ ...formData, website_hero_title: e.target.value })}
-              placeholder="Musabaqah Tilawatil Qur'an XIX Tingkat Kecamatan Tambusai Utara"
-              className="w-full px-4 py-2.5 text-xs sm:text-sm bg-white border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black font-semibold"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-              Sub-Judul Hero (Deskripsi Ringkas)
-            </label>
-            <textarea
-              rows={2}
-              required
-              value={formData.website_hero_subtitle}
-              onChange={(e) => setFormData({ ...formData, website_hero_subtitle: e.target.value })}
-              placeholder="Pusat informasi resmi dan portal verifikasi data peserta MTQ XIX Tahun 2026. Diikuti oleh 11 kafilah desa se-Kecamatan Tambusai Utara."
-              className="w-full px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white leading-relaxed"
-            />
-            <p className="mt-1 text-[11px] text-neutral-500">
-              Tips: Maksimal 1–2 kalimat padat dan informatif.
-            </p>
-          </div>
-
-          {/* Right Hero Image Card */}
-          <div className="space-y-3 pt-3 border-t border-neutral-100">
-            <label className="block text-xs font-bold text-neutral-800 font-mono uppercase">
-              Foto Panggung Arena Utama (Sebelah Kanan Hero)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.website_hero_image_url}
-                onChange={(e) => setFormData({ ...formData, website_hero_image_url: e.target.value })}
-                placeholder="/api/cdn/hero/mtq-hero-mahato.jpg"
-                className="flex-1 px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white font-mono"
-              />
-              <label className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-neutral-300 bg-neutral-100 hover:bg-neutral-200 text-black rounded-xl cursor-pointer transition-colors">
-                <Upload className="w-3.5 h-3.5 text-neutral-600" />
-                <span>{uploadingImage ? 'Mengunggah...' : 'Unggah ke CDN'}</span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploadingImage}
-                />
-              </label>
-            </div>
-
-            {formData.website_hero_image_url && (
-              <div className="mt-2 aspect-[16/10] max-w-sm rounded-xl overflow-hidden border border-neutral-200 relative bg-neutral-100 shadow-xs">
-                <img
-                  src={formData.website_hero_image_url}
-                  alt="Pratinjau Panggung Hero"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/70 text-white text-[10px] rounded font-mono">
-                  Pratinjau Foto CDN
-                </div>
-              </div>
-            )}
-
+      <form onSubmit={handleSave} className="space-y-8">
+        {/* SECTION 1: HERO SLIDER MANAGEMENT (MAX 5 SLIDES) */}
+        <div className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-200">
             <div>
-              <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-                Teks Keterangan Foto Panggung (Caption)
-              </label>
-              <input
-                type="text"
-                value={formData.website_hero_image_caption}
-                onChange={(e) => setFormData({ ...formData, website_hero_image_caption: e.target.value })}
-                placeholder="Mimbar Utama Musabaqah - Desa Mahato 2026"
-                className="w-full px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Section 2: Countdown & Announcement */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-6 space-y-5 shadow-xs">
-          <div className="flex items-center gap-2 pb-3 border-b border-neutral-100">
-            <Clock className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-sm font-bold text-neutral-900 uppercase font-mono tracking-wider">
-              2. Countdown Waktu & Pengumuman
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-                Waktu Target Pembukaan MTQ (Countdown)
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.website_countdown_target}
-                onChange={(e) => setFormData({ ...formData, website_countdown_target: e.target.value })}
-                placeholder="2026-11-09T08:00:00+07:00"
-                className="w-full px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white font-mono"
-              />
-              <p className="mt-1 text-[11px] text-neutral-500">
-                Format: YYYY-MM-DDTHH:mm:ss+07:00 (contoh: 2026-11-09T08:00:00+07:00)
+              <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-emerald-700" />
+                <span>Slider Hero Banner ({slides.length} / 5 Slide)</span>
+              </h2>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Gambar slide latar belakang lebar dengan teks informasi di atasnya (auto-slide 5 detik, tanpa badge).
               </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-                Tuan Rumah Musabaqah
+            <button
+              type="button"
+              onClick={handleAddSlide}
+              disabled={slides.length >= 5}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white rounded-lg text-xs font-semibold transition-colors self-start sm:self-auto"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Tambah Slide</span>
+            </button>
+          </div>
+
+          {/* Slide Tabs Navigation */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {slides.map((s, idx) => (
+              <button
+                key={s.id || idx}
+                type="button"
+                onClick={() => setActiveSlideIndex(idx)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border ${
+                  activeSlideIndex === idx
+                    ? 'bg-neutral-900 text-white border-neutral-900 shadow-xs'
+                    : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100'
+                }`}
+              >
+                <span>Slide {idx + 1}</span>
+                {slides.length > 1 && (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveSlide(idx);
+                    }}
+                    className="hover:text-rose-400 p-0.5"
+                    title="Hapus Slide"
+                  >
+                    ×
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Active Slide Form & Live Preview */}
+          {currentSlide && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+              {/* Form Column */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
+                  <span className="text-xs font-bold text-neutral-800">
+                    Edit Konten Slide #{activeSlideIndex + 1}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleMoveSlide(activeSlideIndex, 'up')}
+                      disabled={activeSlideIndex === 0}
+                      className="p-1 text-neutral-500 hover:text-black disabled:opacity-30 border rounded"
+                      title="Geser ke kiri/atas"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveSlide(activeSlideIndex, 'down')}
+                      disabled={activeSlideIndex === slides.length - 1}
+                      className="p-1 text-neutral-500 hover:text-black disabled:opacity-30 border rounded"
+                      title="Geser ke kanan/bawah"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Image Upload & URL */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-neutral-800">
+                    Foto Latar Belakang Slide
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={currentSlide.image_url}
+                      onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'image_url', e.target.value)}
+                      placeholder="/api/cdn/hero/nama-foto.jpg atau URL gambar..."
+                      className="flex-1 px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                    />
+                    <label className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors flex-shrink-0">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{uploadingSlideIndex === activeSlideIndex ? 'Mengunggah...' : 'Unggah CDN'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleSlideImageUpload(activeSlideIndex, e)}
+                        className="hidden"
+                        disabled={uploadingSlideIndex !== null}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Small Info Text */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-neutral-800">
+                    Informasi Kecil (Jadwal & Lokasi — Teks Murni, Tanpa Badge)
+                  </label>
+                  <input
+                    type="text"
+                    value={currentSlide.info}
+                    onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'info', e.target.value)}
+                    placeholder="Contoh: 09 – 13 November 2026 • Mimbar Utama Desa Mahato"
+                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                  />
+                </div>
+
+                {/* Title */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-neutral-800">
+                    Judul Utama Slide
+                  </label>
+                  <input
+                    type="text"
+                    value={currentSlide.title}
+                    onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'title', e.target.value)}
+                    placeholder="Judul banner hero..."
+                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-semibold"
+                  />
+                </div>
+
+                {/* Subtitle */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-neutral-800">
+                    Deskripsi Ringkas (Maksimal 1–2 Kalimat)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={currentSlide.subtitle}
+                    onChange={(e) => handleUpdateSlideField(activeSlideIndex, 'subtitle', e.target.value)}
+                    placeholder="Deskripsi singkat tentang kegiatan..."
+                    className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                  />
+                </div>
+              </div>
+
+              {/* Live Preview Column */}
+              <div className="lg:col-span-5 space-y-2">
+                <span className="block text-xs font-bold text-neutral-700">
+                  Pratinjau Tampilan Slide #{activeSlideIndex + 1}
+                </span>
+
+                <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-neutral-950 text-white border border-neutral-800 shadow-sm flex flex-col justify-end p-4">
+                  <img
+                    src={currentSlide.image_url}
+                    alt={currentSlide.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=80';
+                    }}
+                  />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/70 to-neutral-950/30 pointer-events-none" />
+
+                  {/* Overlaid Text (No Badges) */}
+                  <div className="relative z-10 space-y-1">
+                    <div className="text-[10px] font-mono text-amber-300 font-medium">
+                      {currentSlide.info || '09 – 13 November 2026 • Mimbar Utama'}
+                    </div>
+                    <div className="text-xs font-bold leading-tight line-clamp-2">
+                      {currentSlide.title || 'Judul Slide Hero'}
+                    </div>
+                    <div className="text-[10px] text-neutral-300 line-clamp-2 leading-relaxed">
+                      {currentSlide.subtitle || 'Keterangan ringkas kegiatan musabaqah.'}
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-neutral-500">
+                  Banner akan otomatis berganti ke slide berikutnya setiap 5 detik di halaman publik.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SECTION 2: COUNTDOWN & EVENT INFO */}
+        <div className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+          <div>
+            <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-700" />
+              <span>Target Waktu Hitung Mundur (Countdown Timer)</span>
+            </h2>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Waktu pembukaan musabaqah yang dihitung mundur di banner hero.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-neutral-800">
+                Waktu Pelaksanaan (Format ISO / Tanggal)
               </label>
               <input
                 type="text"
-                required
+                value={formData.website_countdown_target}
+                onChange={(e) => setFormData({ ...formData, website_countdown_target: e.target.value })}
+                placeholder="2026-11-09T08:00:00+07:00"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+              />
+              <span className="text-[11px] text-neutral-500">
+                Default: 09 November 2026 pukul 08:00 WIB
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-neutral-800">
+                Desa Tuan Rumah
+              </label>
+              <input
+                type="text"
                 value={formData.website_host_village}
                 onChange={(e) => setFormData({ ...formData, website_host_village: e.target.value })}
                 placeholder="Desa Mahato"
-                className="w-full px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
               />
             </div>
           </div>
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-              Teks Pengumuman Singkat (Banner / Marquee)
-            </label>
-            <input
-              type="text"
-              value={formData.website_announcement}
-              onChange={(e) => setFormData({ ...formData, website_announcement: e.target.value })}
-              placeholder="Pemberkasan fisik Map Biru diserahkan di Kantor KUA Rantau Kasai selambatnya 20 Oktober 2026."
-              className="w-full px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
-            />
-          </div>
         </div>
 
-        {/* Section 3: Secretariat & Contact */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-6 space-y-5 shadow-xs">
-          <div className="flex items-center gap-2 pb-3 border-b border-neutral-100">
-            <MapPin className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-sm font-bold text-neutral-900 uppercase font-mono tracking-wider">
-              3. Alamat Sekretariat & Kontak
+        {/* SECTION 3: SECRETARIAT & CONTACTS */}
+        <div className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+          <div>
+            <h2 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
+              <Phone className="w-4 h-4 text-emerald-700" />
+              <span>Kontak & Pengumuman Sekretariat</span>
             </h2>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Informasi kontak darurat panitia dan lokasi pengumpulan berkas fisik.
+            </p>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-              Alamat Sekretariat KUA
-            </label>
-            <input
-              type="text"
-              value={formData.website_contact_address}
-              onChange={(e) => setFormData({ ...formData, website_contact_address: e.target.value })}
-              placeholder="Kantor KUA, Jl. Raya Rantau Kasai Desa Rantau Kasai, Kec. Tambusai Utara"
-              className="w-full px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white"
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-neutral-800">
+                Nomor Telepon / WhatsApp Panitia
+              </label>
+              <input
+                type="text"
+                value={formData.website_contact_phone}
+                onChange={(e) => setFormData({ ...formData, website_contact_phone: e.target.value })}
+                placeholder="0812-6845-1120 / 0813-7123-9988"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold text-neutral-800 mb-1 font-mono uppercase">
-              Nomor Telepon Panitia
-            </label>
-            <input
-              type="text"
-              value={formData.website_contact_phone}
-              onChange={(e) => setFormData({ ...formData, website_contact_phone: e.target.value })}
-              placeholder="0812-6845-1120 / 0813-7123-9988"
-              className="w-full px-3.5 py-2 text-xs border border-neutral-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-black bg-white font-mono"
-            />
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-neutral-800">
+                Alamat Kantor Sekretariat
+              </label>
+              <input
+                type="text"
+                value={formData.website_contact_address}
+                onChange={(e) => setFormData({ ...formData, website_contact_address: e.target.value })}
+                placeholder="Kantor KUA, Jl. Raya Rantau Kasai..."
+                className="w-full px-3 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-lg text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Bottom Save Bar */}
-        <div className="flex justify-end gap-3 pt-2">
+        {/* Save Bar */}
+        <div className="flex items-center justify-end gap-3 pt-3">
           <Button
             type="submit"
-            isLoading={saving}
-            className="px-6 py-2.5 text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-xs"
+            disabled={saving}
+            className="gap-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs px-6 py-2.5 rounded-xl shadow-xs"
           >
-            Simpan Konfigurasi Website
+            <Save className="w-4 h-4" />
+            <span>{saving ? 'Menyimpan Perubahan...' : 'Simpan Semua Pengaturan'}</span>
           </Button>
         </div>
       </form>

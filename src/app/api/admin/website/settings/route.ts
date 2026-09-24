@@ -3,10 +3,11 @@ import { db } from '@/server/db/client';
 import { successResponse, errorResponse, handleServerError } from '@/server/utils/response';
 import { requirePermission, AuthError } from '@/server/middlewares/auth';
 import { recordAuditLog } from '@/server/utils/audit';
+import { HeroSlide, DEFAULT_HERO_SLIDES } from '@/types/website';
 
 export const dynamic = 'force-dynamic';
 
-const DEFAULT_WEBSITE_SETTINGS: Record<string, string> = {
+const DEFAULT_WEBSITE_SETTINGS: Record<string, any> = {
   website_hero_title: "Musabaqah Tilawatil Qur'an XIX Tingkat Kecamatan Tambusai Utara",
   website_hero_subtitle: "Pusat informasi resmi dan portal verifikasi data peserta MTQ XIX Tahun 2026. Diikuti oleh 11 kafilah desa se-Kecamatan Tambusai Utara.",
   website_hero_image_url: "/api/cdn/hero/mtq-hero-mahato.jpg",
@@ -16,6 +17,7 @@ const DEFAULT_WEBSITE_SETTINGS: Record<string, string> = {
   website_host_village: "Desa Mahato",
   website_contact_phone: "0812-6845-1120 / 0813-7123-9988",
   website_contact_address: "Kantor KUA, Jl. Raya Rantau Kasai Desa Rantau Kasai, Kec. Tambusai Utara",
+  website_hero_slides: DEFAULT_HERO_SLIDES,
 };
 
 export async function GET(req: NextRequest) {
@@ -28,16 +30,33 @@ export async function GET(req: NextRequest) {
       WHERE key LIKE 'website_%'
     `;
 
-    const settings: Record<string, string> = { ...DEFAULT_WEBSITE_SETTINGS };
+    const settings: Record<string, any> = { ...DEFAULT_WEBSITE_SETTINGS };
 
     if (rows && Array.isArray(rows)) {
       for (const row of rows) {
         if (row.key && row.value !== undefined && row.value !== null) {
-          let val = typeof row.value === 'string' ? row.value.replace(/^"|"$/g, '') : String(row.value);
-          if (val.includes('/api/cdn/cdn/')) {
-            val = val.replace('/api/cdn/cdn/', '/api/cdn/');
+          if (row.key === 'website_hero_slides') {
+            try {
+              let parsed = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                settings.website_hero_slides = parsed.map((s: any, idx: number) => ({
+                  id: s.id || `slide-${idx + 1}`,
+                  image_url: String(s.image_url || '').replace('/api/cdn/cdn/', '/api/cdn/'),
+                  title: String(s.title || ''),
+                  subtitle: String(s.subtitle || ''),
+                  info: String(s.info || ''),
+                }));
+              }
+            } catch {
+              settings.website_hero_slides = DEFAULT_HERO_SLIDES;
+            }
+          } else {
+            let val = typeof row.value === 'string' ? row.value.replace(/^"|"$/g, '') : String(row.value);
+            if (val.includes('/api/cdn/cdn/')) {
+              val = val.replace('/api/cdn/cdn/', '/api/cdn/');
+            }
+            settings[row.key] = val;
           }
-          settings[row.key] = val;
         }
       }
     }
@@ -62,19 +81,40 @@ export async function PATCH(req: NextRequest) {
     for (const [key, rawValue] of Object.entries(body)) {
       if (!allowedKeys.includes(key)) continue;
 
-      let value = String(rawValue || '').trim();
-      // Clean any accidental double cdn prefix
-      if (value.includes('/api/cdn/cdn/')) {
-        value = value.replace('/api/cdn/cdn/', '/api/cdn/');
-      }
+      if (key === 'website_hero_slides') {
+        let slides: HeroSlide[] = [];
+        if (Array.isArray(rawValue)) {
+          slides = rawValue.slice(0, 5).map((s: any, idx: number) => ({
+            id: s.id || `slide-${idx + 1}`,
+            image_url: String(s.image_url || '').replace('/api/cdn/cdn/', '/api/cdn/').trim(),
+            title: String(s.title || '').trim(),
+            subtitle: String(s.subtitle || '').trim(),
+            info: String(s.info || '').trim(),
+          }));
+        }
 
-      await db.query`
-        INSERT INTO public.system_settings (key, value, updated_by, updated_at)
-        VALUES (${key}, ${JSON.stringify(value)}, ${user.id}, NOW())
-        ON CONFLICT (key) DO UPDATE 
-        SET value = ${JSON.stringify(value)}, updated_by = ${user.id}, updated_at = NOW();
-      `;
-      updatedKeys.push(key);
+        const jsonStr = JSON.stringify(slides);
+        await db.query`
+          INSERT INTO public.system_settings (key, value, updated_by, updated_at)
+          VALUES (${key}, ${jsonStr}::jsonb, ${user.id}, NOW())
+          ON CONFLICT (key) DO UPDATE 
+          SET value = ${jsonStr}::jsonb, updated_by = ${user.id}, updated_at = NOW();
+        `;
+        updatedKeys.push(key);
+      } else {
+        let value = String(rawValue || '').trim();
+        if (value.includes('/api/cdn/cdn/')) {
+          value = value.replace('/api/cdn/cdn/', '/api/cdn/');
+        }
+
+        await db.query`
+          INSERT INTO public.system_settings (key, value, updated_by, updated_at)
+          VALUES (${key}, ${JSON.stringify(value)}::jsonb, ${user.id}, NOW())
+          ON CONFLICT (key) DO UPDATE 
+          SET value = ${JSON.stringify(value)}::jsonb, updated_by = ${user.id}, updated_at = NOW();
+        `;
+        updatedKeys.push(key);
+      }
     }
 
     await recordAuditLog({
