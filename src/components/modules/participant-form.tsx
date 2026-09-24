@@ -4,7 +4,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Participant, Competition, Lptk, Category } from '@/types/database';
-import { AlertCircle, CheckCircle2, FileText, Info } from 'lucide-react';
+import { AlertCircle, CheckCircle2, FileText, Info, Users } from 'lucide-react';
+import { getCategoryBranchInfo, JUKNIS_REQUIRED_DOCUMENTS } from '@/data/juknis-official-data';
 
 export interface ParticipantFormProps {
   initialData?: Participant | null;
@@ -120,6 +121,11 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
     if (formData.category_ids.length === 0) return null;
     return availableCategories.find((c) => c.id === formData.category_ids[0]) || null;
   }, [availableCategories, formData.category_ids]);
+
+  const selectedBranchInfo = useMemo(() => {
+    if (!selectedCategory) return null;
+    return getCategoryBranchInfo(selectedCategory.name);
+  }, [selectedCategory]);
 
   // Validate category compatibility
   const categoryValidation = useMemo(() => {
@@ -420,6 +426,19 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
           </div>
         )}
 
+        {/* Team Format Guidance Alert (Fahmil, Syarhil, Rebana Klasik) */}
+        {selectedBranchInfo && selectedBranchInfo.format !== 'INDIVIDU' && (
+          <div className="p-3 bg-neutral-100 border border-neutral-300 rounded text-xs space-y-1">
+            <div className="font-bold text-black flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5" />
+              Ketentuan Pendaftaran Musabaqah Beregu ({selectedBranchInfo.formatLabel}):
+            </div>
+            <p className="text-neutral-700 leading-relaxed text-[11px]">
+              Setiap anggota regu didaftarkan secara perorangan dengan NIK masing-masing. Harap isi kolom <strong>Sekolah / Instansi / Ponpes</strong> dengan nama regu & peran personel (Contoh: <em>Regu Mahato 1 - Pensyarah</em>, <em>Regu Mahato 1 - Tilawah</em>, atau <em>Regu Rebana - Vokalis</em>).
+            </p>
+          </div>
+        )}
+
         {availableCategories.length === 0 ? (
           <div className="p-4 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded">
             Pilih event lomba terlebih dahulu untuk menampilkan cabang kategori.
@@ -428,6 +447,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-96 overflow-y-auto pr-1">
             {availableCategories.map((cat) => {
               const isSelected = formData.category_ids.includes(cat.id);
+              const catBranch = getCategoryBranchInfo(cat.name);
               return (
                 <div
                   key={cat.id}
@@ -448,9 +468,20 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
                       className="mt-0.5 accent-black"
                     />
                   </div>
-                  <div className={`text-[11px] mt-1 ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>
-                    Usia Maks: {cat.age_max} thn • {cat.gender_code === 'ANY' ? 'Putra/Putri' : cat.gender_code === 'MALE' ? 'Putra' : 'Putri'}
+
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                      isSelected
+                        ? 'bg-neutral-800 text-neutral-200 border-neutral-700'
+                        : 'bg-neutral-100 text-neutral-700 border-neutral-200'
+                    }`}>
+                      {catBranch.formatLabel}
+                    </span>
+                    <span className={`text-[11px] ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                      Maks: {cat.age_max} thn • {cat.gender_code === 'ANY' ? 'Campuran' : cat.gender_code === 'MALE' ? 'Putra' : 'Putri'}
+                    </span>
                   </div>
+
                   {cat.requirements && (
                     <div className={`text-[10px] mt-1.5 leading-tight line-clamp-2 ${isSelected ? 'text-neutral-300' : 'text-neutral-600'}`}>
                       {cat.requirements}
@@ -461,6 +492,30 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
             })}
           </div>
         )}
+      </div>
+
+      {/* 6 Dokumen Persyaratan Juknis MTQ XIX Preview */}
+      <div className="p-3.5 bg-neutral-50 border border-neutral-200 rounded space-y-2 text-xs">
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-black uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5" />
+            6 Dokumen Persyaratan Wajib (Juknis MTQ XIX)
+          </span>
+          <span className="text-[10px] font-mono font-medium text-neutral-700 bg-neutral-200 px-2 py-0.5 rounded">
+            Map Warna Biru
+          </span>
+        </div>
+        <p className="text-[11px] text-neutral-600 leading-relaxed">
+          Setelah formulir disimpan, berkas persyaratan berikut dapat diunggah pada halaman rincian peserta untuk diverifikasi oleh Panitia LPTQ:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+          {JUKNIS_REQUIRED_DOCUMENTS.map((doc, idx) => (
+            <div key={doc.code} className="flex items-start gap-1.5 text-[11px] text-neutral-700">
+              <span className="font-mono font-bold text-neutral-900">{idx + 1}.</span>
+              <span className="leading-tight">{doc.name}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Buttons */}

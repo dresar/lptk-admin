@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Search, Edit2, Trash2, Tags, Trophy } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Plus, Search, Edit2, Trash2, Tags, Trophy, Users, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { PaginationBar } from '@/components/ui/pagination';
@@ -9,11 +9,13 @@ import { ViewToggle, ViewMode, useViewMode } from '@/components/ui/view-toggle';
 import { BulkToolbar } from '@/components/ui/bulk-toolbar';
 import { Category, Competition } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
+import { JUKNIS_BRANCHES, getCategoryBranchInfo } from '@/data/juknis-official-data';
 
 export default function CategoriesPage() {
   const [items, setItems] = useState<Category[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedComp, setSelectedComp] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('ALL');
   const [meta, setMeta] = useState<PaginationMeta>();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -52,7 +54,7 @@ export default function CategoriesPage() {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        page_size: '20',
+        page_size: '50',
       });
       if (search) params.set('q', search);
       if (selectedComp) params.set('competition_id', selectedComp);
@@ -157,6 +159,25 @@ export default function CategoriesPage() {
     }
   };
 
+  const branchCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: items.length };
+    JUKNIS_BRANCHES.forEach((b) => {
+      counts[b.id] = 0;
+    });
+    items.forEach((item) => {
+      const info = getCategoryBranchInfo(item.name);
+      if (counts[info.branchId] !== undefined) {
+        counts[info.branchId]++;
+      }
+    });
+    return counts;
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    if (selectedBranch === 'ALL') return items;
+    return items.filter((item) => getCategoryBranchInfo(item.name).branchId === selectedBranch);
+  }, [items, selectedBranch]);
+
   const handleBulkDelete = async () => {
     if (!confirm(`Hapus ${selectedIds.length} kategori terpilih?`)) return;
     setBulkLoading(true);
@@ -180,9 +201,9 @@ export default function CategoriesPage() {
 
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(items.map((i) => i.id));
+      setSelectedIds(Array.from(new Set([...selectedIds, ...filteredItems.map((i) => i.id)])));
     } else {
-      setSelectedIds([]);
+      setSelectedIds(selectedIds.filter((id) => !filteredItems.some((i) => i.id === id)));
     }
   };
 
@@ -198,7 +219,7 @@ export default function CategoriesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-black">Kategori</h1>
-          <p className="text-xs text-neutral-500">Cabang dan golongan perlombaan MTQ/LPTK</p>
+          <p className="text-xs text-neutral-500">Cabang dan golongan perlombaan MTQ XIX Tambusai Utara 2026 (25 Cabang Resmi)</p>
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
@@ -209,7 +230,7 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      {/* Filter Row */}
+      {/* Filter Row: Search & Competition */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1 max-w-sm">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -242,14 +263,58 @@ export default function CategoriesPage() {
         </select>
       </div>
 
+      {/* Branch Filter Tabs (Juknis Official MTQ XIX: 6 Cabang Utama) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-neutral-200">
+        <button
+          type="button"
+          onClick={() => setSelectedBranch('ALL')}
+          className={`px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-1.5 shrink-0 ${
+            selectedBranch === 'ALL'
+              ? 'bg-neutral-900 text-white font-semibold'
+              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 font-medium'
+          }`}
+        >
+          <span>Semua</span>
+          <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+            selectedBranch === 'ALL' ? 'bg-neutral-800 text-neutral-200' : 'bg-neutral-200 text-neutral-700'
+          }`}>
+            {branchCounts.ALL || 0}
+          </span>
+        </button>
+
+        {JUKNIS_BRANCHES.map((branch) => {
+          const isActive = selectedBranch === branch.id;
+          const count = branchCounts[branch.id] || 0;
+          return (
+            <button
+              key={branch.id}
+              type="button"
+              onClick={() => setSelectedBranch(branch.id)}
+              className={`px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-1.5 shrink-0 ${
+                isActive
+                  ? 'bg-neutral-900 text-white font-semibold'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 font-medium'
+              }`}
+            >
+              <span>{branch.shortName}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                isActive ? 'bg-neutral-800 text-neutral-200' : 'bg-neutral-200 text-neutral-700'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Table / Grid Content */}
       {loading ? (
         <div className="p-8 text-center text-xs text-neutral-500 bg-white border border-neutral-200 rounded">
           Memuat data kategori...
         </div>
-      ) : items.length === 0 ? (
+      ) : filteredItems.length === 0 ? (
         <div className="p-8 text-center text-xs text-neutral-500 bg-white border border-neutral-200 rounded">
-          Tidak ada data kategori ditemukan.
+          Tidak ada data kategori ditemukan untuk filter ini.
         </div>
       ) : viewMode === 'list' ? (
         <div className="bg-white border border-neutral-200 rounded overflow-hidden">
@@ -260,57 +325,83 @@ export default function CategoriesPage() {
                   <th className="w-10 px-3 py-2.5 text-center">
                     <input
                       type="checkbox"
-                      checked={items.length > 0 && selectedIds.length === items.length}
+                      checked={filteredItems.length > 0 && filteredItems.every((i) => selectedIds.includes(i.id))}
                       onChange={(e) => toggleSelectAll(e.target.checked)}
                       className="rounded border-neutral-300"
                     />
                   </th>
                   <th className="px-4 py-2.5">Nama Kategori</th>
-                  <th className="px-4 py-2.5">Lomba</th>
+                  <th className="px-4 py-2.5">Format Regu</th>
+                  <th className="px-4 py-2.5">Cabang</th>
                   <th className="px-4 py-2.5">Gender</th>
-                  <th className="px-4 py-2.5">Rentang Usia</th>
+                  <th className="px-4 py-2.5">Batas Usia (09 Nov 2026)</th>
                   <th className="w-24 px-4 py-2.5 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
-                {items.map((item) => (
-                  <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
-                    <td className="px-3 py-2.5 text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => toggleSelectOne(item.id)}
-                        className="rounded border-neutral-300"
-                      />
-                    </td>
-                    <td className="px-4 py-2.5 font-medium text-black">{item.name}</td>
-                    <td className="px-4 py-2.5 text-neutral-600">{item.competition_name}</td>
-                    <td className="px-4 py-2.5 text-neutral-700">{item.gender_code}</td>
-                    <td className="px-4 py-2.5 font-mono text-neutral-600">
-                      {item.age_min} - {item.age_max} th
-                    </td>
-                    <td className="px-4 py-2.5 text-right space-x-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleOpenEdit(item)}
-                        className="p-1.5"
-                        aria-label="Ubah"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1.5"
-                        aria-label="Hapus"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredItems.map((item) => {
+                  const branchInfo = getCategoryBranchInfo(item.name);
+                  return (
+                    <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
+                      <td className="px-3 py-2.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => toggleSelectOne(item.id)}
+                          className="rounded border-neutral-300"
+                        />
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <div className="font-semibold text-black">{item.name}</div>
+                        {item.requirements && (
+                          <div className="text-[11px] text-neutral-500 line-clamp-1 max-w-xs">{item.requirements}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${
+                          branchInfo.format === 'REGU_11'
+                            ? 'bg-neutral-900 text-white border-neutral-900'
+                            : branchInfo.format === 'REGU_3'
+                            ? 'bg-neutral-200 text-neutral-800 border-neutral-300'
+                            : 'bg-neutral-50 text-neutral-600 border-neutral-200'
+                        }`}>
+                          {branchInfo.formatLabel}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-neutral-700 font-medium whitespace-nowrap">
+                        {branchInfo.shortBranchName}
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <span className="font-mono text-[11px] text-neutral-700">
+                          {item.gender_code === 'MALE' ? 'Putra' : item.gender_code === 'FEMALE' ? 'Putri' : 'Campuran'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 font-mono text-neutral-700 whitespace-nowrap">
+                        {item.age_min > 0 ? `${item.age_min} - ` : ''}Maks. {item.age_max} thn
+                      </td>
+                      <td className="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenEdit(item)}
+                          className="p-1.5"
+                          aria-label="Ubah"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1.5"
+                          aria-label="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -320,50 +411,73 @@ export default function CategoriesPage() {
         /* Grid Mode */
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white border border-neutral-200 p-4 rounded hover:border-black transition-colors flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs text-neutral-500">{item.gender_code}</span>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(item.id)}
-                      onChange={() => toggleSelectOne(item.id)}
-                      className="rounded border-neutral-300"
-                    />
+            {filteredItems.map((item) => {
+              const branchInfo = getCategoryBranchInfo(item.name);
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white border border-neutral-200 p-4 rounded hover:border-black transition-colors flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${
+                        branchInfo.format === 'REGU_11'
+                          ? 'bg-neutral-900 text-white border-neutral-900'
+                          : branchInfo.format === 'REGU_3'
+                          ? 'bg-neutral-200 text-neutral-800 border-neutral-300'
+                          : 'bg-neutral-50 text-neutral-600 border-neutral-200'
+                      }`}>
+                        {branchInfo.formatLabel}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs text-neutral-500">
+                          {item.gender_code === 'MALE' ? 'Putra' : item.gender_code === 'FEMALE' ? 'Putri' : 'Campuran'}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => toggleSelectOne(item.id)}
+                          className="rounded border-neutral-300"
+                        />
+                      </div>
+                    </div>
+                    <div className="font-bold text-sm text-black mb-1 flex items-start gap-1.5">
+                      <Tags className="w-4 h-4 text-black shrink-0 mt-0.5" />
+                      <span>{item.name}</span>
+                    </div>
+                    <div className="text-xs text-neutral-500 mb-1">{branchInfo.branchName}</div>
+                    <div className="text-xs text-neutral-700 font-mono mt-1">
+                      Batas Usia: {item.age_min > 0 ? `${item.age_min} - ` : ''}Maks. {item.age_max} thn
+                    </div>
+                    {item.requirements && (
+                      <div className="text-[11px] text-neutral-500 mt-2 p-2 bg-neutral-50 rounded border border-neutral-100 line-clamp-2">
+                        {item.requirements}
+                      </div>
+                    )}
                   </div>
-                  <div className="font-bold text-sm text-black mb-1 flex items-center gap-1.5">
-                    <Tags className="w-4 h-4 text-black flex-shrink-0" />
-                    <span>{item.name}</span>
-                  </div>
-                  <div className="text-xs text-neutral-500 mb-1">{item.competition_name}</div>
-                  <div className="text-xs text-neutral-600 font-mono">
-                    Usia: {item.age_min} - {item.age_max} tahun
+                  <div className="flex justify-end gap-1.5 mt-4 pt-3 border-t border-neutral-100">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenEdit(item)}
+                      className="p-1.5"
+                      aria-label="Ubah"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(item.id)}
+                      className="p-1.5"
+                      aria-label="Hapus"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex justify-end gap-1.5 mt-4 pt-3 border-t border-neutral-100">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenEdit(item)}
-                    className="p-1.5"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(item.id)}
-                    className="p-1.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="mt-3 bg-white border border-neutral-200 rounded">
             <PaginationBar meta={meta} onPageChange={setPage} />

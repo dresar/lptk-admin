@@ -479,3 +479,183 @@ export const JUKNIS_PAGES: JuknisPageContent[] = [
     show_signature: true,
   },
 ];
+
+export interface JuknisBranch {
+  id: string;
+  name: string;
+  shortName: string;
+  format: 'INDIVIDU' | 'REGU_3' | 'REGU_11';
+  formatLabel: string;
+  personelCount: number;
+  expectedCategoryCount: number;
+}
+
+export const JUKNIS_BRANCHES: JuknisBranch[] = [
+  {
+    id: 'seni-baca',
+    name: "Cabang Seni Baca Al-Qur'an",
+    shortName: 'Seni Baca',
+    format: 'INDIVIDU',
+    formatLabel: 'Individu (1 Orang)',
+    personelCount: 1,
+    expectedCategoryCount: 8,
+  },
+  {
+    id: 'hafalan',
+    name: "Cabang Hafalan Al-Qur'an (Hifzil)",
+    shortName: 'Hafalan',
+    format: 'INDIVIDU',
+    formatLabel: 'Individu (1 Orang)',
+    personelCount: 1,
+    expectedCategoryCount: 6,
+  },
+  {
+    id: 'fahmil',
+    name: "Cabang Fahmil Al-Qur'an",
+    shortName: 'Fahmil',
+    format: 'REGU_3',
+    formatLabel: 'Regu (3 Orang)',
+    personelCount: 3,
+    expectedCategoryCount: 3,
+  },
+  {
+    id: 'syarhil',
+    name: "Cabang Syarhil Al-Qur'an",
+    shortName: 'Syarhil',
+    format: 'REGU_3',
+    formatLabel: 'Regu (3 Orang)',
+    personelCount: 3,
+    expectedCategoryCount: 3,
+  },
+  {
+    id: 'kaligrafi',
+    name: "Cabang Seni Kaligrafi Al-Qur'an",
+    shortName: 'Kaligrafi',
+    format: 'INDIVIDU',
+    formatLabel: 'Individu (1 Orang)',
+    personelCount: 1,
+    expectedCategoryCount: 4,
+  },
+  {
+    id: 'rebana',
+    name: 'Cabang Rebana Klasik',
+    shortName: 'Rebana',
+    format: 'REGU_11',
+    formatLabel: 'Regu (11 Orang)',
+    personelCount: 11,
+    expectedCategoryCount: 1,
+  },
+];
+
+export function getCategoryBranchInfo(categoryName: string): {
+  branchId: string;
+  branchName: string;
+  shortBranchName: string;
+  format: 'INDIVIDU' | 'REGU_3' | 'REGU_11';
+  formatLabel: string;
+  personelCount: number;
+} {
+  const name = (categoryName || '').toLowerCase();
+  if (name.includes('tartil') || name.includes('tilawah')) {
+    return {
+      branchId: 'seni-baca',
+      branchName: "Cabang Seni Baca Al-Qur'an",
+      shortBranchName: 'Seni Baca',
+      format: 'INDIVIDU',
+      formatLabel: 'Individu (1 Orang)',
+      personelCount: 1,
+    };
+  }
+  if (name.includes('hifzil') || name.includes('tahfidz') || name.includes('hafalan')) {
+    return {
+      branchId: 'hafalan',
+      branchName: "Cabang Hafalan Al-Qur'an (Hifzil)",
+      shortBranchName: 'Hafalan',
+      format: 'INDIVIDU',
+      formatLabel: 'Individu (1 Orang)',
+      personelCount: 1,
+    };
+  }
+  if (name.includes('fahmil')) {
+    return {
+      branchId: 'fahmil',
+      branchName: "Cabang Fahmil Al-Qur'an",
+      shortBranchName: 'Fahmil',
+      format: 'REGU_3',
+      formatLabel: 'Regu (3 Orang)',
+      personelCount: 3,
+    };
+  }
+  if (name.includes('syarhil')) {
+    return {
+      branchId: 'syarhil',
+      branchName: "Cabang Syarhil Al-Qur'an",
+      shortBranchName: 'Syarhil',
+      format: 'REGU_3',
+      formatLabel: 'Regu (3 Orang)',
+      personelCount: 3,
+    };
+  }
+  if (name.includes('kaligrafi')) {
+    return {
+      branchId: 'kaligrafi',
+      branchName: "Cabang Seni Kaligrafi Al-Qur'an",
+      shortBranchName: 'Kaligrafi',
+      format: 'INDIVIDU',
+      formatLabel: 'Individu (1 Orang)',
+      personelCount: 1,
+    };
+  }
+  if (name.includes('rebana')) {
+    return {
+      branchId: 'rebana',
+      branchName: 'Cabang Rebana Klasik',
+      shortBranchName: 'Rebana',
+      format: 'REGU_11',
+      formatLabel: 'Regu (11 Orang)',
+      personelCount: 11,
+    };
+  }
+  return {
+    branchId: 'lainnya',
+    branchName: 'Lainnya',
+    shortBranchName: 'Lainnya',
+    format: 'INDIVIDU',
+    formatLabel: 'Individu',
+    personelCount: 1,
+  };
+}
+
+export const JUKNIS_REQUIRED_DOCUMENTS = [
+  {
+    code: 'SURAT_MANDAT',
+    name: 'Surat Mandat dari Desa',
+    hint: 'Surat tugas/mandat resmi yang ditandatangani Kepala Desa pengirim kafilah.',
+  },
+  {
+    code: 'SURAT_DOMISILI',
+    name: 'Surat Keterangan Berdomisili Minimal Tambusai Utara',
+    hint: 'Bukti domisili bahwa peserta adalah putra/putri asal Kecamatan Tambusai Utara.',
+  },
+  {
+    code: 'IJAZAH',
+    name: 'Photo Copy Ijazah Sekolah',
+    hint: 'Fotokopi ijazah formal atau raport/surat keterangan sekolah/madrasah.',
+  },
+  {
+    code: 'AKTE_KELAHIRAN',
+    name: 'Photo Copy Akte Kelahiran',
+    hint: 'Fotokopi akte kelahiran untuk validasi batas usia per 09 November 2026.',
+  },
+  {
+    code: 'KARTU_KELUARGA',
+    name: 'Photo Copy Kartu Keluarga yang Memakai NIK',
+    hint: 'Fotokopi Kartu Keluarga yang mencantumkan NIK 16 digit yang valid.',
+  },
+  {
+    code: 'SURAT_PERNYATAAN',
+    name: 'Surat Pernyataan Kebenaran Dokumen',
+    hint: 'Surat pernyataan keabsahan dan kebenaran seluruh dokumen pendaftaran bermaterai.',
+  },
+];
+
