@@ -83,6 +83,11 @@ export default function ParticipantCardPage() {
   const branchInfo = getCategoryBranchInfo(catName);
   const isCollective = branchInfo.format !== 'INDIVIDU';
 
+  const photoDoc = (data as any)?.documents?.find(
+    (d: any) => d.document_type_code === 'PAS_FOTO' || d.document_type_code === 'FOTO'
+  );
+  const photoUrl = photoDoc ? `/api/admin/documents/${photoDoc.id}/download` : null;
+
   return (
     <div className="space-y-4">
       {/* Top Navigation (Hidden in print) */}
@@ -132,7 +137,7 @@ export default function ParticipantCardPage() {
         )}
       </div>
 
-      <ParticipantCard participant={data} standalone={true} />
+      <ParticipantCard participant={data} photoUrl={photoUrl} standalone={true} />
     </div>
   );
 }
