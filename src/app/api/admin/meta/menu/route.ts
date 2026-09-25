@@ -45,6 +45,21 @@ export async function GET(req: NextRequest) {
       return successResponse({ menu: desaMenu });
     }
 
+    // Specific focused menu for Admin Kecamatan (No Lomba, Kategori, Dokumen, Users, Settings)
+    if (user.role_code === 'ADMIN_KECAMATAN') {
+      const kecamatanMenu: MenuItem[] = [
+        { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+        { title: 'Verifikasi', href: '/admin/verifications', icon: 'CheckSquare' },
+        { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck' },
+        { title: 'Kafilah', href: '/admin/lptks', icon: 'Building2' },
+        { title: 'Berita', href: '/admin/posts', icon: 'Newspaper' },
+        { title: 'CDN', href: '/admin/cdn', icon: 'UploadCloud' },
+        { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
+        { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
+      ];
+      return successResponse({ menu: kecamatanMenu });
+    }
+
     // Filter menu based on user permissions or super admin
     const allowedMenu = ALL_MENU_ITEMS.filter((item) => {
       if (user.role_code === 'SUPER_ADMIN') return true;

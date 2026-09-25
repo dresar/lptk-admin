@@ -84,6 +84,16 @@ const DESA_DEFAULT_MENU: MenuItem[] = [
   { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
 ];
 
+// Clean, task-focused menu for Admin Kecamatan
+const KECAMATAN_DEFAULT_MENU: MenuItem[] = [
+  { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+  { title: 'Verifikasi', href: '/admin/verifications', icon: 'CheckSquare' },
+  { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck' },
+  { title: 'Kafilah', href: '/admin/lptks', icon: 'Building2' },
+  { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
+  { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
+];
+
 export interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -107,7 +117,11 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
       currentUser?.permissions?.includes('post.write'));
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() =>
-    isDesaOperator ? DESA_DEFAULT_MENU : DEFAULT_MENU_ITEMS
+    isDesaOperator
+      ? DESA_DEFAULT_MENU
+      : isKecamatanAdmin
+      ? KECAMATAN_DEFAULT_MENU
+      : DEFAULT_MENU_ITEMS
   );
   const [loggingOut, setLoggingOut] = useState(false);
   const [websiteOpen, setWebsiteOpen] = useState(true);
@@ -152,7 +166,7 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
       }
     }
     fetchMenu();
-  }, [isDesaOperator]);
+  }, [isDesaOperator, isKecamatanAdmin]);
 
   const handleLogout = async () => {
     if (onLogout) {
@@ -292,18 +306,20 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
 
               {websiteOpen && (
                 <div className="pl-6 pr-1 pt-1 space-y-0.5 border-l border-neutral-800 ml-4 mt-1">
-                  <Link
-                    href="/admin/website"
-                    onClick={onClose}
-                    className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                      pathname === '/admin/website'
-                        ? 'bg-white text-black font-semibold shadow-sm'
-                        : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                    }`}
-                  >
-                    <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Tampilan & Hero</span>
-                  </Link>
+                  {isSuperAdmin && (
+                    <Link
+                      href="/admin/website"
+                      onClick={onClose}
+                      className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                        pathname === '/admin/website'
+                          ? 'bg-white text-black font-semibold shadow-sm'
+                          : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                      }`}
+                    >
+                      <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Tampilan & Hero</span>
+                    </Link>
+                  )}
                   <Link
                     href="/admin/posts"
                     onClick={onClose}

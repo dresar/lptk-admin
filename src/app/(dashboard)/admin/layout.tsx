@@ -1,11 +1,44 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { AuthUser } from '@/types/auth';
 import { AuthProvider } from '@/components/providers/auth-context';
+
+function isRouteAllowed(pathname: string, roleCode?: string): boolean {
+  if (!roleCode || roleCode === 'SUPER_ADMIN') return true;
+
+  if (roleCode === 'ADMIN_KECAMATAN') {
+    const forbiddenPrefixes = [
+      '/admin/competitions',
+      '/admin/categories',
+      '/admin/document-types',
+      '/admin/villages',
+      '/admin/users',
+      '/admin/roles',
+      '/admin/settings',
+      '/admin/audit-logs',
+      '/admin/website',
+    ];
+    return !forbiddenPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  }
+
+  if (roleCode === 'OPERATOR_LPTK') {
+    if (pathname === '/admin') return true;
+    const allowedPrefixes = [
+      '/admin/lptks',
+      '/admin/participants',
+      '/admin/juknis',
+      '/admin/reports',
+      '/admin/profile',
+    ];
+    return allowedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  }
+
+  return true;
+}
 
 export default function AdminLayout({
   children,
@@ -13,6 +46,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -77,6 +111,14 @@ export default function AdminLayout({
     }
   };
 
+  const isAllowed = isRouteAllowed(pathname, currentUser?.role_code);
+
+  useEffect(() => {
+    if (!checkingAuth && currentUser && !isAllowed) {
+      router.replace('/admin');
+    }
+  }, [checkingAuth, currentUser, isAllowed, router]);
+
   // Minimal monochrome loading state during initial session check
   if (checkingAuth) {
     return (
@@ -108,7 +150,14 @@ export default function AdminLayout({
             onLogout={handleLogout}
           />
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-            {children}
+            {!isAllowed ? (
+              <div className="py-20 flex flex-col items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs text-neutral-500 font-mono">Mengalihkan...</span>
+              </div>
+            ) : (
+              children
+            )}
           </main>
         </div>
       </div>

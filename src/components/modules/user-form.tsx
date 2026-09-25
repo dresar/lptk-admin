@@ -26,6 +26,9 @@ export function UserForm({ initialData }: UserFormProps) {
     must_change_password: initialData?.must_change_password ?? false,
   });
 
+  const selectedRole = roles.find((r) => r.id === formData.role_id);
+  const isOperatorRole = selectedRole?.code === 'OPERATOR_LPTK';
+
   useEffect(() => {
     async function loadOptions() {
       try {
@@ -52,6 +55,12 @@ export function UserForm({ initialData }: UserFormProps) {
     setLoading(true);
     setError(null);
 
+    if (isOperatorRole && !formData.lptk_id) {
+      setError('Operator Desa wajib memilih LPTK Desa asal.');
+      setLoading(false);
+      return;
+    }
+
     const isEdit = !!initialData?.id;
     const url = isEdit ? `/api/admin/users/${initialData.id}` : '/api/admin/users';
     const method = isEdit ? 'PATCH' : 'POST';
@@ -60,7 +69,7 @@ export function UserForm({ initialData }: UserFormProps) {
       full_name: formData.full_name,
       email: formData.email,
       role_id: formData.role_id,
-      lptk_id: formData.lptk_id || null,
+      lptk_id: isOperatorRole ? (formData.lptk_id || null) : null,
       active: formData.active,
       must_change_password: formData.must_change_password,
     };
@@ -93,9 +102,9 @@ export function UserForm({ initialData }: UserFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl bg-white border border-neutral-300 rounded p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="max-w-2xl bg-white border border-neutral-300 rounded-md p-6 space-y-4">
       {error && (
-        <div className="p-3 text-xs bg-neutral-100 border border-neutral-400 text-black rounded">
+        <div className="p-3 text-xs bg-neutral-100 border border-neutral-400 text-black rounded-md">
           {error}
         </div>
       )}
@@ -146,7 +155,7 @@ export function UserForm({ initialData }: UserFormProps) {
             required
             value={formData.role_id}
             onChange={(e) => setFormData({ ...formData, role_id: e.target.value })}
-            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
           >
             <option value="">Pilih Peran</option>
             {roles.map((r) => (
@@ -157,21 +166,33 @@ export function UserForm({ initialData }: UserFormProps) {
           </select>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-black mb-1">LPTK Asal (Khusus Operator)</label>
-          <select
-            value={formData.lptk_id}
-            onChange={(e) => setFormData({ ...formData, lptk_id: e.target.value })}
-            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
-          >
-            <option value="">Tidak Terikat (Admin)</option>
-            {lptks.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {isOperatorRole ? (
+          <div>
+            <label className="block text-xs font-semibold text-black mb-1">
+              Desa / LPTK Asal <span className="text-red-500">*</span>
+            </label>
+            <select
+              required
+              value={formData.lptk_id}
+              onChange={(e) => setFormData({ ...formData, lptk_id: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+            >
+              <option value="">Pilih Desa / LPTK</option>
+              {lptks.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-xs font-semibold text-neutral-500 mb-1">Desa / LPTK Asal</label>
+            <div className="w-full px-3 py-2 text-xs border border-neutral-200 rounded-md bg-neutral-50 text-neutral-500">
+              Tidak Terikat (Tingkat Kecamatan / Global)
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 pt-2">
