@@ -44,9 +44,9 @@ export default function EditCompetitionPage() {
         <div className="w-10 h-10 mx-auto rounded-full bg-neutral-100 flex items-center justify-center text-black">
           <ShieldAlert className="w-5 h-5" />
         </div>
-        <h2 className="text-base font-bold text-black">Akses Dibatasi</h2>
-        <p className="text-xs text-neutral-600 leading-relaxed">
-          Akun Operator LPTK Desa hanya berwenang melihat agenda musabaqah. Pengubahan atau pembuatan agenda lomba hanya dapat dilakukan oleh Panitia / Administrator Tingkat Kecamatan dan Super Admin.
+        <h2 className="text-base font-bold text-black">Akses Khusus</h2>
+        <p className="text-xs text-neutral-600">
+          Pengelolaan lomba hanya dapat dilakukan oleh Super Admin.
         </p>
         <div className="pt-2">
           <Link href="/admin/competitions">

@@ -33,6 +33,18 @@ export async function GET(req: NextRequest) {
   try {
     const user = await requireAuth();
 
+    // Specific clean menu for Operator Desa (Admin Desa)
+    if (user.role_code === 'OPERATOR_LPTK') {
+      const desaMenu: MenuItem[] = [
+        { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+        { title: 'Kafilah', href: '/admin/lptks', icon: 'Building2' },
+        { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck' },
+        { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
+        { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
+      ];
+      return successResponse({ menu: desaMenu });
+    }
+
     // Filter menu based on user permissions or super admin
     const allowedMenu = ALL_MENU_ITEMS.filter((item) => {
       if (user.role_code === 'SUPER_ADMIN') return true;

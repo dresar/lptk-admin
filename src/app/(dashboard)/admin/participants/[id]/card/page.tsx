@@ -43,11 +43,16 @@ export default function ParticipantCardPage() {
       const catName = data.categories[0].name;
       const branch = getCategoryBranchInfo(catName);
       if (branch.format !== 'INDIVIDU') {
-        fetch(`/api/admin/participants?lptk_id=${data.lptk_id}&category_id=${data.categories[0].id}&limit=20`)
+        fetch(`/api/admin/participants?lptk_id=${data.lptk_id}&category_id=${data.categories[0].id}&page_size=20`)
           .then((res) => res.json())
           .then((json) => {
-            if (json.success && Array.isArray(json.data?.participants)) {
-              setTeammates(json.data.participants);
+            if (json.success) {
+              const list = Array.isArray(json.data)
+                ? json.data
+                : Array.isArray(json.data?.participants)
+                ? json.data.participants
+                : [];
+              setTeammates(list);
             }
           })
           .catch(() => {});

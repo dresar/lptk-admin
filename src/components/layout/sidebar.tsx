@@ -75,6 +75,15 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
   { title: 'Pengaturan', href: '/admin/settings', icon: 'Settings' },
 ];
 
+// Clean, task-focused menu for Operator Desa
+const DESA_DEFAULT_MENU: MenuItem[] = [
+  { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+  { title: 'Kafilah', href: '/admin/lptks', icon: 'Building2' },
+  { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck' },
+  { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
+  { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
+];
+
 export interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -85,7 +94,21 @@ export interface SidebarProps {
 export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(DEFAULT_MENU_ITEMS);
+
+  const isSuperAdmin = currentUser?.role_code === 'SUPER_ADMIN';
+  const isDesaOperator = currentUser?.role_code === 'OPERATOR_LPTK';
+  const isKecamatanAdmin = currentUser?.role_code === 'ADMIN_KECAMATAN';
+
+  const canAccessWebsite =
+    !isDesaOperator &&
+    (isSuperAdmin ||
+      isKecamatanAdmin ||
+      currentUser?.permissions?.includes('setting.write') ||
+      currentUser?.permissions?.includes('post.write'));
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(() =>
+    isDesaOperator ? DESA_DEFAULT_MENU : DEFAULT_MENU_ITEMS
+  );
   const [loggingOut, setLoggingOut] = useState(false);
   const [websiteOpen, setWebsiteOpen] = useState(true);
 
@@ -129,7 +152,7 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
       }
     }
     fetchMenu();
-  }, []);
+  }, [isDesaOperator]);
 
   const handleLogout = async () => {
     if (onLogout) {
@@ -196,7 +219,7 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
             <div className="flex flex-col">
               <span className="text-white font-bold leading-none">{appName}</span>
               <span className="text-[9px] text-neutral-400 font-mono tracking-tight lowercase">
-                kecamatan panel
+                {isDesaOperator ? 'kafilah desa' : isSuperAdmin ? 'super admin' : 'kecamatan panel'}
               </span>
             </div>
           </Link>
@@ -244,69 +267,71 @@ export function Sidebar({ isOpen, onClose, currentUser, onLogout }: SidebarProps
             <span className="truncate">Dashboard</span>
           </Link>
 
-          {/* Website Management Dropdown Section */}
-          <div className="pt-1.5 pb-1">
-            <button
-              type="button"
-              onClick={() => setWebsiteOpen(!websiteOpen)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-semibold transition-all ${
-                isWebsiteActive
-                  ? 'bg-neutral-900 text-amber-300'
-                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Globe className="w-4 h-4 text-emerald-400" />
-                <span>Website</span>
-              </div>
-              {websiteOpen ? (
-                <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
-              ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
-              )}
-            </button>
+          {/* Website Management Dropdown Section (Only for Super Admin & Kecamatan) */}
+          {canAccessWebsite && (
+            <div className="pt-1.5 pb-1">
+              <button
+                type="button"
+                onClick={() => setWebsiteOpen(!websiteOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-semibold transition-all ${
+                  isWebsiteActive
+                    ? 'bg-neutral-900 text-amber-300'
+                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Globe className="w-4 h-4 text-emerald-400" />
+                  <span>Website</span>
+                </div>
+                {websiteOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+                )}
+              </button>
 
-            {websiteOpen && (
-              <div className="pl-6 pr-1 pt-1 space-y-0.5 border-l border-neutral-800 ml-4 mt-1">
-                <Link
-                  href="/admin/website"
-                  onClick={onClose}
-                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                    pathname === '/admin/website'
-                      ? 'bg-white text-black font-semibold shadow-sm'
-                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                  }`}
-                >
-                  <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Tampilan & Hero</span>
-                </Link>
-                <Link
-                  href="/admin/posts"
-                  onClick={onClose}
-                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                    pathname.startsWith('/admin/posts')
-                      ? 'bg-white text-black font-semibold shadow-sm'
-                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                  }`}
-                >
-                  <Newspaper className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Berita & Warta</span>
-                </Link>
-                <Link
-                  href="/admin/cdn"
-                  onClick={onClose}
-                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                    pathname === '/admin/cdn'
-                      ? 'bg-white text-black font-semibold shadow-sm'
-                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                  }`}
-                >
-                  <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Media CDN</span>
-                </Link>
-              </div>
-            )}
-          </div>
+              {websiteOpen && (
+                <div className="pl-6 pr-1 pt-1 space-y-0.5 border-l border-neutral-800 ml-4 mt-1">
+                  <Link
+                    href="/admin/website"
+                    onClick={onClose}
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                      pathname === '/admin/website'
+                        ? 'bg-white text-black font-semibold shadow-sm'
+                        : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                  >
+                    <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Tampilan & Hero</span>
+                  </Link>
+                  <Link
+                    href="/admin/posts"
+                    onClick={onClose}
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                      pathname.startsWith('/admin/posts')
+                        ? 'bg-white text-black font-semibold shadow-sm'
+                        : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                  >
+                    <Newspaper className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Berita & Warta</span>
+                  </Link>
+                  <Link
+                    href="/admin/cdn"
+                    onClick={onClose}
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                      pathname === '/admin/cdn'
+                        ? 'bg-white text-black font-semibold shadow-sm'
+                        : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                  >
+                    <UploadCloud className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Media CDN</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Other Standard Modules */}
           {menuItems

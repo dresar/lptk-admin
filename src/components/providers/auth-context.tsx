@@ -8,6 +8,7 @@ interface AuthContextType {
   hasPermission: (permissionCode: string) => boolean;
   canManageCompetition: boolean;
   isDesaOperator: boolean;
+  isKecamatanAdmin: boolean;
   isSuperAdmin: boolean;
 }
 
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   hasPermission: () => false,
   canManageCompetition: false,
   isDesaOperator: false,
+  isKecamatanAdmin: false,
   isSuperAdmin: false,
 });
 
@@ -27,6 +29,7 @@ export function AuthProvider({
   children: React.ReactNode;
 }) {
   const isSuperAdmin = user?.role_code === 'SUPER_ADMIN';
+  const isKecamatanAdmin = user?.role_code === 'ADMIN_KECAMATAN';
   const isDesaOperator = user?.role_code === 'OPERATOR_LPTK';
 
   const hasPermission = (code: string) => {
@@ -35,10 +38,8 @@ export function AuthProvider({
     return user.permissions?.includes(code) ?? false;
   };
 
-  // Admin LPTK Desa is strictly FORBIDDEN from editing/creating/deleting competitions
-  const canManageCompetition =
-    !isDesaOperator &&
-    (isSuperAdmin || user?.role_code === 'ADMIN_KECAMATAN' || hasPermission('competition.write'));
+  // Editing/managing competitions is strictly restricted to SUPER_ADMIN only
+  const canManageCompetition = isSuperAdmin;
 
   return (
     <AuthContext.Provider
@@ -47,6 +48,7 @@ export function AuthProvider({
         hasPermission,
         canManageCompetition,
         isDesaOperator,
+        isKecamatanAdmin,
         isSuperAdmin,
       }}
     >

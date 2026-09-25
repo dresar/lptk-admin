@@ -10,8 +10,10 @@ import { BulkToolbar } from '@/components/ui/bulk-toolbar';
 import { Category, Competition } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
 import { JUKNIS_BRANCHES, getCategoryBranchInfo } from '@/data/juknis-official-data';
+import { useAuth } from '@/components/providers/auth-context';
 
 export default function CategoriesPage() {
+  const { canManageCompetition } = useAuth();
   const [items, setItems] = useState<Category[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedComp, setSelectedComp] = useState('');
@@ -222,10 +224,12 @@ export default function CategoriesPage() {
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
-          <Button size="sm" onClick={handleOpenCreate} className="gap-1.5">
-            <Plus className="w-3.5 h-3.5" />
-            Tambah
-          </Button>
+          {canManageCompetition && (
+            <Button size="sm" onClick={handleOpenCreate} className="gap-1.5 font-bold">
+              <Plus className="w-3.5 h-3.5" />
+              Tambah
+            </Button>
+          )}
         </div>
       </div>
 
@@ -321,20 +325,24 @@ export default function CategoriesPage() {
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="w-10 px-3 py-2.5 text-center">
-                    <input
-                      type="checkbox"
-                      checked={filteredItems.length > 0 && filteredItems.every((i) => selectedIds.includes(i.id))}
-                      onChange={(e) => toggleSelectAll(e.target.checked)}
-                      className="rounded border-neutral-300"
-                    />
-                  </th>
+                  {canManageCompetition && (
+                    <th className="w-10 px-3 py-2.5 text-center">
+                      <input
+                        type="checkbox"
+                        checked={filteredItems.length > 0 && filteredItems.every((i) => selectedIds.includes(i.id))}
+                        onChange={(e) => toggleSelectAll(e.target.checked)}
+                        className="rounded border-neutral-300"
+                      />
+                    </th>
+                  )}
                   <th className="px-4 py-2.5">Nama Kategori</th>
                   <th className="px-4 py-2.5">Format Regu</th>
                   <th className="px-4 py-2.5">Cabang</th>
                   <th className="px-4 py-2.5">Gender</th>
                   <th className="px-4 py-2.5">Batas Usia (09 Nov 2026)</th>
-                  <th className="w-24 px-4 py-2.5 text-right">Aksi</th>
+                  {canManageCompetition && (
+                    <th className="w-24 px-4 py-2.5 text-right">Aksi</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
@@ -342,14 +350,16 @@ export default function CategoriesPage() {
                   const branchInfo = getCategoryBranchInfo(item.name);
                   return (
                     <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
-                      <td className="px-3 py-2.5 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(item.id)}
-                          onChange={() => toggleSelectOne(item.id)}
-                          className="rounded border-neutral-300"
-                        />
-                      </td>
+                      {canManageCompetition && (
+                        <td className="px-3 py-2.5 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(item.id)}
+                            onChange={() => toggleSelectOne(item.id)}
+                            className="rounded border-neutral-300"
+                          />
+                        </td>
+                      )}
                       <td className="px-4 py-2.5">
                         <div className="font-semibold text-black">{item.name}</div>
                         {item.requirements && (
@@ -378,26 +388,28 @@ export default function CategoriesPage() {
                       <td className="px-4 py-2.5 font-mono text-neutral-700 whitespace-nowrap">
                         {item.age_min > 0 ? `${item.age_min} - ` : ''}Maks. {item.age_max} thn
                       </td>
-                      <td className="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenEdit(item)}
-                          className="p-1.5"
-                          aria-label="Ubah"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(item.id)}
-                          className="p-1.5"
-                          aria-label="Hapus"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </td>
+                      {canManageCompetition && (
+                        <td className="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenEdit(item)}
+                            className="p-1.5"
+                            aria-label="Ubah"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(item.id)}
+                            className="p-1.5"
+                            aria-label="Hapus"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -432,12 +444,14 @@ export default function CategoriesPage() {
                         <span className="font-mono text-xs text-neutral-500">
                           {item.gender_code === 'MALE' ? 'Putra' : item.gender_code === 'FEMALE' ? 'Putri' : 'Campuran'}
                         </span>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(item.id)}
-                          onChange={() => toggleSelectOne(item.id)}
-                          className="rounded border-neutral-300"
-                        />
+                        {canManageCompetition && (
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(item.id)}
+                            onChange={() => toggleSelectOne(item.id)}
+                            className="rounded border-neutral-300"
+                          />
+                        )}
                       </div>
                     </div>
                     <div className="font-bold text-sm text-black mb-1 flex items-start gap-1.5">
@@ -454,26 +468,28 @@ export default function CategoriesPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex justify-end gap-1.5 mt-4 pt-3 border-t border-neutral-100">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenEdit(item)}
-                      className="p-1.5"
-                      aria-label="Ubah"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(item.id)}
-                      className="p-1.5"
-                      aria-label="Hapus"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
+                  {canManageCompetition && (
+                    <div className="flex justify-end gap-1.5 mt-4 pt-3 border-t border-neutral-100">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenEdit(item)}
+                        className="p-1.5"
+                        aria-label="Ubah"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(item.id)}
+                        className="p-1.5"
+                        aria-label="Hapus"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -484,13 +500,15 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      {/* Bulk Delete Toolbar */}
-      <BulkToolbar
-        selectedCount={selectedIds.length}
-        onDelete={handleBulkDelete}
-        onClear={() => setSelectedIds([])}
-        isLoading={bulkLoading}
-      />
+      {/* Bulk Delete Toolbar (Super Admin only) */}
+      {canManageCompetition && (
+        <BulkToolbar
+          selectedCount={selectedIds.length}
+          onDelete={handleBulkDelete}
+          onClear={() => setSelectedIds([])}
+          isLoading={bulkLoading}
+        />
+      )}
 
       {/* Form Modal */}
       <Modal

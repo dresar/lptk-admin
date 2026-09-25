@@ -24,6 +24,7 @@ import { ColumnToggle } from '@/components/ui/column-toggle';
 import { ActionMenu } from '@/components/ui/action-menu';
 import { Lptk } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
+import { useAuth } from '@/components/providers/auth-context';
 
 const LPTK_COLUMNS = [
   { id: 'desa', label: 'Desa' },
@@ -33,6 +34,7 @@ const LPTK_COLUMNS = [
 ];
 
 export default function LptksPage() {
+  const { user, isSuperAdmin, isDesaOperator } = useAuth();
   const [items, setItems] = useState<Lptk[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>();
   const [page, setPage] = useState(1);
@@ -153,15 +155,17 @@ export default function LptksPage() {
           <h1 className="text-lg font-bold tracking-tight text-neutral-900">Data LPTK</h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant={isSelectMode ? 'primary' : 'outline'}
-            size="sm"
-            onClick={handleToggleSelectMode}
-            className="gap-1.5 font-bold text-xs"
-          >
-            <CheckSquare className="w-3.5 h-3.5" />
-            {isSelectMode ? 'Batal' : 'Pilih'}
-          </Button>
+          {isSuperAdmin && (
+            <Button
+              variant={isSelectMode ? 'primary' : 'outline'}
+              size="sm"
+              onClick={handleToggleSelectMode}
+              className="gap-1.5 font-bold text-xs"
+            >
+              <CheckSquare className="w-3.5 h-3.5" />
+              {isSelectMode ? 'Batal' : 'Pilih'}
+            </Button>
+          )}
           {viewMode === 'list' && (
             <ColumnToggle
               columns={LPTK_COLUMNS}
@@ -170,12 +174,22 @@ export default function LptksPage() {
             />
           )}
           <ViewToggle mode={viewMode} onChange={setViewMode} />
-          <Link href="/admin/lptks/new">
-            <Button size="sm" className="gap-1.5 font-bold">
-              <Plus className="w-3.5 h-3.5" />
-              Tambah
-            </Button>
-          </Link>
+          {isSuperAdmin && (
+            <Link href="/admin/lptks/new">
+              <Button size="sm" className="gap-1.5 font-bold">
+                <Plus className="w-3.5 h-3.5" />
+                Tambah
+              </Button>
+            </Link>
+          )}
+          {isDesaOperator && user?.lptk_id && (
+            <Link href={`/admin/lptks/${user.lptk_id}/edit`}>
+              <Button size="sm" className="gap-1.5 font-bold">
+                <Edit2 className="w-3.5 h-3.5" />
+                Lengkapi Data
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -288,8 +302,8 @@ export default function LptksPage() {
                       <div className="sm:hidden flex justify-end">
                         <ActionMenu
                           detailHref={`/admin/lptks/${item.id}`}
-                          editHref={`/admin/lptks/${item.id}/edit`}
-                          onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
+                          editHref={isSuperAdmin || (isDesaOperator && user?.lptk_id === item.id) ? `/admin/lptks/${item.id}/edit` : undefined}
+                          onDelete={isSuperAdmin ? () => setDeleteTarget({ id: item.id, name: item.name }) : undefined}
                         />
                       </div>
 
@@ -301,20 +315,24 @@ export default function LptksPage() {
                             Lihat
                           </Button>
                         </Link>
-                        <Link href={`/admin/lptks/${item.id}/edit`}>
-                          <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah">
-                            <Edit2 className="w-3.5 h-3.5" />
+                        {(isSuperAdmin || (isDesaOperator && user?.lptk_id === item.id)) && (
+                          <Link href={`/admin/lptks/${item.id}/edit`}>
+                            <Button variant="outline" size="sm" className="p-1.5 h-7 w-7" aria-label="Ubah" title="Ubah Data LPTK">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        )}
+                        {isSuperAdmin && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                            className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
+                            aria-label="Hapus"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
-                        </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                          className="p-1.5 h-7 w-7 text-neutral-600 hover:text-black"
-                          aria-label="Hapus"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -349,8 +367,8 @@ export default function LptksPage() {
                       <ActionMenu
                         className="sm:hidden"
                         detailHref={`/admin/lptks/${item.id}`}
-                        editHref={`/admin/lptks/${item.id}/edit`}
-                        onDelete={() => setDeleteTarget({ id: item.id, name: item.name })}
+                        editHref={isSuperAdmin || (isDesaOperator && user?.lptk_id === item.id) ? `/admin/lptks/${item.id}/edit` : undefined}
+                        onDelete={isSuperAdmin ? () => setDeleteTarget({ id: item.id, name: item.name }) : undefined}
                       />
                     )}
                   </div>
@@ -394,20 +412,24 @@ export default function LptksPage() {
                     </Button>
                   </Link>
                   <div className="flex items-center gap-1">
-                    <Link href={`/admin/lptks/${item.id}/edit`}>
-                      <Button variant="outline" size="sm" className="p-1 h-6 w-6" aria-label="Ubah">
-                        <Edit2 className="w-3 h-3" />
+                    {(isSuperAdmin || (isDesaOperator && user?.lptk_id === item.id)) && (
+                      <Link href={`/admin/lptks/${item.id}/edit`}>
+                        <Button variant="outline" size="sm" className="p-1 h-6 w-6" aria-label="Ubah">
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                      </Link>
+                    )}
+                    {isSuperAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                        className="p-1 h-6 w-6 text-neutral-600 hover:text-black"
+                        aria-label="Hapus"
+                      >
+                        <Trash2 className="w-3 h-3" />
                       </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                      className="p-1 h-6 w-6 text-neutral-600 hover:text-black"
-                      aria-label="Hapus"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -419,8 +441,8 @@ export default function LptksPage() {
         </div>
       )}
 
-      {/* Floating Bulk Toolbar (only active when in selection mode) */}
-      {isSelectMode && (
+      {/* Floating Bulk Toolbar (only active when in selection mode for Super Admin) */}
+      {isSelectMode && isSuperAdmin && (
         <BulkToolbar
           selectedCount={selectedIds.length}
           onClear={() => setSelectedIds([])}

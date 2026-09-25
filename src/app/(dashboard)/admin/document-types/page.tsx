@@ -9,8 +9,10 @@ import { ViewToggle, ViewMode, useViewMode } from '@/components/ui/view-toggle';
 import { BulkToolbar } from '@/components/ui/bulk-toolbar';
 import { DocumentType } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
+import { useAuth } from '@/components/providers/auth-context';
 
 export default function DocumentTypesPage() {
+  const { isSuperAdmin } = useAuth();
   const [items, setItems] = useState<DocumentType[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>();
   const [page, setPage] = useState(1);
@@ -155,10 +157,12 @@ export default function DocumentTypesPage() {
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
-          <Button size="sm" onClick={handleOpenCreate} className="gap-1.5">
-            <Plus className="w-3.5 h-3.5" />
-            Tambah
-          </Button>
+          {isSuperAdmin && (
+            <Button size="sm" onClick={handleOpenCreate} className="gap-1.5 font-bold">
+              <Plus className="w-3.5 h-3.5" />
+              Tambah
+            </Button>
+          )}
         </div>
       </div>
 
@@ -194,32 +198,38 @@ export default function DocumentTypesPage() {
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="w-10 px-3 py-2.5 text-center">
-                    <input
-                      type="checkbox"
-                      checked={items.length > 0 && selectedIds.length === items.length}
-                      onChange={(e) => toggleSelectAll(e.target.checked)}
-                      className="rounded border-neutral-300"
-                    />
-                  </th>
+                  {isSuperAdmin && (
+                    <th className="w-10 px-3 py-2.5 text-center">
+                      <input
+                        type="checkbox"
+                        checked={items.length > 0 && selectedIds.length === items.length}
+                        onChange={(e) => toggleSelectAll(e.target.checked)}
+                        className="rounded border-neutral-300"
+                      />
+                    </th>
+                  )}
                   <th className="px-4 py-2.5">Kode</th>
                   <th className="px-4 py-2.5">Nama Dokumen</th>
                   <th className="px-4 py-2.5">Wajib</th>
                   <th className="px-4 py-2.5">Status</th>
-                  <th className="w-24 px-4 py-2.5 text-right">Aksi</th>
+                  {isSuperAdmin && (
+                    <th className="w-24 px-4 py-2.5 text-right">Aksi</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
                 {items.map((item) => (
                   <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
-                    <td className="px-3 py-2.5 text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => toggleSelectOne(item.id)}
-                        className="rounded border-neutral-300"
-                      />
-                    </td>
+                    {isSuperAdmin && (
+                      <td className="px-3 py-2.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => toggleSelectOne(item.id)}
+                          className="rounded border-neutral-300"
+                        />
+                      </td>
+                    )}
                     <td className="px-4 py-2.5 font-mono text-neutral-600">{item.code}</td>
                     <td className="px-4 py-2.5 font-medium text-black">{item.name}</td>
                     <td className="px-4 py-2.5">
@@ -232,26 +242,28 @@ export default function DocumentTypesPage() {
                     <td className="px-4 py-2.5">
                       <span className="text-[11px] font-mono">{item.active ? 'Aktif' : 'Nonaktif'}</span>
                     </td>
-                    <td className="px-4 py-2.5 text-right space-x-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleOpenEdit(item)}
-                        className="p-1.5"
-                        aria-label="Ubah"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1.5"
-                        aria-label="Hapus"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </td>
+                    {isSuperAdmin && (
+                      <td className="px-4 py-2.5 text-right space-x-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenEdit(item)}
+                          className="p-1.5"
+                          aria-label="Ubah"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1.5"
+                          aria-label="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -271,12 +283,14 @@ export default function DocumentTypesPage() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-mono text-xs text-neutral-500">{item.code}</span>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(item.id)}
-                      onChange={() => toggleSelectOne(item.id)}
-                      className="rounded border-neutral-300"
-                    />
+                    {isSuperAdmin && (
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(item.id)}
+                        onChange={() => toggleSelectOne(item.id)}
+                        className="rounded border-neutral-300"
+                      />
+                    )}
                   </div>
                   <div className="font-semibold text-sm text-black mb-1 flex items-center gap-1.5">
                     <FileText className="w-4 h-4 text-black flex-shrink-0" />
@@ -286,24 +300,26 @@ export default function DocumentTypesPage() {
                     {item.is_required ? 'Dokumen Wajib' : 'Dokumen Opsional'}
                   </div>
                 </div>
-                <div className="flex justify-end gap-1.5 mt-4 pt-3 border-t border-neutral-100">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenEdit(item)}
-                    className="p-1.5"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(item.id)}
-                    className="p-1.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                {isSuperAdmin && (
+                  <div className="flex justify-end gap-1.5 mt-4 pt-3 border-t border-neutral-100">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenEdit(item)}
+                      className="p-1.5"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(item.id)}
+                      className="p-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -313,13 +329,15 @@ export default function DocumentTypesPage() {
         </div>
       )}
 
-      {/* Bulk Delete Toolbar */}
-      <BulkToolbar
-        selectedCount={selectedIds.length}
-        onDelete={handleBulkDelete}
-        onClear={() => setSelectedIds([])}
-        isLoading={bulkLoading}
-      />
+      {/* Bulk Delete Toolbar (Super Admin only) */}
+      {isSuperAdmin && (
+        <BulkToolbar
+          selectedCount={selectedIds.length}
+          onDelete={handleBulkDelete}
+          onClear={() => setSelectedIds([])}
+          isLoading={bulkLoading}
+        />
+      )}
 
       {/* Modal Dialog */}
       <Modal
