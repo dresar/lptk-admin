@@ -56,12 +56,12 @@ export function ParticipantCard({
 
   useEffect(() => {
     if (!logoUrl || !stampUrl) {
-      fetch('/api/meta/branding')
+      fetch('/api/meta/branding', { cache: 'no-store' })
         .then((res) => res.json())
         .then((json) => {
           if (json?.data) {
-            if (!logoUrl && json.data.app_logo_url) setDynamicLogo(json.data.app_logo_url);
-            if (!stampUrl && json.data.app_stamp_url) setDynamicStamp(json.data.app_stamp_url);
+            if (!logoUrl && json.data.app_logo_url) setDynamicLogo(json.data.app_logo_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/'));
+            if (!stampUrl && json.data.app_stamp_url) setDynamicStamp(json.data.app_stamp_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/'));
           }
         })
         .catch(() => {});

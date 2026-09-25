@@ -1,10 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MapPin, Phone, ArrowUpRight } from 'lucide-react';
 
 export function PublicFooter() {
+  const [logoUrl, setLogoUrl] = useState('/api/cdn/logos/lptq-logo.png');
+
+  useEffect(() => {
+    fetch('/api/meta/branding', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data?.app_logo_url) {
+          const clean = json.data.app_logo_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/');
+          setLogoUrl(clean);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer className="bg-neutral-900 text-white border-t border-neutral-800 pt-12 pb-24 lg:pb-12">
       <div className="max-w-6xl mx-auto px-4">
@@ -26,7 +40,7 @@ export function PublicFooter() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md bg-white p-1 flex items-center justify-center flex-shrink-0 ring-1 ring-amber-400 shadow-xs">
                 <img
-                  src="/api/cdn/logos/lptq-logo.png"
+                  src={logoUrl}
                   alt="LPTQ Logo"
                   className="w-full h-full object-contain"
                   onError={(e) => {

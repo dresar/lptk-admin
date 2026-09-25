@@ -48,9 +48,33 @@ export function validateMagicBytes(buffer: Buffer): FileSignatureResult {
     return { valid: true, detectedMime: 'image/png', extension: 'png' };
   }
 
+  // 4. WebP: RIFF....WEBP (hex: 52 49 46 46 ... 57 45 42 50)
+  if (
+    buffer.length >= 12 &&
+    buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+    buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
+  ) {
+    return { valid: true, detectedMime: 'image/webp', extension: 'webp' };
+  }
+
+  // 5. GIF: GIF87a or GIF89a (hex: 47 49 46 38 37/39 61)
+  if (
+    buffer.length >= 6 &&
+    buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 &&
+    buffer[3] === 0x38 && (buffer[4] === 0x37 || buffer[4] === 0x39) && buffer[5] === 0x61
+  ) {
+    return { valid: true, detectedMime: 'image/gif', extension: 'gif' };
+  }
+
+  // 6. SVG: XML or SVG tag
+  const textHeader = buffer.slice(0, 100).toString('utf-8').trim().toLowerCase();
+  if (textHeader.startsWith('<svg') || textHeader.startsWith('<?xml')) {
+    return { valid: true, detectedMime: 'image/svg+xml', extension: 'svg' };
+  }
+
   return {
     valid: false,
-    error: 'Format berkas tidak diizinkan. Hanya berkas PDF, JPG, atau PNG asli yang diterima.',
+    error: 'Format berkas tidak diizinkan. Hanya berkas PDF, JPG, PNG, WebP, GIF, atau SVG yang diterima.',
   };
 }
 

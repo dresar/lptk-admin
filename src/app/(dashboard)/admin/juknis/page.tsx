@@ -21,11 +21,11 @@ export default function JuknisPage() {
   const [stampUrl, setStampUrl] = useState('/api/cdn/logos/lptq-stempel.png');
 
   useEffect(() => {
-    fetch('/api/meta/branding')
+    fetch('/api/meta/branding', { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
-        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url);
-        if (json?.data?.app_stamp_url) setStampUrl(json.data.app_stamp_url);
+        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/'));
+        if (json?.data?.app_stamp_url) setStampUrl(json.data.app_stamp_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/'));
       })
       .catch(() => {});
   }, []);

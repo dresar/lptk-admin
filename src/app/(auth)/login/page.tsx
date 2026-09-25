@@ -57,10 +57,13 @@ export default function LoginPage() {
   const [appName, setAppName] = useState('LPTK Mahato');
 
   useEffect(() => {
-    fetch('/api/meta/branding')
+    fetch('/api/meta/branding', { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
-        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url);
+        if (json?.data?.app_logo_url) {
+          const clean = json.data.app_logo_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/');
+          setLogoUrl(clean);
+        }
         if (json?.data?.app_name) setAppName(json.data.app_name);
       })
       .catch(() => {});

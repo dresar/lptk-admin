@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/server/db/client';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -40,11 +41,18 @@ export async function GET() {
     if (rows && Array.isArray(rows)) {
       for (const row of rows) {
         if (row.key && row.value !== undefined && row.value !== null) {
-          // If value is a JSON string or object, clean it
-          let raw = typeof row.value === 'string' ? row.value.replace(/^"|"$/g, '') : String(row.value);
+          let raw = '';
+          if (typeof row.value === 'string') {
+            raw = row.value.trim().replace(/^"|"$/g, '');
+          } else if (typeof row.value === 'object' && row.value !== null) {
+            raw = JSON.stringify(row.value).replace(/^"|"$/g, '');
+          } else {
+            raw = String(row.value || '');
+          }
+
           // Auto-clean any redundant /api/cdn/cdn/ to /api/cdn/
           if (raw.includes('/api/cdn/cdn/')) {
-            raw = raw.replace('/api/cdn/cdn/', '/api/cdn/');
+            raw = raw.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/');
           }
           branding[row.key] = raw;
         }
@@ -56,7 +64,10 @@ export async function GET() {
       {
         status: 200,
         headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store',
         },
       }
     );

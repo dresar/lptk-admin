@@ -121,10 +121,22 @@ export default function SettingsPage() {
 
       if (targetSettingKey) {
         handleValueChange(targetSettingKey, cdnUrl);
+        // Auto-save setting to database so changes take effect immediately
+        try {
+          await fetch('/api/admin/settings', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              settings: [{ key: targetSettingKey, value: cdnUrl }],
+            }),
+          });
+        } catch (saveErr) {
+          console.error('Failed to auto-save setting:', saveErr);
+        }
       }
 
       setMessage({
-        text: `Berkas berhasil diunggah ke Neon CDN: ${json.data.file_name}`,
+        text: `Berkas berhasil diunggah & disimpan: ${json.data.file_name}`,
         type: 'success',
       });
 
@@ -566,7 +578,21 @@ export default function SettingsPage() {
 
                         <button
                           type="button"
-                          onClick={() => handleValueChange('app_logo_url', asset.url)}
+                          onClick={async () => {
+                            handleValueChange('app_logo_url', asset.url);
+                            try {
+                              await fetch('/api/admin/settings', {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  settings: [{ key: 'app_logo_url', value: asset.url }],
+                                }),
+                              });
+                              setMessage({ text: 'Logo berhasil diganti & disimpan.', type: 'success' });
+                            } catch {
+                              setMessage({ text: 'Gagal menyimpan perubahan logo.', type: 'error' });
+                            }
+                          }}
                           className="p-1 hover:bg-neutral-200 rounded text-neutral-700 transition-colors text-[9px] font-bold"
                           title="Gunakan sebagai Logo"
                         >

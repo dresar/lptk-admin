@@ -17,11 +17,11 @@ export function PublicHeader() {
       })
       .catch(() => {});
 
-    fetch('/api/meta/branding')
+    fetch('/api/meta/branding', { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
         if (json?.data?.app_logo_url) {
-          const clean = json.data.app_logo_url.replace('/api/cdn/cdn/', '/api/cdn/');
+          const clean = json.data.app_logo_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/');
           setLogoUrl(clean);
         }
         if (json?.data?.app_name) setAppName(json.data.app_name);
@@ -101,7 +101,7 @@ export function PublicHeader() {
         <div className="flex items-center gap-2">
           {isLoggedIn ? (
             <Link
-              href="/admin/dashboard"
+              href="/admin"
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-md shadow-xs transition-colors"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -147,7 +147,7 @@ export function PublicHeader() {
           <div className="pt-3 border-t border-neutral-200 flex flex-col gap-2">
             {isLoggedIn ? (
               <Link
-                href="/admin/dashboard"
+                href="/admin"
                 onClick={handleLinkClick}
                 className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-md text-xs"
               >
