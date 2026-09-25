@@ -25,8 +25,10 @@ const s3Client = new S3Client({
   },
 });
 
+import { uploadToGitHubStorage } from './github-storage';
+
 /**
- * Upload a file buffer to Neon Object Storage (S3-compatible).
+ * Upload a file buffer to Neon Object Storage (S3-compatible) with GitHub CDN fallback.
  * Returns the S3 key.
  */
 export async function uploadToS3(
@@ -34,15 +36,25 @@ export async function uploadToS3(
   body: Buffer | Uint8Array,
   contentType: string
 ): Promise<string> {
-  await s3Client.send(
-    new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-      Body: body,
-      ContentType: contentType,
-    })
-  );
-  return key;
+  try {
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      })
+    );
+    return key;
+  } catch (s3Err) {
+    console.warn('Neon S3 upload issue, attempting GitHub Storage fallback:', s3Err);
+    const buf = Buffer.isBuffer(body) ? body : Buffer.from(body);
+    const ghRes = await uploadToGitHubStorage(key, buf);
+    if (ghRes.success) {
+      return key;
+    }
+    throw s3Err;
+  }
 }
 
 /**

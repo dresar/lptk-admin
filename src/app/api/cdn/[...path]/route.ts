@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getObjectFromS3 } from '@/server/utils/s3';
+import { fetchFromGitHubCdn } from '@/server/utils/github-storage';
 import fs from 'fs';
 import path from 'path';
 
@@ -59,6 +60,23 @@ export async function GET(
         } catch {}
       }
     }
+
+    // Try fetching from GitHub CDN fallback if S3 misses
+    try {
+      const ghRes = await fetchFromGitHubCdn(key);
+      if (ghRes && ghRes.ok) {
+        const buffer = await ghRes.arrayBuffer();
+        const contentType = ghRes.headers.get('content-type') || 'application/octet-stream';
+        return new Response(Buffer.from(buffer), {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Content-Length': buffer.byteLength.toString(),
+            'Cache-Control': 'public, max-age=31536000, immutable',
+          },
+        });
+      }
+    } catch {}
 
     // Local filesystem fallback for base assets
     const filename = cleanSegments[cleanSegments.length - 1];

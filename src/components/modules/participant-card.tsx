@@ -224,7 +224,7 @@ export function ParticipantCard({
                   {branchInfo.formatLabel}
                 </span>
                 <span className="inline-block w-full text-[10px] font-mono font-semibold py-0.5 px-1.5 rounded border border-neutral-300 bg-neutral-100 text-neutral-800">
-                  {participant.gender_code === 'MALE' ? 'Putra' : 'Putri'}
+                  {participant.gender_code === 'MALE' ? 'Putra' : participant.gender_code === 'FEMALE' ? 'Putri' : 'Campuran (Pa/Pi)'}
                 </span>
               </div>
             </div>
@@ -296,6 +296,16 @@ export function ParticipantCard({
                     </span>
                   </div>
                 </div>
+                {branchInfo.format !== 'INDIVIDU' && (
+                  <div className="mt-1.5 pt-1.5 border-t border-neutral-300 flex items-center justify-between text-[9px] font-mono">
+                    <span className="font-bold text-black uppercase bg-neutral-200 px-1.5 py-0.5 rounded-sm">
+                      Kategori Kolektif: {branchInfo.formatLabel}
+                    </span>
+                    <span className="text-neutral-700 font-semibold">
+                      Regu Kafilah {participant.village_name || 'Desa'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {participant.school_or_institution && (

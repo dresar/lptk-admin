@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     await requirePermission('cdn.read');
 
-    const s3Assets = await listObjectsFromS3('cdn/');
+    const s3Assets = await listObjectsFromS3('');
 
     const assets = s3Assets.map((item) => {
       const parts = item.key.split('/');
@@ -21,15 +21,19 @@ export async function GET(req: NextRequest) {
       else if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
       else if (ext === 'webp') mime = 'image/webp';
       else if (ext === 'svg') mime = 'image/svg+xml';
+      else if (ext === 'gif') mime = 'image/gif';
       else if (ext === 'pdf') mime = 'application/pdf';
+
+      const cleanPath = item.key.replace(/^cdn\//, '');
 
       return {
         key: item.key,
         name: filename,
+        folder: parts.length > 1 ? parts[0] === 'cdn' && parts.length > 2 ? parts[1] : parts[0] : 'root',
         type: mime,
         size_bytes: item.size,
         last_modified: item.lastModified,
-        url: `/api/cdn/${item.key}`,
+        url: `/api/cdn/${cleanPath}`,
       };
     });
 
