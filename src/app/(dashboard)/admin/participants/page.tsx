@@ -417,26 +417,39 @@ export default function ParticipantsPage() {
                             <img
                               src={item.photo_url}
                               alt={item.name}
-                              className="w-8 h-8 rounded object-cover border border-neutral-200 flex-shrink-0"
+                              className="w-8 h-8 rounded-md object-cover border border-neutral-200 flex-shrink-0"
                               onError={(e) => {
                                 (e.target as HTMLElement).style.display = 'none';
                               }}
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded bg-neutral-100 border border-neutral-300 flex items-center justify-center font-bold text-[10px] text-neutral-700 flex-shrink-0">
+                            <div className="w-8 h-8 rounded-md bg-neutral-100 border border-neutral-300 flex items-center justify-center font-bold text-[10px] text-neutral-700 flex-shrink-0">
                               {initials}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <Link
-                              href={`/admin/participants/${item.id}`}
-                              className="font-semibold text-black hover:underline block truncate"
-                            >
-                              {item.name}
-                            </Link>
-                            <span className="font-mono text-[10px] text-neutral-500">
-                              {item.nik}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {item.participant_number && (
+                                <span className="font-mono font-black text-[10px] bg-black text-white px-1.5 py-0.5 rounded-sm">
+                                  {item.participant_number}
+                                </span>
+                              )}
+                              <Link
+                                href={`/admin/participants/${item.id}`}
+                                className="font-semibold text-black hover:underline truncate"
+                              >
+                                {item.name}
+                              </Link>
+                              {item.team_role && (
+                                <span className="text-[9px] font-mono font-bold bg-neutral-200 text-neutral-800 px-1 py-0.5 rounded-sm border border-neutral-300">
+                                  {item.team_role}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[10px] text-neutral-500 font-mono mt-0.5">
+                              <span>{item.nik}</span>
+                              {item.team_name && <span className="text-neutral-700 font-sans font-medium">({item.team_name})</span>}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -558,26 +571,41 @@ export default function ParticipantsPage() {
 
                     {/* Participant Info & Photo */}
                     <div className="flex flex-col items-center text-center mb-2">
-                      {item.photo_url ? (
-                        <img
-                          src={item.photo_url}
-                          alt={item.name}
-                          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-neutral-200 mb-1.5 shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center font-bold text-xs text-neutral-700 mb-1.5">
-                          {initials}
-                        </div>
-                      )}
+                      <div className="relative mb-1.5">
+                        {item.photo_url ? (
+                          <img
+                            src={item.photo_url}
+                            alt={item.name}
+                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-md object-cover border border-neutral-300 shadow-sm"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-md bg-neutral-100 border border-neutral-300 flex items-center justify-center font-bold text-xs text-neutral-700">
+                            {initials}
+                          </div>
+                        )}
+                        {item.participant_number && (
+                          <span className="absolute -bottom-1 -right-1 font-mono font-black text-[9px] bg-black text-white px-1 py-0.2 rounded-sm border border-black shadow">
+                            {item.participant_number}
+                          </span>
+                        )}
+                      </div>
+
                       <Link
                         href={`/admin/participants/${item.id}`}
                         className="font-bold text-xs sm:text-sm text-black leading-tight hover:underline line-clamp-2 block"
                       >
                         {item.name}
                       </Link>
+
+                      {item.team_role && (
+                        <span className="mt-1 text-[9px] font-mono font-bold bg-neutral-200 text-neutral-800 px-1.5 py-0.5 rounded-sm border border-neutral-300 inline-block uppercase">
+                          {item.team_role}
+                        </span>
+                      )}
+
                       <div className="font-mono text-[9px] sm:text-[10px] text-neutral-500 mt-0.5 truncate">
                         {item.nik}
                       </div>

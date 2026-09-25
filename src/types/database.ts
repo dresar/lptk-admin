@@ -121,6 +121,16 @@ export interface Participant {
   status_code: ParticipantStatus;
   rejection_note?: string | null;
   categories?: Category[];
+  participant_number?: string | null;
+  team_id?: string | null;
+  team_name?: string | null;
+  team_role?: string | null;
+  team_leader_name?: string | null;
+  emergency_phone?: string | null;
+  delegation_letter_url?: string | null;
+  payment_proof_url?: string | null;
+  photo_url?: string | null;
+  teammates?: any[];
   created_by?: string;
   submitted_at?: string | null;
   created_at: string;

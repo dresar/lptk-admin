@@ -25,6 +25,11 @@ export async function GET(
         p.birth_place,
         p.birth_date,
         p.status_code,
+        p.participant_number,
+        p.team_id,
+        p.team_name,
+        p.team_role,
+        p.photo_url AS direct_photo_url,
         p.submitted_at,
         p.created_at,
         l.name AS lptk_name,
@@ -48,17 +53,21 @@ export async function GET(
 
     const p = rows[0];
 
-    // Check for photo document
-    const photoRows = await db.query`
-      SELECT pd.id
-      FROM public.participant_documents pd
-      JOIN public.document_types dt ON pd.document_type_id = dt.id
-      WHERE pd.participant_id = ${id}
-        AND (dt.code = 'PAS_FOTO' OR dt.code = 'FOTO')
-      LIMIT 1;
-    `;
-
-    const photoUrl = photoRows.length > 0 ? `/api/admin/documents/${photoRows[0].id}/download` : null;
+    // Check for photo document if no direct photo_url
+    let photoUrl = p.direct_photo_url || null;
+    if (!photoUrl) {
+      const photoRows = await db.query`
+        SELECT pd.id
+        FROM public.participant_documents pd
+        JOIN public.document_types dt ON pd.document_type_id = dt.id
+        WHERE pd.participant_id = ${id}
+          AND (dt.code = 'PAS_FOTO' OR dt.code = 'FOTO')
+        LIMIT 1;
+      `;
+      if (photoRows.length > 0) {
+        photoUrl = `/api/admin/documents/${photoRows[0].id}/download`;
+      }
+    }
 
     return successResponse({
       id: p.id,
@@ -68,6 +77,10 @@ export async function GET(
       birth_place: p.birth_place,
       birth_date: p.birth_date,
       status_code: p.status_code,
+      participant_number: p.participant_number,
+      team_id: p.team_id,
+      team_name: p.team_name,
+      team_role: p.team_role,
       lptk_name: p.lptk_name,
       village_name: p.village_name,
       competition_name: p.competition_name,

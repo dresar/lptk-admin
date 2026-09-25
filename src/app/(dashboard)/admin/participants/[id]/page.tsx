@@ -17,6 +17,7 @@ import {
   Info,
   Check,
   Printer,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -230,8 +231,18 @@ export default function ParticipantDetailPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-bold tracking-tight text-black">{participant.name}</h1>
+              {participant.participant_number && (
+                <span className="font-mono font-black text-xs bg-black text-white px-2 py-0.5 rounded-sm">
+                  {participant.team_role ? `REGU: ${participant.participant_number}` : `NO: ${participant.participant_number}`}
+                </span>
+              )}
+              {participant.team_role && (
+                <span className="font-mono font-bold text-xs bg-neutral-200 text-neutral-800 px-2 py-0.5 rounded-sm border border-neutral-300 uppercase">
+                  {participant.team_role}
+                </span>
+              )}
               {getStatusBadge(participant.status_code)}
             </div>
             <p className="text-xs text-neutral-500 font-mono">NIK: {participant.nik} • {participant.competition_name}</p>
@@ -287,6 +298,97 @@ export default function ParticipantDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Identity Card */}
         <div className="lg:col-span-1 space-y-4">
+          {/* Team / Regu Card if applicable */}
+          {(participant.team_name || participant.team_role) && (
+            <div className="bg-neutral-50 border-2 border-black rounded-md p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-neutral-300 pb-2">
+                <span className="text-xs font-bold text-black uppercase tracking-wider flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
+                  Informasi Regu Kolektif
+                </span>
+                <span className="text-[10px] font-mono font-bold bg-black text-white px-1.5 py-0.5 rounded-sm">
+                  {participant.participant_number || 'REGU'}
+                </span>
+              </div>
+
+              <div className="text-xs space-y-2">
+                <div>
+                  <span className="text-neutral-500 block text-[10px] uppercase font-bold">Nama Regu</span>
+                  <span className="font-extrabold text-black text-sm">{participant.team_name || '-'}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="text-neutral-500 block text-[10px] uppercase font-bold">Peran Anggota</span>
+                    <span className="font-black text-black text-xs font-mono">{participant.team_role || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-[10px] uppercase font-bold">Ketua Regu</span>
+                    <span className="font-semibold text-black text-xs">{participant.team_leader_name || '-'}</span>
+                  </div>
+                </div>
+
+                {participant.emergency_phone && (
+                  <div>
+                    <span className="text-neutral-500 block text-[10px] uppercase font-bold">WhatsApp Darurat</span>
+                    <span className="font-mono text-black text-xs">{participant.emergency_phone}</span>
+                  </div>
+                )}
+
+                {/* Teammates list */}
+                {Array.isArray(participant.teammates) && participant.teammates.length > 0 && (
+                  <div className="pt-2 border-t border-neutral-200">
+                    <span className="text-neutral-500 block text-[10px] uppercase font-bold mb-1">
+                      Anggota Regu Lainnya:
+                    </span>
+                    <div className="space-y-1">
+                      {participant.teammates.map((tm: any) => (
+                        <Link
+                          key={tm.id}
+                          href={`/admin/participants/${tm.id}`}
+                          className="p-1.5 bg-white border border-neutral-200 rounded flex items-center justify-between hover:border-black text-[11px]"
+                        >
+                          <span className="font-semibold text-black">{tm.name}</span>
+                          <span className="text-[9px] font-mono font-bold bg-neutral-100 text-neutral-800 px-1 rounded-sm border border-neutral-300">
+                            {tm.team_role}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Shared Admin Docs */}
+                {(participant.delegation_letter_url || participant.payment_proof_url) && (
+                  <div className="pt-2 border-t border-neutral-200 flex items-center gap-2 flex-wrap">
+                    {participant.delegation_letter_url && (
+                      <a
+                        href={participant.delegation_letter_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-bold text-black border border-neutral-300 bg-white px-2 py-1 rounded hover:bg-neutral-100 inline-flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3" />
+                        Surat Mandat Regu
+                      </a>
+                    )}
+                    {participant.payment_proof_url && (
+                      <a
+                        href={participant.payment_proof_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-bold text-black border border-neutral-300 bg-white px-2 py-1 rounded hover:bg-neutral-100 inline-flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3" />
+                        Bukti Bayar Regu
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="bg-white border border-neutral-300 rounded p-5 space-y-3">
             <h2 className="text-xs font-bold text-black uppercase tracking-wider border-b border-neutral-200 pb-2">
               Biodata Peserta

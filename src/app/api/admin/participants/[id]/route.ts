@@ -39,8 +39,8 @@ export async function GET(
       return errorResponse('FORBIDDEN', 'Anda tidak memiliki hak akses untuk melihat peserta dari LPTK lain.', 403);
     }
 
-    // Query categories & documents
-    const [categories, documents, verifications] = await Promise.all([
+    // Query categories, documents, verifications, & teammates
+    const [categories, documents, verifications, teammates] = await Promise.all([
       db.query`
         SELECT cat.id, cat.name, cat.gender_code, cat.age_min, cat.age_max, cat.requirements
         FROM public.categories cat
@@ -63,6 +63,14 @@ export async function GET(
         WHERE v.participant_id = ${id}
         ORDER BY v.created_at DESC;
       `,
+      participant.team_id
+        ? db.query`
+            SELECT id, name, nik, gender_code, team_role, photo_url, participant_number, status_code
+            FROM public.participants
+            WHERE team_id = ${participant.team_id} AND id != ${id} AND deleted_at IS NULL
+            ORDER BY created_at ASC;
+          `
+        : Promise.resolve([]),
     ]);
 
     return successResponse({
@@ -70,6 +78,7 @@ export async function GET(
       categories,
       documents,
       verifications,
+      teammates,
     });
   } catch (err) {
     if (err instanceof AuthError) {
@@ -129,6 +138,13 @@ export async function PATCH(
       school_or_institution,
       father_name,
       mother_name,
+      photo_url,
+      team_name,
+      team_role,
+      team_leader_name,
+      emergency_phone,
+      delegation_letter_url,
+      payment_proof_url,
       category_ids,
     } = parsed.data;
 
@@ -158,9 +174,16 @@ export async function PATCH(
         school_or_institution = COALESCE(${school_or_institution !== undefined ? school_or_institution : null}, school_or_institution),
         father_name = COALESCE(${father_name !== undefined ? father_name : null}, father_name),
         mother_name = COALESCE(${mother_name !== undefined ? mother_name : null}, mother_name),
+        photo_url = COALESCE(${photo_url !== undefined ? photo_url : null}, photo_url),
+        team_name = COALESCE(${team_name !== undefined ? team_name : null}, team_name),
+        team_role = COALESCE(${team_role !== undefined ? team_role : null}, team_role),
+        team_leader_name = COALESCE(${team_leader_name !== undefined ? team_leader_name : null}, team_leader_name),
+        emergency_phone = COALESCE(${emergency_phone !== undefined ? emergency_phone : null}, emergency_phone),
+        delegation_letter_url = COALESCE(${delegation_letter_url !== undefined ? delegation_letter_url : null}, delegation_letter_url),
+        payment_proof_url = COALESCE(${payment_proof_url !== undefined ? payment_proof_url : null}, payment_proof_url),
         updated_at = NOW()
       WHERE id = ${id}
-      RETURNING id, name, nik, status_code, updated_at;
+      RETURNING id, name, nik, participant_number, status_code, updated_at;
     `;
 
     // Update categories if provided

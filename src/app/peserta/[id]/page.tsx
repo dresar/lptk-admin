@@ -14,6 +14,10 @@ interface PublicParticipant {
   birth_place: string;
   birth_date: string;
   status_code: string;
+  participant_number?: string | null;
+  team_id?: string | null;
+  team_name?: string | null;
+  team_role?: string | null;
   lptk_name: string;
   village_name: string;
   competition_name: string;
@@ -89,13 +93,20 @@ export default function PublicParticipantPage() {
             <h1 className="text-sm font-bold text-black uppercase tracking-wider">Verifikasi Peserta</h1>
             <span className="text-[10px] text-neutral-500 font-mono">MTQ XIX TAMBUSAI UTARA 2026</span>
           </div>
-          <span
-            className={`px-2 py-0.5 text-[11px] font-bold rounded-sm uppercase font-mono ${
-              isVerified ? 'bg-black text-white' : 'bg-neutral-200 text-black'
-            }`}
-          >
-            {isVerified ? 'Valid' : data.status_code}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {data.participant_number && (
+              <span className="px-2 py-0.5 text-[11px] font-black font-mono rounded-sm bg-black text-white">
+                {data.participant_number}
+              </span>
+            )}
+            <span
+              className={`px-2 py-0.5 text-[11px] font-bold rounded-sm uppercase font-mono ${
+                isVerified ? 'bg-black text-white' : 'bg-neutral-200 text-black'
+              }`}
+            >
+              {isVerified ? 'Valid' : data.status_code}
+            </span>
+          </div>
         </div>
 
         {/* Body */}
@@ -111,11 +122,25 @@ export default function PublicParticipantPage() {
             <div className="min-w-0 flex-1 space-y-1">
               <span className="text-[10px] text-neutral-500 font-mono block">{regNo}</span>
               <h2 className="text-base font-black text-black uppercase leading-tight truncate">{data.name}</h2>
-              <span className="inline-block px-1.5 py-0.5 text-[10px] font-mono rounded-sm bg-neutral-100 border border-neutral-300 text-neutral-800">
-                {data.gender_code === 'M' || data.gender_code === 'MALE' ? 'Putra' : 'Putri'}
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="inline-block px-1.5 py-0.5 text-[10px] font-mono rounded-sm bg-neutral-100 border border-neutral-300 text-neutral-800">
+                  {data.gender_code === 'M' || data.gender_code === 'MALE' ? 'Putra' : 'Putri'}
+                </span>
+                {data.team_role && (
+                  <span className="inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold rounded-sm bg-black text-white">
+                    {data.team_role}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
+
+          {data.team_name && (
+            <div className="p-2.5 bg-neutral-50 border border-neutral-200 rounded-md text-xs">
+              <span className="text-[10px] text-neutral-500 uppercase font-bold block">Regu / Kafilah:</span>
+              <span className="font-extrabold text-black text-xs uppercase">{data.team_name}</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-neutral-200 text-xs">
             <div>

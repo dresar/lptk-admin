@@ -11,7 +11,16 @@ const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requirePermission('cdn.write');
+    let user;
+    try {
+      user = await requirePermission('cdn.write');
+    } catch {
+      try {
+        user = await requirePermission('participant.write');
+      } catch {
+        user = await requirePermission('document.write');
+      }
+    }
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;

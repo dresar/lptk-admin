@@ -186,15 +186,22 @@ export function ParticipantCard({
             </div>
           </div>
 
-          {/* Bar Nomor Registrasi & Status */}
-          <div className="flex items-center justify-between py-1.5 px-2 bg-neutral-100 border-b border-neutral-300 text-xs font-mono mt-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-neutral-600">NO. REGISTRASI:</span>
+          {/* Bar Nomor Registrasi, Nomor Regu/Tampil & Status */}
+          <div className="flex items-center justify-between py-2 px-2.5 bg-neutral-100 border-b border-neutral-300 text-xs font-mono mt-1 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-neutral-600">NO. REGISTRASI:</span>
               <span className="font-bold text-black tracking-wider text-xs">{registrationNo}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm bg-black text-white">
-                {participant.status_code === 'VERIFIED' ? 'TERVERIFIKASI SAH' : 'TERDAFTAR RESMI'}
+
+            {/* Nomor Peserta / Nomor Regu Kolektif (Besar & Menonjol) */}
+            <div className="flex items-center gap-2">
+              <div className="px-2.5 py-0.5 bg-black text-white rounded-sm text-xs sm:text-sm font-black tracking-widest uppercase border border-black shadow-sm">
+                {participant.team_role || branchInfo.format !== 'INDIVIDU'
+                  ? `NO. REGU: ${participant.participant_number || 'SQ-01'}`
+                  : `NO. TAMPIL: ${participant.participant_number || registrationNo}`}
+              </div>
+              <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-sm bg-neutral-800 text-white">
+                {participant.status_code === 'VERIFIED' ? 'TERVERIFIKASI' : 'TERDAFTAR'}
               </span>
             </div>
           </div>
@@ -204,9 +211,9 @@ export function ParticipantCard({
             {/* Kolom Foto & Format Lomba */}
             <div className="sm:col-span-1 flex flex-col items-center justify-start space-y-2">
               <div className="w-28 h-36 sm:w-32 sm:h-40 border-2 border-black bg-neutral-100 rounded-md flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
-                {photoUrl ? (
+                {photoUrl || participant.photo_url ? (
                   <img
-                    src={photoUrl}
+                    src={photoUrl || participant.photo_url!}
                     alt={participant.name}
                     className="w-full h-full object-cover"
                   />
@@ -223,9 +230,14 @@ export function ParticipantCard({
                 )}
               </div>
 
-              {/* Badges */}
+              {/* Badges: Format, Gender & Peran Khusus */}
               <div className="w-full space-y-1 text-center">
-                <span className="inline-block w-full text-[10px] font-mono font-bold py-0.5 px-1.5 rounded-sm border border-black bg-neutral-900 text-white uppercase">
+                {participant.team_role && (
+                  <span className="inline-block w-full text-[10px] font-mono font-black py-0.5 px-1.5 rounded-sm border-2 border-black bg-black text-white uppercase tracking-wider">
+                    {participant.team_role}
+                  </span>
+                )}
+                <span className="inline-block w-full text-[10px] font-mono font-bold py-0.5 px-1.5 rounded-sm border border-neutral-400 bg-neutral-900 text-white uppercase">
                   {branchInfo.formatLabel}
                 </span>
                 <span className="inline-block w-full text-[10px] font-mono font-semibold py-0.5 px-1.5 rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-800">
@@ -241,10 +253,17 @@ export function ParticipantCard({
             {/* Kolom Biodata Peserta */}
             <div className="sm:col-span-2 text-xs space-y-1.5">
               <div>
-                <span className="text-[10px] text-neutral-500 font-bold uppercase block leading-tight">
-                  Nama Lengkap Peserta:
-                </span>
-                <span className="font-extrabold text-sm sm:text-base text-black uppercase leading-tight block">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] text-neutral-500 font-bold uppercase block leading-tight">
+                    Nama Lengkap Peserta:
+                  </span>
+                  {participant.team_role && (
+                    <span className="text-[9px] font-bold font-mono px-1.5 py-0.2 bg-neutral-200 text-black border border-neutral-400 rounded-sm uppercase">
+                      Peran: {participant.team_role}
+                    </span>
+                  )}
+                </div>
+                <span className="font-extrabold text-sm sm:text-base text-black uppercase leading-tight block mt-0.5">
                   {participant.name}
                 </span>
               </div>
@@ -307,13 +326,13 @@ export function ParticipantCard({
                     </span>
                   </div>
                 </div>
-                {branchInfo.format !== 'INDIVIDU' && (
-                  <div className="mt-1.5 pt-1.5 border-t border-neutral-300 flex items-center justify-between text-[9px] font-mono">
+                {(participant.team_name || branchInfo.format !== 'INDIVIDU') && (
+                  <div className="mt-1.5 pt-1.5 border-t border-neutral-300 flex items-center justify-between text-[9px] font-mono flex-wrap gap-1">
                     <span className="font-bold text-black uppercase bg-neutral-200 px-1.5 py-0.5 rounded-sm">
-                      Kategori Kolektif: {branchInfo.formatLabel}
+                      {participant.team_name ? `Regu: ${participant.team_name}` : `Format: ${branchInfo.formatLabel}`}
                     </span>
-                    <span className="text-neutral-700 font-semibold">
-                      Regu Kafilah {participant.village_name || 'Desa'}
+                    <span className="text-neutral-800 font-bold uppercase">
+                      {participant.team_role ? `Peran: ${participant.team_role}` : `Kafilah ${participant.village_name || 'Desa'}`}
                     </span>
                   </div>
                 )}
