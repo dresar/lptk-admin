@@ -8,7 +8,7 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [logoUrl, setLogoUrl] = useState('/api/cdn/logos/lptq-logo.png');
-  const [appName, setAppName] = useState('MTQ XIX TAMBUSAI UTARA');
+  const [appName, setAppName] = useState('LPTK Tambusai Utara - Mahato 2026');
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -53,7 +53,8 @@ export function PublicHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md text-neutral-900 border-b border-neutral-200 shadow-xs">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white text-neutral-900 border-b border-neutral-200 shadow-xs">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link
@@ -165,5 +166,8 @@ export function PublicHeader() {
         </div>
       )}
     </header>
+    {/* Spacer to preserve layout flow and prevent content from slipping under fixed header */}
+    <div className="h-16 w-full flex-shrink-0" aria-hidden="true" />
+  </>
   );
 }

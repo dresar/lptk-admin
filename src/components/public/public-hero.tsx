@@ -181,11 +181,6 @@ export function PublicHero() {
 
         {/* Text Overlaid on Background: Clean, Big, Focused (NO BADGES, NO CLUTTER) */}
         <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 relative z-20 w-full text-center flex flex-col items-center justify-center">
-          {/* Small Info Text (Plain text, no badge) */}
-          <div className="text-xs sm:text-sm font-semibold text-amber-300 font-mono tracking-wide mb-3 drop-shadow-sm">
-            {activeSlide.info || `09 – 13 November 2026 • Mimbar Utama ${stats.host_village}`}
-          </div>
-
           {/* Large Bold Headline */}
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight max-w-4xl drop-shadow-md">
             {activeSlide.title || stats.hero_title}
@@ -195,6 +190,24 @@ export function PublicHero() {
           <p className="text-xs sm:text-base text-neutral-200 leading-relaxed max-w-2xl mt-3 sm:mt-4 drop-shadow-sm">
             {activeSlide.subtitle || stats.hero_subtitle}
           </p>
+
+          {/* Action Buttons under Title */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#cek-status"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs sm:text-sm rounded-md shadow-md transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              <span>Cek Status Peserta</span>
+            </a>
+            <Link
+              href="/cabang"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900/80 hover:bg-neutral-900 text-white font-semibold text-xs sm:text-sm rounded-md border border-white/20 backdrop-blur-xs transition-colors shadow-md"
+            >
+              <Layers className="w-4 h-4 text-emerald-400" />
+              <span>Cabang Lomba</span>
+            </Link>
+          </div>
         </div>
 
         {/* Slide Indicator Dots (Rectangular / Subtle rounded) */}

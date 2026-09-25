@@ -106,10 +106,28 @@ export async function POST(req: NextRequest) {
 
     // Check code duplication
     const existing = await db.query`
-      SELECT id FROM public.lptks WHERE code = ${code} AND deleted_at IS NULL LIMIT 1;
+      SELECT id, deleted_at FROM public.lptks WHERE code = ${code} LIMIT 1;
     `;
     if (existing.length > 0) {
-      return errorResponse('DUPLICATE_CODE', 'Kode LPTK sudah digunakan.', 400);
+      if (existing[0].deleted_at !== null) {
+        const rows = await db.query`
+          UPDATE public.lptks
+          SET village_id = ${village_id}, name = ${name}, leader_name = ${leader_name},
+              phone = ${phone}, address = ${address}, active = ${active}, deleted_at = NULL, updated_at = NOW()
+          WHERE id = ${existing[0].id}
+          RETURNING id, village_id, code, name, leader_name, phone, address, active, created_at, updated_at;
+        `;
+        const restoredLptk = rows[0];
+        await recordAuditLog({
+          userId: user.id,
+          actionCode: 'RESTORE_LPTK',
+          entityType: 'lptk',
+          entityId: restoredLptk.id,
+          newData: restoredLptk,
+        });
+        return successResponse(restoredLptk, undefined, 201);
+      }
+      return errorResponse('DUPLICATE_CODE', 'Kode LPTK sudah digunakan dan aktif.', 400);
     }
 
     const rows = await db.query`

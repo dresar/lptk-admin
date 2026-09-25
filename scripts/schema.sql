@@ -87,18 +87,19 @@ CREATE INDEX IF NOT EXISTS idx_login_attempts_email ON auth.login_attempts(email
 -- Master Desa
 CREATE TABLE IF NOT EXISTS public.villages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code VARCHAR(50) UNIQUE NOT NULL,
+    code VARCHAR(50) NOT NULL,
     name VARCHAR(150) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
+CREATE UNIQUE INDEX IF NOT EXISTS villages_code_unique ON public.villages (code) WHERE deleted_at IS NULL;
 
 -- Master LPTK
 CREATE TABLE IF NOT EXISTS public.lptks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     village_id UUID NOT NULL REFERENCES public.villages(id),
-    code VARCHAR(50) UNIQUE NOT NULL,
+    code VARCHAR(50) NOT NULL,
     name VARCHAR(150) NOT NULL,
     leader_name VARCHAR(150) NOT NULL,
     phone VARCHAR(30) NOT NULL,
@@ -108,6 +109,7 @@ CREATE TABLE IF NOT EXISTS public.lptks (
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
+CREATE UNIQUE INDEX IF NOT EXISTS lptks_code_unique ON public.lptks (code) WHERE deleted_at IS NULL;
 
 -- Hubungkan auth.users.lptk_id ke public.lptks
 DO $$
@@ -154,7 +156,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
 -- Master Jenis Dokumen Persyaratan
 CREATE TABLE IF NOT EXISTS public.document_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code VARCHAR(50) UNIQUE NOT NULL,      -- KTP, KK, PAS_FOTO, SURAT_MANDAT, IJAZAH
+    code VARCHAR(50) NOT NULL,      -- KTP, KK, PAS_FOTO, SURAT_MANDAT, IJAZAH
     name VARCHAR(150) NOT NULL,
     is_required BOOLEAN DEFAULT true,
     active BOOLEAN DEFAULT true,
@@ -162,6 +164,7 @@ CREATE TABLE IF NOT EXISTS public.document_types (
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
+CREATE UNIQUE INDEX IF NOT EXISTS document_types_code_unique ON public.document_types (code) WHERE deleted_at IS NULL;
 
 -- Kebutuhan Dokumen per Kategori
 CREATE TABLE IF NOT EXISTS public.category_document_requirements (
@@ -192,9 +195,9 @@ CREATE TABLE IF NOT EXISTS public.participants (
     submitted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ,
-    CONSTRAINT uq_competition_nik UNIQUE (competition_id, nik)
+    deleted_at TIMESTAMPTZ
 );
+CREATE UNIQUE INDEX IF NOT EXISTS participants_competition_nik_unique ON public.participants (competition_id, nik) WHERE deleted_at IS NULL;
 
 -- Relasi Peserta & Kategori Cabang Lomba
 CREATE TABLE IF NOT EXISTS public.participant_categories (

@@ -72,10 +72,27 @@ export async function POST(req: NextRequest) {
 
     // Check duplicate code
     const existing = await db.query`
-      SELECT id FROM public.villages WHERE code = ${code} AND deleted_at IS NULL LIMIT 1;
+      SELECT id, deleted_at FROM public.villages WHERE code = ${code} LIMIT 1;
     `;
     if (existing.length > 0) {
-      return errorResponse('DUPLICATE_CODE', 'Kode desa sudah digunakan.', 400);
+      if (existing[0].deleted_at !== null) {
+        const rows = await db.query`
+          UPDATE public.villages
+          SET name = ${name}, deleted_at = NULL, updated_at = NOW()
+          WHERE id = ${existing[0].id}
+          RETURNING id, code, name, created_at, updated_at;
+        `;
+        const restoredVillage = rows[0];
+        await recordAuditLog({
+          userId: user.id,
+          actionCode: 'RESTORE_VILLAGE',
+          entityType: 'village',
+          entityId: restoredVillage.id,
+          newData: restoredVillage,
+        });
+        return successResponse(restoredVillage, undefined, 201);
+      }
+      return errorResponse('DUPLICATE_CODE', 'Kode desa sudah digunakan dan aktif.', 400);
     }
 
     const rows = await db.query`

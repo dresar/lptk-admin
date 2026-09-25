@@ -56,11 +56,23 @@ export async function PATCH(
     const oldData = existingRows[0];
 
     const { code, name, is_required, active } = parsed.data;
+    const cleanCode = code ? code.toUpperCase().trim().replace(/\s+/g, '_') : undefined;
+
+    if (cleanCode && cleanCode !== oldData.code) {
+      const dup = await db.query`
+        SELECT id FROM public.document_types 
+        WHERE code = ${cleanCode} AND id != ${id} AND deleted_at IS NULL 
+        LIMIT 1;
+      `;
+      if (dup.length > 0) {
+        return errorResponse('DUPLICATE_CODE', `Kode jenis dokumen "${cleanCode}" sudah digunakan.`, 400);
+      }
+    }
 
     const updatedRows = await db.query`
       UPDATE public.document_types
       SET
-        code = COALESCE(${code || null}, code),
+        code = COALESCE(${cleanCode || null}, code),
         name = COALESCE(${name || null}, name),
         is_required = COALESCE(${is_required ?? null}, is_required),
         active = COALESCE(${active ?? null}, active),

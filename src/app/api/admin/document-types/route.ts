@@ -66,9 +66,33 @@ export async function POST(req: NextRequest) {
     const { code, name, is_required, active } = parsed.data;
     const cleanCode = code.toUpperCase().trim().replace(/\s+/g, '_');
 
-    const dup = await db.query`SELECT id FROM public.document_types WHERE code = ${cleanCode} AND deleted_at IS NULL LIMIT 1;`;
-    if (dup.length > 0) {
-      return errorResponse('DUPLICATE_CODE', 'Kode jenis dokumen sudah digunakan.', 400);
+    const existing = await db.query`
+      SELECT id, deleted_at FROM public.document_types WHERE code = ${cleanCode} LIMIT 1;
+    `;
+
+    let docTypeResult;
+
+    if (existing.length > 0) {
+      if (existing[0].deleted_at !== null) {
+        // Restore and update previously deleted document type
+        const updated = await db.query`
+          UPDATE public.document_types
+          SET name = ${name}, is_required = ${is_required}, active = ${active}, deleted_at = NULL, updated_at = NOW()
+          WHERE id = ${existing[0].id}
+          RETURNING id, code, name, is_required, active, created_at, updated_at;
+        `;
+        docTypeResult = updated[0];
+        await recordAuditLog({
+          userId: user.id,
+          actionCode: 'RESTORE_DOCUMENT_TYPE',
+          entityType: 'document_type',
+          entityId: docTypeResult.id,
+          newData: docTypeResult,
+        });
+        return successResponse(docTypeResult, undefined, 201);
+      } else {
+        return errorResponse('DUPLICATE_CODE', `Kode jenis dokumen "${cleanCode}" sudah digunakan dan sedang aktif.`, 400);
+      }
     }
 
     const rows = await db.query`
@@ -77,17 +101,17 @@ export async function POST(req: NextRequest) {
       RETURNING id, code, name, is_required, active, created_at, updated_at;
     `;
 
-    const newDocType = rows[0];
+    docTypeResult = rows[0];
 
     await recordAuditLog({
       userId: user.id,
       actionCode: 'CREATE_DOCUMENT_TYPE',
       entityType: 'document_type',
-      entityId: newDocType.id,
-      newData: newDocType,
+      entityId: docTypeResult.id,
+      newData: docTypeResult,
     });
 
-    return successResponse(newDocType, undefined, 201);
+    return successResponse(docTypeResult, undefined, 201);
   } catch (err) {
     if (err instanceof AuthError) {
       return errorResponse(err.code, err.message, err.code === 'UNAUTHORIZED' ? 401 : 403);
