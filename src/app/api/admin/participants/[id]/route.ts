@@ -147,7 +147,7 @@ export async function PATCH(
     const updatedRows = await db.query`
       UPDATE public.participants
       SET
-        lptk_id = COALESCE(${lptk_id || null}, lptk_id),
+        lptk_id = COALESCE(${user.role_code === 'OPERATOR_LPTK' ? user.lptk_id : (lptk_id || null)}, lptk_id),
         name = COALESCE(${name || null}, name),
         nik = COALESCE(${nik || null}, nik),
         gender_code = COALESCE(${gender_code || null}, gender_code),

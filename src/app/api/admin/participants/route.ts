@@ -154,11 +154,14 @@ export async function POST(req: NextRequest) {
       category_ids,
     } = parsed.data;
 
-    // Operator scope verification
+    // Operator scope verification & auto-assignment
+    let effectiveLptkId = lptk_id;
     if (user.role_code === 'OPERATOR_LPTK') {
-      if (user.lptk_id !== lptk_id) {
-        return errorResponse('FORBIDDEN', 'Operator hanya dapat mendaftarkan peserta untuk LPTK-nya sendiri.', 403);
+      if (!user.lptk_id) {
+        return errorResponse('FORBIDDEN', 'Akun Operator Anda belum terhubung dengan data LPTK Desa manapun.', 403);
       }
+      // Guarantee participant is assigned to operator's own village LPTK
+      effectiveLptkId = user.lptk_id;
     }
 
     // Check NIK duplication in this competition
@@ -178,7 +181,7 @@ export async function POST(req: NextRequest) {
         address, phone, school_or_institution, father_name, mother_name,
         status_code, created_by
       ) VALUES (
-        ${competition_id}, ${lptk_id}, ${name}, ${nik}, ${gender_code}, ${birth_place}, ${birth_date},
+        ${competition_id}, ${effectiveLptkId}, ${name}, ${nik}, ${gender_code}, ${birth_place}, ${birth_date},
         ${address}, ${phone}, ${school_or_institution || null}, ${father_name || null}, ${mother_name || null},
         'DRAFT', ${user.id}
       )
@@ -201,7 +204,7 @@ export async function POST(req: NextRequest) {
       actionCode: 'CREATE_PARTICIPANT',
       entityType: 'participant',
       entityId: newParticipant.id,
-      newData: { id: newParticipant.id, name, nik, lptk_id, competition_id },
+      newData: { id: newParticipant.id, name, nik, lptk_id: effectiveLptkId, competition_id },
     });
 
     return successResponse(newParticipant, undefined, 201);

@@ -4,8 +4,9 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Participant, Competition, Lptk, Category } from '@/types/database';
-import { AlertCircle, CheckCircle2, FileText, Info, Users } from 'lucide-react';
+import { AlertCircle, CheckCircle2, FileText, Info, Users, Building2 } from 'lucide-react';
 import { getCategoryBranchInfo, JUKNIS_REQUIRED_DOCUMENTS } from '@/data/juknis-official-data';
+import { useAuth } from '@/components/providers/auth-context';
 
 export interface ParticipantFormProps {
   initialData?: Participant | null;
@@ -38,6 +39,7 @@ function calculateAgeAtMTQ(birthDateStr: string) {
 
 export function ParticipantForm({ initialData }: ParticipantFormProps) {
   const router = useRouter();
+  const { user, isDesaOperator } = useAuth();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [lptks, setLptks] = useState<Lptk[]>([]);
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
@@ -48,7 +50,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
 
   const [formData, setFormData] = useState({
     competition_id: initialData?.competition_id || '',
-    lptk_id: initialData?.lptk_id || '',
+    lptk_id: initialData?.lptk_id || (isDesaOperator && user?.lptk_id ? user.lptk_id : ''),
     name: initialData?.name || '',
     nik: initialData?.nik || '',
     gender_code: initialData?.gender_code || 'MALE',
@@ -66,6 +68,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
     return calculateAgeAtMTQ(formData.birth_date);
   }, [formData.birth_date]);
 
+  // Load options once and set intelligent defaults
   useEffect(() => {
     async function loadOptions() {
       try {
@@ -75,12 +78,27 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
           if (json.success) {
             setCompetitions(json.data.competitions || []);
             setLptks(json.data.lptks || []);
-            if (!formData.competition_id && json.data.competitions?.length > 0) {
-              setFormData((prev) => ({ ...prev, competition_id: json.data.competitions[0].id }));
-            }
-            if (!formData.lptk_id && json.data.lptks?.length > 0) {
-              setFormData((prev) => ({ ...prev, lptk_id: json.data.lptks[0].id }));
-            }
+
+            setFormData((prev) => {
+              const updates: Partial<typeof prev> = {};
+
+              // Default to MTQ competition or competition with categories
+              if (!prev.competition_id && json.data.competitions?.length > 0) {
+                const defaultComp = json.data.competitions.find((c: Competition) =>
+                  c.name.toLowerCase().includes('mtq')
+                ) || json.data.competitions[0];
+                updates.competition_id = defaultComp.id;
+              }
+
+              // Default LPTK: If desa operator, strictly enforce their LPTK
+              if (isDesaOperator && user?.lptk_id) {
+                updates.lptk_id = user.lptk_id;
+              } else if (!prev.lptk_id && json.data.lptks?.length > 0) {
+                updates.lptk_id = json.data.lptks[0].id;
+              }
+
+              return { ...prev, ...updates };
+            });
           }
         }
       } catch (err) {
@@ -88,7 +106,14 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
       }
     }
     loadOptions();
-  }, [formData.competition_id, formData.lptk_id]);
+  }, [isDesaOperator, user?.lptk_id]);
+
+  // Synchronize operator's lptk_id when user session arrives
+  useEffect(() => {
+    if (isDesaOperator && user?.lptk_id && formData.lptk_id !== user.lptk_id) {
+      setFormData((prev) => ({ ...prev, lptk_id: user.lptk_id! }));
+    }
+  }, [isDesaOperator, user?.lptk_id, formData.lptk_id]);
 
   // Load categories when competition changes
   useEffect(() => {
@@ -177,11 +202,16 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
     const url = isEdit ? `/api/admin/participants/${initialData.id}` : '/api/admin/participants';
     const method = isEdit ? 'PATCH' : 'POST';
 
+    const payload = {
+      ...formData,
+      ...(isDesaOperator && user?.lptk_id ? { lptk_id: user.lptk_id } : {}),
+    };
+
     try {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json();
@@ -202,16 +232,16 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl bg-white border border-neutral-300 rounded p-6 space-y-6">
+    <form onSubmit={handleSubmit} className="max-w-4xl bg-white border border-neutral-300 rounded-md p-6 space-y-6">
       {error && (
-        <div className="p-3 text-xs bg-neutral-100 border border-neutral-400 text-black rounded flex items-center gap-2">
+        <div className="p-3 text-xs bg-neutral-100 border border-neutral-400 text-black rounded-md flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 text-black" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Info Juknis Map Biru */}
-      <div className="p-4 bg-neutral-50 border border-neutral-200 rounded flex items-start gap-3">
+      <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-md flex items-start gap-3">
         <Info className="w-4 h-4 text-black shrink-0 mt-0.5" />
         <div className="text-xs text-neutral-700 leading-relaxed">
           <p className="font-semibold text-black">Pedoman Juknis MTQ ke-XIX Tambusai Utara (Desa Mahato 2026):</p>
@@ -230,7 +260,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
             disabled={!!initialData}
             value={formData.competition_id}
             onChange={(e) => setFormData({ ...formData, competition_id: e.target.value })}
-            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black disabled:bg-neutral-100"
+            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black disabled:bg-neutral-100"
           >
             <option value="">Pilih Event Lomba</option>
             {competitions.map((c) => (
@@ -243,19 +273,33 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
 
         <div>
           <label className="block text-xs font-semibold text-black mb-1">LPTK / Desa Pengusul</label>
-          <select
-            required
-            value={formData.lptk_id}
-            onChange={(e) => setFormData({ ...formData, lptk_id: e.target.value })}
-            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
-          >
-            <option value="">Pilih LPTK</option>
-            {lptks.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
+          {isDesaOperator ? (
+            <div className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md bg-neutral-50 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-black font-medium">
+                <Building2 className="w-3.5 h-3.5 text-neutral-600 shrink-0" />
+                <span>
+                  {lptks.find((l) => l.id === (formData.lptk_id || user?.lptk_id))?.name || user?.full_name || 'Desa Anda'}
+                </span>
+              </div>
+              <span className="text-[10px] bg-neutral-200 text-neutral-800 px-1.5 py-0.5 rounded-sm font-mono font-medium">
+                Desa Anda
+              </span>
+            </div>
+          ) : (
+            <select
+              required
+              value={formData.lptk_id}
+              onChange={(e) => setFormData({ ...formData, lptk_id: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+            >
+              <option value="">Pilih LPTK</option>
+              {lptks.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -272,7 +316,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Nama lengkap sesuai KTP/Akta"
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
 
@@ -285,7 +329,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               value={formData.nik}
               onChange={(e) => setFormData({ ...formData, nik: e.target.value.replace(/\D/g, '') })}
               placeholder="16 digit angka"
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black font-mono"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black font-mono"
             />
           </div>
         </div>
@@ -297,7 +341,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               required
               value={formData.gender_code}
               onChange={(e) => setFormData({ ...formData, gender_code: e.target.value as any })}
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             >
               <option value="MALE">Laki-laki (Putra)</option>
               <option value="FEMALE">Perempuan (Putri)</option>
@@ -312,7 +356,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               value={formData.birth_place}
               onChange={(e) => setFormData({ ...formData, birth_place: e.target.value })}
               placeholder="Kota / Kabupaten"
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
 
@@ -323,14 +367,14 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               required
               value={formData.birth_date}
               onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
         </div>
 
         {/* Live Age Calculation Display */}
         {ageData && (
-          <div className="p-2.5 bg-neutral-100 border border-neutral-200 rounded text-xs flex items-center justify-between">
+          <div className="p-2.5 bg-neutral-100 border border-neutral-200 rounded-md text-xs flex items-center justify-between">
             <span className="text-neutral-600">Usia saat musabaqah (09 Nov 2026):</span>
             <span className="font-mono font-bold text-black">
               {ageData.years} Tahun {ageData.months} Bulan {ageData.days} Hari
@@ -347,7 +391,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="0812xxxxxxxx"
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
 
@@ -358,7 +402,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               value={formData.school_or_institution}
               onChange={(e) => setFormData({ ...formData, school_or_institution: e.target.value })}
               placeholder="Nama sekolah / pesantren / madrasah"
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
         </div>
@@ -371,7 +415,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             placeholder="Alamat lengkap domisili di Tambusai Utara..."
-            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+            className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
           />
         </div>
 
@@ -383,7 +427,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               value={formData.father_name}
               onChange={(e) => setFormData({ ...formData, father_name: e.target.value })}
               placeholder="Nama ayah kandung"
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
 
@@ -394,7 +438,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
               value={formData.mother_name}
               onChange={(e) => setFormData({ ...formData, mother_name: e.target.value })}
               placeholder="Nama ibu kandung"
-              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+              className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
             />
           </div>
         </div>
@@ -413,7 +457,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
 
         {/* Validation Warning Alert if any */}
         {categoryValidation && !categoryValidation.isValid && (
-          <div className="p-3 bg-neutral-100 border border-neutral-400 rounded text-xs space-y-1">
+          <div className="p-3 bg-neutral-100 border border-neutral-400 rounded-md text-xs space-y-1">
             <div className="font-semibold text-black flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5" />
               Perhatian Ketentuan Juknis:
@@ -428,7 +472,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
 
         {/* Team Format Guidance Alert (Fahmil, Syarhil, Rebana Klasik) */}
         {selectedBranchInfo && selectedBranchInfo.format !== 'INDIVIDU' && (
-          <div className="p-3 bg-neutral-100 border border-neutral-300 rounded text-xs space-y-1">
+          <div className="p-3 bg-neutral-100 border border-neutral-300 rounded-md text-xs space-y-1">
             <div className="font-bold text-black flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" />
               Ketentuan Pendaftaran Musabaqah Beregu ({selectedBranchInfo.formatLabel}):
@@ -440,7 +484,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
         )}
 
         {availableCategories.length === 0 ? (
-          <div className="p-4 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded">
+          <div className="p-4 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-md">
             Pilih event lomba terlebih dahulu untuk menampilkan cabang kategori.
           </div>
         ) : (
@@ -452,7 +496,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
                 <div
                   key={cat.id}
                   onClick={() => handleSelectCategory(cat.id)}
-                  className={`p-3 rounded border text-xs cursor-pointer transition-all ${
+                  className={`p-3 rounded-md border text-xs cursor-pointer transition-all ${
                     isSelected
                       ? 'border-black bg-neutral-900 text-white'
                       : 'border-neutral-200 hover:border-neutral-400 bg-white text-black'
@@ -470,7 +514,7 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-mono border ${
                       isSelected
                         ? 'bg-neutral-800 text-neutral-200 border-neutral-700'
                         : 'bg-neutral-100 text-neutral-700 border-neutral-200'
@@ -495,13 +539,13 @@ export function ParticipantForm({ initialData }: ParticipantFormProps) {
       </div>
 
       {/* 6 Dokumen Persyaratan Juknis MTQ XIX Preview */}
-      <div className="p-3.5 bg-neutral-50 border border-neutral-200 rounded space-y-2 text-xs">
+      <div className="p-3.5 bg-neutral-50 border border-neutral-200 rounded-md space-y-2 text-xs">
         <div className="flex items-center justify-between">
           <span className="font-bold text-black uppercase tracking-wider text-[11px] flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5" />
             6 Dokumen Persyaratan Wajib (Juknis MTQ XIX)
           </span>
-          <span className="text-[10px] font-mono font-medium text-neutral-700 bg-neutral-200 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-mono font-medium text-neutral-700 bg-neutral-200 px-2 py-0.5 rounded-sm">
             Map Warna Biru
           </span>
         </div>

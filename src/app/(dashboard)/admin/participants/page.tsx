@@ -23,6 +23,7 @@ import { ColumnToggle } from '@/components/ui/column-toggle';
 import { ActionMenu } from '@/components/ui/action-menu';
 import { Competition, Lptk } from '@/types/database';
 import { PaginationMeta } from '@/types/api';
+import { useAuth } from '@/components/providers/auth-context';
 
 const PARTICIPANT_COLUMNS = [
   { id: 'lptk', label: 'LPTK' },
@@ -32,6 +33,7 @@ const PARTICIPANT_COLUMNS = [
 ];
 
 export default function ParticipantsPage() {
+  const { user, isDesaOperator } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [meta, setMeta] = useState<PaginationMeta>();
   const [page, setPage] = useState(1);
@@ -90,7 +92,8 @@ export default function ParticipantsPage() {
       });
       if (search) params.set('q', search);
       if (selectedComp) params.set('competition_id', selectedComp);
-      if (selectedLptk) params.set('lptk_id', selectedLptk);
+      const effectiveLptk = isDesaOperator && user?.lptk_id ? user.lptk_id : selectedLptk;
+      if (effectiveLptk) params.set('lptk_id', effectiveLptk);
       if (selectedStatus) params.set('status_code', selectedStatus);
 
       const res = await fetch(`/api/admin/participants?${params.toString()}`);
@@ -106,7 +109,7 @@ export default function ParticipantsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, selectedComp, selectedLptk, selectedStatus]);
+  }, [page, search, selectedComp, selectedLptk, selectedStatus, isDesaOperator, user?.lptk_id]);
 
   useEffect(() => {
     fetchParticipants();
@@ -158,7 +161,8 @@ export default function ParticipantsPage() {
   const handleExport = () => {
     const params = new URLSearchParams();
     if (selectedComp) params.set('competition_id', selectedComp);
-    if (selectedLptk) params.set('lptk_id', selectedLptk);
+    const effectiveLptk = isDesaOperator && user?.lptk_id ? user.lptk_id : selectedLptk;
+    if (effectiveLptk) params.set('lptk_id', effectiveLptk);
     if (selectedStatus) params.set('status_code', selectedStatus);
     window.open(`/api/admin/participants/export?${params.toString()}`, '_blank');
   };
@@ -304,21 +308,28 @@ export default function ParticipantsPage() {
           ))}
         </select>
 
-        <select
-          value={selectedLptk}
-          onChange={(e) => {
-            setSelectedLptk(e.target.value);
-            setPage(1);
-          }}
-          className="px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black text-black"
-        >
-          <option value="">Semua LPTK</option>
-          {lptks.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-            </option>
-          ))}
-        </select>
+        {isDesaOperator ? (
+          <div className="px-3 py-1.5 text-xs bg-neutral-50 border border-neutral-300 rounded-md text-neutral-800 font-medium flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-neutral-600" />
+            <span>{lptks.find((l) => l.id === user?.lptk_id)?.name || 'Kafilah Anda'}</span>
+          </div>
+        ) : (
+          <select
+            value={selectedLptk}
+            onChange={(e) => {
+              setSelectedLptk(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-black"
+          >
+            <option value="">Semua LPTK</option>
+            {lptks.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        )}
 
         <select
           value={selectedStatus}
