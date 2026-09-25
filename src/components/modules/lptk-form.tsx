@@ -45,7 +45,7 @@ export function LptkForm({ initialData }: LptkFormProps) {
       }
     }
     loadVillages();
-  }, [formData.village_id]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

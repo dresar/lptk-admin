@@ -164,3 +164,5 @@ export async function DELETE(
     return handleServerError(err);
   }
 }
+
+export const PATCH = PUT;

@@ -93,11 +93,18 @@ export default function PostsPage() {
     if (!confirm(`Hapus ${selectedIds.length} artikel terpilih?`)) return;
     setBulkLoading(true);
     try {
-      for (const id of selectedIds) {
-        await fetch(`/api/admin/posts/${id}`, { method: 'DELETE' });
+      const res = await fetch('/api/admin/posts/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSelectedIds([]);
+        fetchPosts();
+      } else {
+        alert(json.error?.message || 'Gagal melakukan hapus massal.');
       }
-      setSelectedIds([]);
-      fetchPosts();
     } catch {
       alert('Gagal melakukan hapus massal.');
     } finally {

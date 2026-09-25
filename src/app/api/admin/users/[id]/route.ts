@@ -120,6 +120,24 @@ export async function DELETE(
       return errorResponse('SELF_DELETION_FORBIDDEN', 'Anda tidak dapat menghapus akun Anda sendiri.', 400);
     }
 
+    // Check if user has verification records
+    const verifCount = await db.query`
+      SELECT count(*)::int as count FROM public.verifications WHERE verifier_id = ${id};
+    `;
+    if (verifCount[0]?.count > 0) {
+      await db.query`UPDATE auth.users SET active = false, updated_at = NOW() WHERE id = ${id}`;
+      await db.query`DELETE FROM auth.sessions WHERE user_id = ${id}`;
+      return successResponse({
+        message: 'Pengguna memiliki riwayat verifikasi berkas. Akun dinonaktifkan demi integritas audit musabaqah.',
+      });
+    }
+
+    // Detach nullable user references to prevent FK constraint errors
+    await db.query`UPDATE public.participants SET created_by = NULL WHERE created_by = ${id}`;
+    await db.query`UPDATE public.posts SET created_by = NULL WHERE created_by = ${id}`;
+    await db.query`UPDATE public.system_settings SET updated_by = NULL WHERE updated_by = ${id}`;
+    await db.query`DELETE FROM auth.sessions WHERE user_id = ${id}`;
+
     const deleted = await db.query`
       DELETE FROM auth.users WHERE id = ${id} RETURNING id, email;
     `;

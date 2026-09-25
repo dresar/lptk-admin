@@ -48,7 +48,7 @@ export function UserForm({ initialData }: UserFormProps) {
       }
     }
     loadOptions();
-  }, [formData.role_id]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

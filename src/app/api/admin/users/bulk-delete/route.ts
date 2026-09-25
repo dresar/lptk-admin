@@ -25,11 +25,30 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      const res = await db.query`DELETE FROM auth.users WHERE id = ${id} RETURNING id;`;
-      if (res && res.length > 0) {
-        deletedCount++;
-      } else {
-        failed.push({ id, reason: 'NOT_FOUND' });
+      try {
+        const verifCount = await db.query`
+          SELECT count(*)::int as count FROM public.verifications WHERE verifier_id = ${id};
+        `;
+        if (verifCount[0]?.count > 0) {
+          await db.query`UPDATE auth.users SET active = false, updated_at = NOW() WHERE id = ${id}`;
+          await db.query`DELETE FROM auth.sessions WHERE user_id = ${id}`;
+          deletedCount++;
+          continue;
+        }
+
+        await db.query`UPDATE public.participants SET created_by = NULL WHERE created_by = ${id}`;
+        await db.query`UPDATE public.posts SET created_by = NULL WHERE created_by = ${id}`;
+        await db.query`UPDATE public.system_settings SET updated_by = NULL WHERE updated_by = ${id}`;
+        await db.query`DELETE FROM auth.sessions WHERE user_id = ${id}`;
+
+        const res = await db.query`DELETE FROM auth.users WHERE id = ${id} RETURNING id;`;
+        if (res && res.length > 0) {
+          deletedCount++;
+        } else {
+          failed.push({ id, reason: 'NOT_FOUND' });
+        }
+      } catch (err: any) {
+        failed.push({ id, reason: err.message || 'DELETE_FAILED' });
       }
     }
 
