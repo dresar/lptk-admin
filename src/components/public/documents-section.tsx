@@ -5,6 +5,37 @@ import { FileText, Download, Check, AlertCircle, FolderArchive } from 'lucide-re
 import { JUKNIS_REQUIRED_DOCUMENTS } from '@/data/juknis-official-data';
 
 export function DocumentsSection() {
+  const [branding, setBranding] = React.useState<{
+    juknis_mode?: string;
+    juknis_pdf_url?: string;
+    juknis_word_url?: string;
+    juknis_letter_no?: string;
+  }>({
+    juknis_mode: 'custom',
+    juknis_pdf_url: '/documents/juknis-mtq-xix-tambusai-utara-2026.pdf',
+    juknis_word_url: '',
+    juknis_letter_no: '09/LPTQ-T.U/MTQ/IX/2026',
+  });
+
+  React.useEffect(() => {
+    fetch('/api/meta/branding', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data) {
+          setBranding(json.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const isWord = branding.juknis_mode === 'word' && Boolean(branding.juknis_word_url);
+  const downloadUrl = isWord
+    ? branding.juknis_word_url!
+    : branding.juknis_pdf_url || '/documents/juknis-mtq-xix-tambusai-utara-2026.pdf';
+  const downloadName = isWord
+    ? 'juknis-mtq-xix-tambusai-utara-2026.docx'
+    : 'juknis-mtq-xix-tambusai-utara-2026.pdf';
+
   return (
     <section id="dokumen" className="bg-white text-neutral-900 py-12 border-b border-neutral-300 scroll-mt-14">
       <div className="max-w-6xl mx-auto px-4">
@@ -25,7 +56,7 @@ export function DocumentsSection() {
 
         {/* Two-Column Layout: Rectangular Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-          {/* Download Juknis PDF Card (Rectangular with subtle rounded corners) */}
+          {/* Download Juknis PDF/Word Card (Rectangular with subtle rounded corners) */}
           <div className="lg:col-span-5 bg-emerald-950 text-white p-5 sm:p-6 rounded-md flex flex-col justify-between space-y-5 shadow-xs border border-emerald-800">
             <div className="space-y-3.5">
               <div className="w-10 h-10 rounded-md bg-emerald-900 border border-emerald-700 flex items-center justify-center text-amber-400 shadow-xs">
@@ -34,7 +65,7 @@ export function DocumentsSection() {
 
               <div>
                 <span className="text-[10px] font-mono text-amber-300 block mb-1 font-semibold uppercase">
-                  SK NO. 09/LPTQ-T.U/MTQ/IX/2026
+                  SK NO. {branding.juknis_letter_no || '09/LPTQ-T.U/MTQ/IX/2026'}
                 </span>
                 <h3 className="font-bold text-base sm:text-lg text-white">
                   Buku Petunjuk Teknis MTQ ke-XIX Tahun 2026
@@ -47,11 +78,11 @@ export function DocumentsSection() {
               <div className="p-3 bg-emerald-900/60 border border-emerald-800 rounded-md space-y-1.5 text-xs font-mono text-emerald-200">
                 <div className="flex justify-between border-b border-emerald-800/80 pb-1">
                   <span className="text-emerald-400">Format:</span>
-                  <span className="text-white font-bold">PDF Dokumen</span>
+                  <span className="text-white font-bold">{isWord ? 'Word (.docx)' : 'PDF Dokumen'}</span>
                 </div>
                 <div className="flex justify-between border-b border-emerald-800/80 pb-1">
-                  <span className="text-emerald-400">Ukuran:</span>
-                  <span className="text-white font-bold">340 KB</span>
+                  <span className="text-emerald-400">Sumber:</span>
+                  <span className="text-white font-bold">CDN Neon Storage</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-emerald-400">Ditetapkan:</span>
@@ -62,12 +93,14 @@ export function DocumentsSection() {
 
             <div>
               <a
-                href="/documents/juknis-mtq-xix-tambusai-utara-2026.pdf"
-                download="juknis-mtq-xix-tambusai-utara-2026.pdf"
+                href={downloadUrl}
+                download={downloadName}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs sm:text-sm rounded-md transition-colors shadow-xs min-h-[42px]"
               >
                 <Download className="w-4 h-4" />
-                <span>Unduh Juknis Resmi PDF</span>
+                <span>Unduh Juknis Resmi</span>
               </a>
             </div>
           </div>

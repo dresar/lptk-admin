@@ -7,7 +7,7 @@ import { recordAuditLog } from '@/server/utils/audit';
 
 export const dynamic = 'force-dynamic';
 
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
       return errorResponse('VALIDATION_ERROR', 'Berkas (file) wajib disertakan.', 400);
     }
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      return errorResponse('FILE_TOO_LARGE', 'Ukuran berkas melebihi batas maksimum 5 MB.', 400);
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return errorResponse('FILE_TOO_LARGE', 'Ukuran berkas melebihi batas maksimum 25 MB.', 400);
     }
 
     const arrayBuffer = await file.arrayBuffer();

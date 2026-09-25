@@ -287,7 +287,7 @@ export default function AdminCdnPage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,application/pdf"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,application/pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
             onChange={handleFileUpload}
             className="hidden"
           />
@@ -420,6 +420,20 @@ export default function AdminCdnPage() {
                       className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-150"
                       loading="lazy"
                     />
+                  ) : asset.name.toLowerCase().endsWith('.docx') || asset.name.toLowerCase().endsWith('.doc') || asset.type.includes('word') ? (
+                    <div className="flex flex-col items-center justify-center gap-1 text-blue-700">
+                      <FileText className="w-9 h-9" />
+                      <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded-xs">
+                        DOCX
+                      </span>
+                    </div>
+                  ) : asset.name.toLowerCase().endsWith('.pdf') || asset.type.includes('pdf') ? (
+                    <div className="flex flex-col items-center justify-center gap-1 text-rose-700">
+                      <FileText className="w-9 h-9" />
+                      <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 bg-rose-100 text-rose-800 rounded-xs">
+                        PDF
+                      </span>
+                    </div>
                   ) : (
                     <FileText className="w-10 h-10 text-neutral-400" />
                   )}

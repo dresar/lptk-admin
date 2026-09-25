@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
       else if (ext === 'svg') mime = 'image/svg+xml';
       else if (ext === 'gif') mime = 'image/gif';
       else if (ext === 'pdf') mime = 'application/pdf';
+      else if (ext === 'docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      else if (ext === 'doc') mime = 'application/msword';
 
       const cleanPath = item.key.replace(/^cdn\//, '');
 

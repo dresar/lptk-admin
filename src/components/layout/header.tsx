@@ -23,6 +23,7 @@ const PATH_TITLES: Record<string, string> = {
   '/admin/settings': 'Pengaturan',
   '/admin/profile': 'Profil',
   '/admin/juknis': 'Juknis',
+  '/admin/juknis/edit': 'Edit Juknis',
   '/admin/cdn': 'Media CDN',
 };
 

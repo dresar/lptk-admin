@@ -72,9 +72,43 @@ export function validateMagicBytes(buffer: Buffer): FileSignatureResult {
     return { valid: true, detectedMime: 'image/svg+xml', extension: 'svg' };
   }
 
+  // 7. DOCX: PK\x03\x04 (ZIP format for Microsoft Word Open XML)
+  if (
+    buffer.length >= 4 &&
+    buffer[0] === 0x50 &&
+    buffer[1] === 0x4b &&
+    (buffer[2] === 0x03 || buffer[2] === 0x05 || buffer[2] === 0x07) &&
+    (buffer[3] === 0x04 || buffer[3] === 0x06 || buffer[3] === 0x08)
+  ) {
+    return {
+      valid: true,
+      detectedMime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      extension: 'docx',
+    };
+  }
+
+  // 8. DOC: D0 CF 11 E0 A1 B1 1A E1 (Legacy Microsoft Word CFBF)
+  if (
+    buffer.length >= 8 &&
+    buffer[0] === 0xd0 &&
+    buffer[1] === 0xcf &&
+    buffer[2] === 0x11 &&
+    buffer[3] === 0xe0 &&
+    buffer[4] === 0xa1 &&
+    buffer[5] === 0xb1 &&
+    buffer[6] === 0x1a &&
+    buffer[7] === 0xe1
+  ) {
+    return {
+      valid: true,
+      detectedMime: 'application/msword',
+      extension: 'doc',
+    };
+  }
+
   return {
     valid: false,
-    error: 'Format berkas tidak diizinkan. Hanya berkas PDF, JPG, PNG, WebP, GIF, atau SVG yang diterima.',
+    error: 'Format berkas tidak diizinkan. Hanya berkas PDF, DOCX, DOC, JPG, PNG, WebP, GIF, atau SVG yang diterima.',
   };
 }
 

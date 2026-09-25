@@ -1,6 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.font-times,
+.font-tnr,
+.naskah-dinas {
+  font-family: 'Times New Roman', 'Tinos', Times, 'Nimbus Roman No9 L', 'Liberation Serif', FreeSerif, serif;
+}
 
 :root {
   --background: #ffffff;
