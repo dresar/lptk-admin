@@ -18,6 +18,7 @@ export async function GET() {
         'event_location',
         'juknis_letter_no',
         'juknis_letter_date',
+        'juknis_pdf_url',
         'lptq_chairman',
         'lptq_secretariat',
         'submission_envelope'
@@ -33,6 +34,7 @@ export async function GET() {
       event_location: 'Desa Mahato, Kecamatan Tambusai Utara, Kabupaten Rokan Hulu',
       juknis_letter_no: '09/LPTQ-T.U/MTQ/IX/2026',
       juknis_letter_date: '10 September 2026',
+      juknis_pdf_url: '/documents/juknis-mtq-xix-tambusai-utara-2026.pdf',
       lptq_chairman: 'Rahmat Saputra',
       lptq_secretariat: 'Kantor KUA - Jl. Raya Rantau Kasai Desa Rantau Kasai, Kec. Tambusai Utara, Kab. Rokan Hulu - Riau',
       submission_envelope: 'Map Warna Biru disampaikan di Sekretariat LPTQ Kecamatan / Bagian Administrasi MTQ Desa Mahato',

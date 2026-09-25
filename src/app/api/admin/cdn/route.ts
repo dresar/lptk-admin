@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { db } from '@/server/db/client';
 import { listObjectsFromS3, deleteFromS3 } from '@/server/utils/s3';
 import { successResponse, errorResponse, handleServerError } from '@/server/utils/response';
 import { requirePermission, AuthError } from '@/server/middlewares/auth';
@@ -29,12 +30,19 @@ export async function GET(req: NextRequest) {
       return {
         key: item.key,
         name: filename,
-        folder: parts.length > 1 ? parts[0] === 'cdn' && parts.length > 2 ? parts[1] : parts[0] : 'root',
+        folder: parts.length > 1 ? (parts[0] === 'cdn' && parts.length > 2 ? parts[1] : parts[0]) : 'root',
         type: mime,
         size_bytes: item.size,
         last_modified: item.lastModified,
         url: `/api/cdn/${cleanPath}`,
       };
+    });
+
+    // Sort newest first by lastModified
+    assets.sort((a, b) => {
+      const timeA = a.last_modified ? new Date(a.last_modified).getTime() : 0;
+      const timeB = b.last_modified ? new Date(b.last_modified).getTime() : 0;
+      return timeB - timeA;
     });
 
     return successResponse({
@@ -60,12 +68,25 @@ export async function DELETE(req: NextRequest) {
       return errorResponse('VALIDATION_ERROR', 'Parameter key berkas wajib disertakan.', 400);
     }
 
-    // Safety check: protect default system logos from accidental deletion
-    if (key === 'cdn/logos/lptq-logo.png' || key === 'cdn/logos/lptq-stempel.png') {
-      return errorResponse('PROTECTED_ASSET', 'Aset default sistem tidak dapat dihapus.', 400);
-    }
-
+    // Delete from S3 storage
     await deleteFromS3(key);
+
+    // If this file was set as logo/stamp in system settings, clear reference
+    const keyPattern = `%${key}%`;
+    try {
+      await db.query`
+        UPDATE public.system_settings 
+        SET value = to_jsonb('/api/cdn/logos/lptq-logo.png'::text), updated_at = NOW()
+        WHERE key = 'app_logo_url' AND value::text ILIKE ${keyPattern};
+      `;
+      await db.query`
+        UPDATE public.system_settings 
+        SET value = to_jsonb('/api/cdn/logos/lptq-stempel.png'::text), updated_at = NOW()
+        WHERE key = 'app_stamp_url' AND value::text ILIKE ${keyPattern};
+      `;
+    } catch (dbErr) {
+      console.warn('Could not reset system settings reference:', dbErr);
+    }
 
     await recordAuditLog({
       userId: user.id,

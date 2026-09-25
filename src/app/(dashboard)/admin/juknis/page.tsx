@@ -1,44 +1,187 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Printer,
   Download,
   Search,
+  Edit3,
+  X,
+  UploadCloud,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import {
   JUKNIS_OFFICIAL_HEADER,
   JUKNIS_PAGES,
 } from '@/data/juknis-official-data';
+import { useAuth } from '@/components/providers/auth-context';
+
+interface JuknisSettings {
+  juknis_letter_no: string;
+  juknis_letter_date: string;
+  event_official_name: string;
+  event_dates: string;
+  event_location: string;
+  lptq_chairman: string;
+  lptq_secretariat: string;
+  submission_envelope: string;
+  juknis_pdf_url: string;
+  app_logo_url: string;
+  app_stamp_url: string;
+}
+
+const DEFAULT_SETTINGS: JuknisSettings = {
+  juknis_letter_no: '09/LPTQ-T.U/MTQ/IX/2026',
+  juknis_letter_date: '10 September 2026',
+  event_official_name: 'Musabaqah Tilawatil Qur’an (MTQ) ke-XIX Tingkat Kecamatan Tambusai Utara Tahun 2026 di Desa Mahato',
+  event_dates: '09 – 13 November 2026',
+  event_location: 'Desa Mahato, Kecamatan Tambusai Utara, Kabupaten Rokan Hulu',
+  lptq_chairman: 'Rahmat Saputra',
+  lptq_secretariat: 'Kantor KUA - Jl. Raya Rantau Kasai Desa Rantau Kasai, Kec. Tambusai Utara, Kab. Rokan Hulu - Riau',
+  submission_envelope: 'Map Warna Biru disampaikan di Sekretariat LPTQ Kecamatan / Bagian Administrasi MTQ Desa Mahato',
+  juknis_pdf_url: '/documents/juknis-mtq-xix-tambusai-utara-2026.pdf',
+  app_logo_url: '/api/cdn/logos/lptq-logo.png',
+  app_stamp_url: '/api/cdn/logos/lptq-stempel.png',
+};
 
 export default function JuknisPage() {
+  const { isSuperAdmin, isKecamatanAdmin } = useAuth();
+  const canEditJuknis = isSuperAdmin || isKecamatanAdmin;
+
   const [viewMode, setViewMode] = useState<'dokumen' | 'ringkasan'>('dokumen');
   const [selectedCabangFilter, setSelectedCabangFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [logoUrl, setLogoUrl] = useState('/api/cdn/logos/lptq-logo.png');
-  const [stampUrl, setStampUrl] = useState('/api/cdn/logos/lptq-stempel.png');
 
+  const [settings, setSettings] = useState<JuknisSettings>(DEFAULT_SETTINGS);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [formData, setFormData] = useState<JuknisSettings>(DEFAULT_SETTINGS);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-dismiss top-right toast
   useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const loadSettings = () => {
     fetch('/api/meta/branding', { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
-        if (json?.data?.app_logo_url) setLogoUrl(json.data.app_logo_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/'));
-        if (json?.data?.app_stamp_url) setStampUrl(json.data.app_stamp_url.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/'));
+        if (json?.data) {
+          setSettings((prev) => ({
+            ...prev,
+            ...json.data,
+            app_logo_url: json.data.app_logo_url?.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/') || prev.app_logo_url,
+            app_stamp_url: json.data.app_stamp_url?.replace(/\/api\/cdn\/cdn\//g, '/api/cdn/') || prev.app_stamp_url,
+          }));
+        }
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    loadSettings();
   }, []);
+
+  const handleOpenEdit = () => {
+    setFormData({ ...settings });
+    setIsEditOpen(true);
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setToast({ message: 'Hanya berkas PDF yang diperbolehkan.', type: 'error' });
+      return;
+    }
+
+    setUploadingPdf(true);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      body.append('folder', 'juknis');
+
+      const res = await fetch('/api/admin/cdn/upload', {
+        method: 'POST',
+        body,
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message || 'Gagal mengunggah PDF.');
+      }
+
+      const uploadedUrl = json.data?.url;
+      setFormData((prev) => ({ ...prev, juknis_pdf_url: uploadedUrl }));
+      setToast({ message: 'PDF berhasil diunggah.', type: 'success' });
+    } catch (err: any) {
+      setToast({ message: err.message || 'Gagal mengunggah berkas.', type: 'error' });
+    } finally {
+      setUploadingPdf(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        settings: [
+          { key: 'juknis_letter_no', value: formData.juknis_letter_no },
+          { key: 'juknis_letter_date', value: formData.juknis_letter_date },
+          { key: 'event_official_name', value: formData.event_official_name },
+          { key: 'event_dates', value: formData.event_dates },
+          { key: 'event_location', value: formData.event_location },
+          { key: 'lptq_chairman', value: formData.lptq_chairman },
+          { key: 'lptq_secretariat', value: formData.lptq_secretariat },
+          { key: 'submission_envelope', value: formData.submission_envelope },
+          { key: 'juknis_pdf_url', value: formData.juknis_pdf_url },
+        ],
+      };
+
+      const res = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message || 'Gagal menyimpan pengaturan.');
+      }
+
+      setSettings({ ...formData });
+      setIsEditOpen(false);
+      setToast({ message: 'Juknis berhasil diperbarui.', type: 'success' });
+    } catch (err: any) {
+      setToast({ message: err.message || 'Terjadi kesalahan sistem.', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handlePrint = () => {
     window.print();
   };
 
   const handleDownload = () => {
-    // Download the authentic official PDF directly
     const link = document.createElement('a');
-    link.href = '/documents/juknis-mtq-xix-tambusai-utara-2026.pdf';
-    link.download = 'Juknis_MTQ_XIX_Tambusai_Utara_2026_Desa_Mahato.pdf';
+    link.href = settings.juknis_pdf_url || '/documents/juknis-mtq-xix-tambusai-utara-2026.pdf';
+    link.download = 'Juknis_MTQ_XIX_Tambusai_Utara_2026.pdf';
+    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -77,18 +220,36 @@ export default function JuknisPage() {
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
+      {/* Top-Right Notification Toast */}
+      {toast && (
+        <div
+          className={`fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold shadow-lg border transition-all duration-200 ${
+            toast.type === 'success'
+              ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
+              : 'bg-rose-50 text-rose-900 border-rose-300'
+          }`}
+        >
+          {toast.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          )}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       {/* Top Bar Navigation (Hidden on Print) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-300 print:hidden">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-black">Juknis</h1>
           <p className="text-xs text-neutral-600 mt-0.5">
-            Petunjuk Teknis Resmi MTQ ke-XIX Tingkat Kecamatan Tambusai Utara Tahun 2026 di Desa Mahato
+            Petunjuk teknis resmi MTQ XIX Tambusai Utara 2026.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* View Mode Toggle: Dokumen vs Ringkasan */}
-          <div className="flex items-center border border-neutral-300 rounded overflow-hidden p-0.5 bg-neutral-100">
+          {/* View Mode Toggle */}
+          <div className="flex items-center border border-neutral-300 rounded-md overflow-hidden p-0.5 bg-neutral-100">
             <button
               type="button"
               onClick={() => setViewMode('dokumen')}
@@ -113,12 +274,25 @@ export default function JuknisPage() {
             </button>
           </div>
 
+          {canEditJuknis && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenEdit}
+              className="text-xs font-semibold gap-1.5 rounded-md"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              Edit
+            </Button>
+          )}
+
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleDownload}
-            className="text-xs font-semibold gap-1.5"
+            className="text-xs font-semibold gap-1.5 rounded-md"
           >
             <Download className="w-3.5 h-3.5" />
             Unduh
@@ -128,7 +302,7 @@ export default function JuknisPage() {
             type="button"
             size="sm"
             onClick={handlePrint}
-            className="text-xs font-semibold gap-1.5"
+            className="text-xs font-semibold gap-1.5 rounded-md"
           >
             <Printer className="w-3.5 h-3.5" />
             Cetak
@@ -140,9 +314,9 @@ export default function JuknisPage() {
       {viewMode === 'dokumen' && (
         <div className="space-y-6 sm:space-y-8 w-full max-w-full overflow-hidden">
           {/* Helper notice on web screen */}
-          <div className="p-3 bg-neutral-100 border border-neutral-300 text-xs text-neutral-700 rounded print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div className="p-3 bg-neutral-100 border border-neutral-300 text-xs text-neutral-700 rounded-md print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <span>
-              Format naskah dinas resmi sesuai fisik dokumen <strong>09/LPTQ-T.U/MTQ/IX/2026</strong>. Klik <strong>Cetak</strong> untuk print standar kertas A4.
+              Format naskah dinas resmi sesuai fisik dokumen <strong>{settings.juknis_letter_no}</strong>. Klik <strong>Cetak</strong> untuk print standar kertas A4.
             </span>
             <span className="font-mono text-[11px] text-neutral-500 font-bold shrink-0">8 Halaman Lengkap</span>
           </div>
@@ -151,7 +325,7 @@ export default function JuknisPage() {
           {JUKNIS_PAGES.map((page) => (
             <div
               key={page.page_number}
-              className="w-full max-w-4xl mx-auto bg-white border border-neutral-300 shadow-sm p-4 sm:p-10 lg:p-14 font-serif text-black leading-relaxed relative print:border-none print:shadow-none print:p-0 print:m-0 print:break-after-page mb-6 sm:mb-8 overflow-hidden break-words"
+              className="w-full max-w-4xl mx-auto bg-white border border-neutral-300 shadow-sm p-4 sm:p-10 lg:p-14 font-serif text-black leading-relaxed relative print:border-none print:shadow-none print:p-0 print:m-0 print:break-after-page mb-6 sm:mb-8 overflow-hidden break-words rounded-md"
             >
               {/* Header Kop Surat Resmi (Halaman 1) */}
               {page.page_number === 1 && (
@@ -159,7 +333,7 @@ export default function JuknisPage() {
                   <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 sm:gap-4 pb-3">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 relative shrink-0 flex items-center justify-center">
                       <img
-                        src={logoUrl}
+                        src={settings.app_logo_url}
                         alt="Logo LPTQ"
                         className="object-contain w-full h-full max-h-20"
                         onError={(e) => {
@@ -178,7 +352,7 @@ export default function JuknisPage() {
                         {JUKNIS_OFFICIAL_HEADER.instansi_baris3}
                       </h3>
                       <p className="text-[10px] sm:text-[11px] font-sans text-neutral-700 leading-tight mt-1 italic break-words">
-                        {JUKNIS_OFFICIAL_HEADER.alamat_sekretariat}
+                        {settings.lptq_secretariat || JUKNIS_OFFICIAL_HEADER.alamat_sekretariat}
                       </p>
                     </div>
                   </div>
@@ -194,7 +368,7 @@ export default function JuknisPage() {
                         <span className="w-14 sm:w-16 shrink-0 text-neutral-600">No</span>
                         <span className="w-3 shrink-0">:</span>
                         <span className="font-sans font-bold break-all flex-1 min-w-0">
-                          {JUKNIS_OFFICIAL_HEADER.nomor_surat}
+                          {settings.juknis_letter_no || JUKNIS_OFFICIAL_HEADER.nomor_surat}
                         </span>
                       </div>
                       <div className="flex items-start">
@@ -256,13 +430,11 @@ export default function JuknisPage() {
                       <div className="space-y-3 pl-1 sm:pl-2 break-words">
                         {sec.items.map((it, itIdx) => (
                           <div key={itIdx} className="space-y-1.5 break-words">
-                            {/* Jika label adalah judul tanpa teks pendamping */}
                             {it.label && !it.text ? (
                               <div className="font-bold text-black text-xs sm:text-sm leading-snug break-words">
                                 {it.label}
                               </div>
                             ) : (
-                              /* Jika memiliki label penomoran dan isi teks */
                               <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2 break-words">
                                 {it.label && (
                                   <span
@@ -281,7 +453,6 @@ export default function JuknisPage() {
                               </div>
                             )}
 
-                            {/* Sub-item bullet point */}
                             {it.subitems && (
                               <ul className="list-disc pl-5 sm:pl-6 space-y-1 text-xs sm:text-[13px] text-neutral-800">
                                 {it.subitems.map((sub, subIdx) => (
@@ -303,15 +474,15 @@ export default function JuknisPage() {
               {page.show_signature && (
                 <div className="mt-8 sm:mt-12 flex justify-end font-serif">
                   <div className="w-52 sm:w-64 text-center text-xs space-y-1">
-                    <div>Tambusai Utara, 10 September 2026</div>
+                    <div>Tambusai Utara, {settings.juknis_letter_date || '10 September 2026'}</div>
                     <div className="font-bold uppercase">Ketua Umum</div>
                     <div className="font-sans text-[11px] text-neutral-700">LPTQ Kec.Tambusai Utara</div>
                     
                     {/* Gambar Stempel & Tanda Tangan Resmi */}
                     <div className="py-1 flex justify-center">
                       <img
-                        src={stampUrl}
-                        alt="Stempel LPTQ & Tanda Tangan Rahmat Saputra"
+                        src={settings.app_stamp_url}
+                        alt={`Stempel LPTQ & Tanda Tangan ${settings.lptq_chairman}`}
                         className="object-contain max-w-full h-24"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
@@ -320,7 +491,7 @@ export default function JuknisPage() {
                     </div>
 
                     <div className="font-bold font-sans tracking-wide uppercase border-b border-black inline-block px-2 text-xs">
-                      RAHMAT SAPUTRA
+                      {settings.lptq_chairman || 'RAHMAT SAPUTRA'}
                     </div>
                   </div>
                 </div>
@@ -344,7 +515,7 @@ export default function JuknisPage() {
       {viewMode === 'ringkasan' && (
         <div className="space-y-6 w-full max-w-full overflow-hidden">
           {/* Filter Bar */}
-          <div className="bg-white border border-neutral-300 rounded p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="bg-white border border-neutral-300 rounded-md p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-1.5">
               {[
                 { key: 'ALL', label: 'Semua' },
@@ -359,7 +530,7 @@ export default function JuknisPage() {
                   key={c.key}
                   type="button"
                   onClick={() => setSelectedCabangFilter(c.key)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded border transition-colors ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
                     selectedCabangFilter === c.key
                       ? 'border-black bg-black text-white'
                       : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-500'
@@ -377,13 +548,13 @@ export default function JuknisPage() {
                 placeholder="Cari golongan atau maqra..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                className="w-full pl-8 pr-3 py-1.5 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
               />
             </div>
           </div>
 
           {/* Tabel Matriks Cepat */}
-          <div className="bg-white border border-neutral-300 rounded overflow-hidden shadow-sm">
+          <div className="bg-white border border-neutral-300 rounded-md overflow-hidden shadow-sm">
             <div className="overflow-x-auto w-full">
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
@@ -430,7 +601,7 @@ export default function JuknisPage() {
 
           {/* Ringkasan 6 Dokumen & Ketentuan Map Biru */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 bg-white border border-neutral-300 rounded space-y-3">
+            <div className="p-5 bg-white border border-neutral-300 rounded-md space-y-3">
               <h2 className="text-xs font-bold text-black uppercase tracking-wider border-b border-neutral-200 pb-2">
                 6 Dokumen Persyaratan Administrasi
               </h2>
@@ -444,13 +615,13 @@ export default function JuknisPage() {
               </ol>
             </div>
 
-            <div className="p-5 bg-white border border-neutral-300 rounded space-y-3">
+            <div className="p-5 bg-white border border-neutral-300 rounded-md space-y-3">
               <h2 className="text-xs font-bold text-black uppercase tracking-wider border-b border-neutral-200 pb-2">
                 Ketentuan Pengumpulan & Sanksi
               </h2>
               <div className="space-y-2 text-xs text-neutral-800 leading-relaxed">
                 <p>
-                  <strong>Wadah Berkas:</strong> Berkas pendaftaran beserta dokumen asli dan fotokopi rangkap 1 (satu) dimasukkan ke dalam <strong>Map Warna Biru</strong> dan disampaikan di Sekretariat LPTQ Kecamatan / Bagian Administrasi MTQ Desa Mahato.
+                  <strong>Wadah Berkas:</strong> {settings.submission_envelope || 'Map Warna Biru disampaikan di Sekretariat LPTQ Kecamatan / Bagian Administrasi MTQ Desa Mahato.'}
                 </p>
                 <p>
                   <strong>Batasan Cabang:</strong> Setiap peserta hanya boleh mengikuti <strong>1 cabang musabaqah</strong>.
@@ -460,6 +631,208 @@ export default function JuknisPage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT JUKNIS MODAL (Admin Only) */}
+      {isEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white border border-neutral-300 rounded-md shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-200">
+              <div>
+                <h2 className="text-sm font-bold text-black">Edit Juknis</h2>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  Perbarui parameter naskah dinas dan dokumen PDF resmi.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditOpen(false)}
+                className="text-neutral-400 hover:text-black p-1 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body / Form */}
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Nomor Surat
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.juknis_letter_no}
+                    onChange={(e) => setFormData({ ...formData, juknis_letter_no: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Tanggal Surat
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.juknis_letter_date}
+                    onChange={(e) => setFormData({ ...formData, juknis_letter_date: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Nama Resmi Kegiatan
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.event_official_name}
+                    onChange={(e) => setFormData({ ...formData, event_official_name: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Tanggal Pelaksanaan
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.event_dates}
+                    onChange={(e) => setFormData({ ...formData, event_dates: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Ketua Umum LPTQ
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.lptq_chairman}
+                    onChange={(e) => setFormData({ ...formData, lptq_chairman: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Lokasi Pelaksanaan
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.event_location}
+                    onChange={(e) => setFormData({ ...formData, event_location: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Alamat Sekretariat
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.lptq_secretariat}
+                    onChange={(e) => setFormData({ ...formData, lptq_secretariat: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Ketentuan Wadah Berkas
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.submission_envelope}
+                    onChange={(e) => setFormData({ ...formData, submission_envelope: e.target.value })}
+                    className="w-full text-xs px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-white text-black"
+                  />
+                </div>
+
+                {/* Upload Berkas PDF Juknis */}
+                <div className="sm:col-span-2 border-t border-neutral-200 pt-3">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Berkas PDF Resmi
+                  </label>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <input
+                      type="text"
+                      value={formData.juknis_pdf_url}
+                      onChange={(e) => setFormData({ ...formData, juknis_pdf_url: e.target.value })}
+                      placeholder="/documents/juknis-mtq-xix-tambusai-utara-2026.pdf"
+                      className="flex-1 text-xs font-mono px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black bg-neutral-50 text-neutral-800"
+                    />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      onChange={handlePdfUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploadingPdf}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-xs font-semibold gap-1.5 shrink-0 rounded-md"
+                    >
+                      {uploadingPdf ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Mengunggah</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span>Unggah PDF</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-neutral-500 mt-1">
+                    Unggah dokumen PDF baru (maks. 5 MB) ke penyimpanan CDN.
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-2 pt-4 border-t border-neutral-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditOpen(false)}
+                  disabled={saving}
+                  className="text-xs font-semibold rounded-md"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={saving}
+                  className="text-xs font-semibold gap-1.5 rounded-md"
+                >
+                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Simpan
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}
