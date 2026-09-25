@@ -3,15 +3,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   FileDown,
-  BarChart3,
   Building2,
   Tags,
   CheckSquare,
   Users,
   CheckCircle2,
   Clock,
-  AlertTriangle,
-  PieChart as PieIcon,
+  AlertCircle,
+  XCircle,
   TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,8 @@ export default function ReportsPage() {
         if (json.success && json.data?.competitions) {
           setCompetitions(json.data.competitions);
         }
-      });
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -87,7 +87,6 @@ export default function ReportsPage() {
     const submittedPct = total > 0 ? Math.round((submitted / total) * 100) : 0;
     const revisionPct = total > 0 ? Math.round((revision / total) * 100) : 0;
     const rejectedPct = total > 0 ? Math.round((rejected / total) * 100) : 0;
-
     const malePct = total > 0 ? Math.round((male / total) * 100) : 0;
     const femalePct = total > 0 ? Math.round((female / total) * 100) : 0;
 
@@ -143,53 +142,63 @@ export default function ReportsPage() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-neutral-200">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold tracking-tight text-neutral-900">Laporan Statistik</h1>
-          </div>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Laporan</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" onClick={handleExport} className="gap-1.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs">
+        <div>
+          <Button size="sm" onClick={handleExport} className="gap-1.5 text-xs">
             <FileDown className="w-3.5 h-3.5" />
-            Ekspor CSV
+            Ekspor
           </Button>
         </div>
       </div>
 
       {/* Tabs & Filter Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* 1-Word Tab Buttons */}
-        <div className="inline-flex rounded-lg border border-neutral-200 p-1 bg-neutral-100 text-xs shadow-xs">
+        {/* Tab Buttons */}
+        <div className="inline-flex rounded-md border border-neutral-300 p-0.5 bg-neutral-100 text-xs">
           <button
+            type="button"
             onClick={() => setActiveTab('participants')}
             className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md transition-colors ${
-              activeTab === 'participants' ? 'bg-white text-emerald-900 shadow-xs font-semibold' : 'text-neutral-600 hover:text-black'
+              activeTab === 'participants'
+                ? 'bg-white text-black font-semibold shadow-xs'
+                : 'text-neutral-600 hover:text-black'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
             <span>Peserta</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('lptks')}
             className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md transition-colors ${
-              activeTab === 'lptks' ? 'bg-white text-emerald-900 shadow-xs font-semibold' : 'text-neutral-600 hover:text-black'
+              activeTab === 'lptks'
+                ? 'bg-white text-black font-semibold shadow-xs'
+                : 'text-neutral-600 hover:text-black'
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
             <span>Kafilah</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('categories')}
             className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md transition-colors ${
-              activeTab === 'categories' ? 'bg-white text-emerald-900 shadow-xs font-semibold' : 'text-neutral-600 hover:text-black'
+              activeTab === 'categories'
+                ? 'bg-white text-black font-semibold shadow-xs'
+                : 'text-neutral-600 hover:text-black'
             }`}
           >
             <Tags className="w-3.5 h-3.5" />
             <span>Kategori</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('verification')}
             className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md transition-colors ${
-              activeTab === 'verification' ? 'bg-white text-emerald-900 shadow-xs font-semibold' : 'text-neutral-600 hover:text-black'
+              activeTab === 'verification'
+                ? 'bg-white text-black font-semibold shadow-xs'
+                : 'text-neutral-600 hover:text-black'
             }`}
           >
             <CheckSquare className="w-3.5 h-3.5" />
@@ -201,9 +210,9 @@ export default function ReportsPage() {
           <select
             value={selectedComp}
             onChange={(e) => setSelectedComp(e.target.value)}
-            className="px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600 text-black shadow-xs"
+            className="px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black text-black"
           >
-            <option value="">Semua Cabang Lomba</option>
+            <option value="">Semua Lomba</option>
             {competitions.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -213,302 +222,216 @@ export default function ReportsPage() {
         )}
       </div>
 
-      {/* Visual Charts & Diagrams Section */}
+      {/* Visual Content */}
       {loading ? (
-        <div className="p-12 text-center text-xs text-neutral-500 bg-white border border-neutral-200 rounded-xl">
-          Memuat visualisasi dan statistik...
+        <div className="p-8 text-center text-xs text-neutral-500 bg-white border border-neutral-300 rounded-md">
+          Memuat data...
         </div>
       ) : (
         <div className="space-y-6">
-          {/* TAB 1: PARTICIPANTS CHARTS */}
+          {/* TAB 1: PARTICIPANTS */}
           {activeTab === 'participants' && participantStats && (
             <div className="space-y-4">
-              {/* Executive Metrics Bar */}
+              {/* 4 Clean Metric Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-white border border-neutral-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-neutral-500">Total Pendaftar</div>
-                  <div className="text-xl font-bold font-mono text-neutral-900 mt-1">
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Total Peserta</div>
+                  <div className="text-2xl font-black text-black mt-1">
                     {participantStats.total}
                   </div>
-                  <div className="text-[10px] text-neutral-400 font-mono mt-0.5">100% dari seluruh berkas</div>
                 </div>
 
-                <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    <span>Terverifikasi</span>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-600 uppercase tracking-wider">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                    <span>Valid</span>
                   </div>
-                  <div className="text-xl font-bold font-mono text-emerald-900 mt-1">
+                  <div className="text-2xl font-black text-black mt-1">
                     {participantStats.verified}
                   </div>
-                  <div className="text-[10px] text-emerald-700 font-mono mt-0.5">
-                    {participantStats.verifiedPct}% memenuhi syarat
-                  </div>
                 </div>
 
-                <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-amber-700 flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-amber-600" />
-                    <span>Perlu Ditelaah</span>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-600 uppercase tracking-wider">
+                    <Clock className="w-3.5 h-3.5 text-black" />
+                    <span>Menunggu</span>
                   </div>
-                  <div className="text-xl font-bold font-mono text-amber-900 mt-1">
+                  <div className="text-2xl font-black text-black mt-1">
                     {participantStats.submitted + participantStats.revision}
                   </div>
-                  <div className="text-[10px] text-amber-700 font-mono mt-0.5">
-                    {participantStats.submittedPct + participantStats.revisionPct}% dalam antrean
-                  </div>
                 </div>
 
-                <div className="bg-rose-50/60 border border-rose-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-rose-700 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3 text-rose-600" />
-                    <span>Ditolak / Gugur</span>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-600 uppercase tracking-wider">
+                    <XCircle className="w-3.5 h-3.5 text-black" />
+                    <span>Ditolak</span>
                   </div>
-                  <div className="text-xl font-bold font-mono text-rose-900 mt-1">
+                  <div className="text-2xl font-black text-black mt-1">
                     {participantStats.rejected}
-                  </div>
-                  <div className="text-[10px] text-rose-700 font-mono mt-0.5">
-                    {participantStats.rejectedPct}% tidak sesuai juknis
                   </div>
                 </div>
               </div>
 
-              {/* Graphical Charts: Donut Status & Gender Distribution */}
+              {/* Status Composition & Gender Breakdown */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                {/* Visual Chart 1: Status Distribution Bar & Proportions */}
-                <div className="md:col-span-7 bg-white border border-neutral-200 rounded-xl p-5 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
-                    <div className="flex items-center gap-2">
-                      <PieIcon className="w-4 h-4 text-emerald-700" />
-                      <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                        Komposisi Status Verifikasi
-                      </h3>
-                    </div>
-                    <span className="text-[11px] font-mono text-neutral-400">Total: {participantStats.total}</span>
+                <div className="md:col-span-7 bg-white border border-neutral-300 rounded-md p-4 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-200">
+                    <h2 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                      Komposisi Status
+                    </h2>
+                    <span className="text-xs font-mono text-neutral-500">{participantStats.total} peserta</span>
                   </div>
 
-                  {/* Horizontal Stacked Bar */}
-                  <div className="h-6 w-full rounded-lg overflow-hidden flex bg-neutral-100 border border-neutral-200">
+                  {/* Horizontal Bar */}
+                  <div className="h-5 w-full rounded-sm overflow-hidden flex bg-neutral-100 border border-neutral-300">
                     {participantStats.verified > 0 && (
                       <div
                         style={{ width: `${participantStats.verifiedPct}%` }}
-                        className="bg-emerald-600 h-full flex items-center justify-center text-[10px] font-bold text-white transition-all"
-                        title={`Verified: ${participantStats.verified} (${participantStats.verifiedPct}%)`}
+                        className="bg-neutral-900 h-full flex items-center justify-center text-[10px] font-bold text-white"
+                        title={`Valid: ${participantStats.verified} (${participantStats.verifiedPct}%)`}
                       >
-                        {participantStats.verifiedPct > 8 ? `${participantStats.verifiedPct}%` : ''}
+                        {participantStats.verifiedPct > 10 ? `${participantStats.verifiedPct}%` : ''}
                       </div>
                     )}
                     {participantStats.submitted > 0 && (
                       <div
                         style={{ width: `${participantStats.submittedPct}%` }}
-                        className="bg-amber-500 h-full flex items-center justify-center text-[10px] font-bold text-neutral-900 transition-all"
-                        title={`Submitted: ${participantStats.submitted} (${participantStats.submittedPct}%)`}
+                        className="bg-neutral-500 h-full flex items-center justify-center text-[10px] font-bold text-white"
+                        title={`Terkirim: ${participantStats.submitted} (${participantStats.submittedPct}%)`}
                       >
-                        {participantStats.submittedPct > 8 ? `${participantStats.submittedPct}%` : ''}
+                        {participantStats.submittedPct > 10 ? `${participantStats.submittedPct}%` : ''}
                       </div>
                     )}
                     {participantStats.revision > 0 && (
                       <div
                         style={{ width: `${participantStats.revisionPct}%` }}
-                        className="bg-sky-500 h-full flex items-center justify-center text-[10px] font-bold text-white transition-all"
-                        title={`Revision: ${participantStats.revision} (${participantStats.revisionPct}%)`}
+                        className="bg-neutral-400 h-full flex items-center justify-center text-[10px] font-bold text-black"
+                        title={`Revisi: ${participantStats.revision} (${participantStats.revisionPct}%)`}
                       >
-                        {participantStats.revisionPct > 8 ? `${participantStats.revisionPct}%` : ''}
+                        {participantStats.revisionPct > 10 ? `${participantStats.revisionPct}%` : ''}
                       </div>
                     )}
                     {participantStats.rejected > 0 && (
                       <div
                         style={{ width: `${participantStats.rejectedPct}%` }}
-                        className="bg-rose-500 h-full flex items-center justify-center text-[10px] font-bold text-white transition-all"
-                        title={`Rejected: ${participantStats.rejected} (${participantStats.rejectedPct}%)`}
+                        className="bg-neutral-300 h-full flex items-center justify-center text-[10px] font-bold text-black"
+                        title={`Ditolak: ${participantStats.rejected} (${participantStats.rejectedPct}%)`}
                       >
-                        {participantStats.rejectedPct > 8 ? `${participantStats.rejectedPct}%` : ''}
+                        {participantStats.rejectedPct > 10 ? `${participantStats.rejectedPct}%` : ''}
                       </div>
                     )}
                   </div>
 
-                  {/* Legends Grid */}
+                  {/* Clean Legend */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 border border-neutral-100">
-                      <span className="w-3 h-3 rounded-full bg-emerald-600 flex-shrink-0" />
-                      <div>
-                        <div className="text-[11px] font-semibold text-neutral-800">Valid</div>
-                        <div className="text-xs font-mono font-bold text-emerald-800">
-                          {participantStats.verified} ({participantStats.verifiedPct}%)
-                        </div>
-                      </div>
+                    <div className="p-2 rounded-sm bg-neutral-50 border border-neutral-200">
+                      <div className="text-[10px] uppercase font-semibold text-neutral-500">Valid</div>
+                      <div className="text-sm font-bold text-black">{participantStats.verified} ({participantStats.verifiedPct}%)</div>
                     </div>
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 border border-neutral-100">
-                      <span className="w-3 h-3 rounded-full bg-amber-500 flex-shrink-0" />
-                      <div>
-                        <div className="text-[11px] font-semibold text-neutral-800">Menunggu</div>
-                        <div className="text-xs font-mono font-bold text-amber-800">
-                          {participantStats.submitted} ({participantStats.submittedPct}%)
-                        </div>
-                      </div>
+                    <div className="p-2 rounded-sm bg-neutral-50 border border-neutral-200">
+                      <div className="text-[10px] uppercase font-semibold text-neutral-500">Terkirim</div>
+                      <div className="text-sm font-bold text-black">{participantStats.submitted} ({participantStats.submittedPct}%)</div>
                     </div>
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 border border-neutral-100">
-                      <span className="w-3 h-3 rounded-full bg-sky-500 flex-shrink-0" />
-                      <div>
-                        <div className="text-[11px] font-semibold text-neutral-800">Revisi</div>
-                        <div className="text-xs font-mono font-bold text-sky-800">
-                          {participantStats.revision} ({participantStats.revisionPct}%)
-                        </div>
-                      </div>
+                    <div className="p-2 rounded-sm bg-neutral-50 border border-neutral-200">
+                      <div className="text-[10px] uppercase font-semibold text-neutral-500">Revisi</div>
+                      <div className="text-sm font-bold text-black">{participantStats.revision} ({participantStats.revisionPct}%)</div>
                     </div>
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 border border-neutral-100">
-                      <span className="w-3 h-3 rounded-full bg-rose-500 flex-shrink-0" />
-                      <div>
-                        <div className="text-[11px] font-semibold text-neutral-800">Ditolak</div>
-                        <div className="text-xs font-mono font-bold text-rose-800">
-                          {participantStats.rejected} ({participantStats.rejectedPct}%)
-                        </div>
-                      </div>
+                    <div className="p-2 rounded-sm bg-neutral-50 border border-neutral-200">
+                      <div className="text-[10px] uppercase font-semibold text-neutral-500">Ditolak</div>
+                      <div className="text-sm font-bold text-black">{participantStats.rejected} ({participantStats.rejectedPct}%)</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Visual Chart 2: Gender Breakdown */}
-                <div className="md:col-span-5 bg-white border border-neutral-200 rounded-xl p-5 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-emerald-700" />
-                      <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                        Rasio Gender
-                      </h3>
-                    </div>
-                    <span className="text-[11px] font-mono text-neutral-400">Putra / Putri</span>
+                {/* Gender Breakdown */}
+                <div className="md:col-span-5 bg-white border border-neutral-300 rounded-md p-4 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-200">
+                    <h2 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                      Rasio Gender
+                    </h2>
+                    <span className="text-xs font-mono text-neutral-500">Putra & Putri</span>
                   </div>
 
-                  <div className="space-y-3 pt-1">
-                    {/* Putra Bar */}
+                  <div className="space-y-3 pt-2">
                     <div>
                       <div className="flex justify-between text-xs mb-1 font-medium">
-                        <span className="text-neutral-700 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-blue-600" />
-                          Putra (M)
-                        </span>
-                        <span className="font-mono font-bold text-neutral-900">
-                          {participantStats.male} ({participantStats.malePct}%)
-                        </span>
+                        <span className="text-black">Putra</span>
+                        <span className="font-bold text-black">{participantStats.male} ({participantStats.malePct}%)</span>
                       </div>
-                      <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
-                        <div
-                          style={{ width: `${participantStats.malePct}%` }}
-                          className="h-full bg-blue-600 rounded-full transition-all"
-                        />
+                      <div className="h-2.5 w-full bg-neutral-100 rounded-sm overflow-hidden border border-neutral-300">
+                        <div style={{ width: `${participantStats.malePct}%` }} className="h-full bg-black" />
                       </div>
                     </div>
 
-                    {/* Putri Bar */}
                     <div>
                       <div className="flex justify-between text-xs mb-1 font-medium">
-                        <span className="text-neutral-700 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-rose-500" />
-                          Putri (F)
-                        </span>
-                        <span className="font-mono font-bold text-neutral-900">
-                          {participantStats.female} ({participantStats.femalePct}%)
-                        </span>
+                        <span className="text-black">Putri</span>
+                        <span className="font-bold text-black">{participantStats.female} ({participantStats.femalePct}%)</span>
                       </div>
-                      <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
-                        <div
-                          style={{ width: `${participantStats.femalePct}%` }}
-                          className="h-full bg-rose-500 rounded-full transition-all"
-                        />
+                      <div className="h-2.5 w-full bg-neutral-100 rounded-sm overflow-hidden border border-neutral-300">
+                        <div style={{ width: `${participantStats.femalePct}%` }} className="h-full bg-neutral-600" />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-100 text-[11px] text-neutral-600 leading-relaxed">
-                    Setiap golongan lomba MTQ XIX Tambusai Utara dibatasi maksimal 1 peserta putra dan 1 peserta putri per kafilah desa.
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 2: LPTKS CHARTS */}
+          {/* TAB 2: LPTKS */}
           {activeTab === 'lptks' && lptkStats && (
             <div className="space-y-4">
-              {/* Summary Cards */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white border border-neutral-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-neutral-500">Jumlah Kafilah Desa</div>
-                  <div className="text-xl font-bold font-mono text-neutral-900 mt-1">
-                    {lptkStats.totalVillages} Desa
-                  </div>
-                  <div className="text-[10px] text-emerald-700 font-medium">Kecamatan Tambusai Utara</div>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Kafilah Desa</div>
+                  <div className="text-2xl font-black text-black mt-1">{lptkStats.totalVillages} Desa</div>
                 </div>
-                <div className="bg-white border border-neutral-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-neutral-500">Total Peserta Diajukan</div>
-                  <div className="text-xl font-bold font-mono text-neutral-900 mt-1">
-                    {lptkStats.totalParticipants}
-                  </div>
-                  <div className="text-[10px] text-neutral-400 font-mono">Seluruh desa</div>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Total Peserta</div>
+                  <div className="text-2xl font-black text-black mt-1">{lptkStats.totalParticipants}</div>
                 </div>
-                <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-emerald-700">Telah Terverifikasi</div>
-                  <div className="text-xl font-bold font-mono text-emerald-900 mt-1">
-                    {lptkStats.totalVerified}
-                  </div>
-                  <div className="text-[10px] text-emerald-700 font-mono">
-                    {lptkStats.totalParticipants > 0
-                      ? Math.round((lptkStats.totalVerified / lptkStats.totalParticipants) * 100)
-                      : 0}
-                    % terverifikasi
-                  </div>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Valid</div>
+                  <div className="text-2xl font-black text-black mt-1">{lptkStats.totalVerified}</div>
                 </div>
               </div>
 
-              {/* Ranked Bar Chart for 11 Villages */}
-              <div className="bg-white border border-neutral-200 rounded-xl p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-emerald-700" />
-                    <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                      Peringkat Partisipasi Kafilah Desa
-                    </h3>
-                  </div>
-                  <span className="text-[11px] font-mono text-neutral-400">Total & Terverifikasi</span>
+              {/* Ranked Bar Chart for Villages */}
+              <div className="bg-white border border-neutral-300 rounded-md p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-200">
+                  <h2 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                    Partisipasi Kafilah
+                  </h2>
+                  <span className="text-xs font-mono text-neutral-500">11 Desa</span>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5 pt-1">
                   {data.map((row) => {
                     const total = Number(row.total_participants) || 0;
                     const verified = Number(row.verified_count) || 0;
-                    const pctOfMax = Math.round((total / lptkStats.maxParticipants) * 100);
-                    const verifiedPctOfTotal = total > 0 ? Math.round((verified / total) * 100) : 0;
 
                     return (
                       <div key={row.lptk_id} className="space-y-1">
                         <div className="flex items-center justify-between text-xs font-medium">
-                          <span className="text-neutral-900 font-semibold flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                          <span className="text-black font-semibold">
                             {row.lptk_name}
-                            <span className="text-[10px] text-neutral-400 font-mono">({row.village_name})</span>
                           </span>
-                          <span className="font-mono text-neutral-700">
-                            <strong className="text-black">{total}</strong> diajukan (
-                            <span className="text-emerald-700">{verified} lolos</span>)
+                          <span className="font-mono text-neutral-600 text-xs">
+                            <strong className="text-black">{total}</strong> diajukan, <strong className="text-black">{verified}</strong> valid
                           </span>
                         </div>
-                        <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden flex border border-neutral-200">
-                          {/* Verified portion */}
+                        <div className="h-2 w-full bg-neutral-100 rounded-sm overflow-hidden flex border border-neutral-200">
                           <div
                             style={{
                               width: `${(verified / lptkStats.maxParticipants) * 100}%`,
                             }}
-                            className="bg-emerald-600 h-full transition-all"
-                            title={`Lolos: ${verified}`}
+                            className="bg-black h-full"
                           />
-                          {/* Unverified portion */}
                           <div
                             style={{
                               width: `${((total - verified) / lptkStats.maxParticipants) * 100}%`,
                             }}
-                            className="bg-amber-400 h-full transition-all"
-                            title={`Belum Lolos: ${total - verified}`}
+                            className="bg-neutral-400 h-full"
                           />
                         </div>
                       </div>
@@ -519,37 +442,29 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* TAB 3: CATEGORIES CHARTS */}
+          {/* TAB 3: CATEGORIES */}
           {activeTab === 'categories' && categoryStats && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white border border-neutral-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-neutral-500">Total Kategori Terbuka</div>
-                  <div className="text-xl font-bold font-mono text-neutral-900 mt-1">{data.length} Golongan</div>
-                  <div className="text-[10px] text-neutral-400 font-mono">6 Cabang Musabaqah</div>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Golongan Lomba</div>
+                  <div className="text-2xl font-black text-black mt-1">{data.length} Golongan</div>
                 </div>
-                <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-emerald-700">Total Pendaftar di Seluruh Kategori</div>
-                  <div className="text-xl font-bold font-mono text-emerald-900 mt-1">
-                    {categoryStats.totalRegistrations}
-                  </div>
-                  <div className="text-[10px] text-emerald-700 font-mono">Akumulasi pendaftaran golongan</div>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Total Pendaftar</div>
+                  <div className="text-2xl font-black text-black mt-1">{categoryStats.totalRegistrations}</div>
                 </div>
               </div>
 
-              {/* Bar Chart of Top Categories */}
-              <div className="bg-white border border-neutral-200 rounded-xl p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-emerald-700" />
-                    <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                      Golongan Paling Diminati (Pendaftar Tertinggi)
-                    </h3>
-                  </div>
-                  <span className="text-[11px] font-mono text-neutral-400">Peringkat Teratas</span>
+              {/* Top Categories */}
+              <div className="bg-white border border-neutral-300 rounded-md p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-200">
+                  <h2 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                    Golongan Peminat Terbanyak
+                  </h2>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5 pt-1">
                   {categoryStats.top5.map((row) => {
                     const count = Number(row.total_registered) || 0;
                     const verified = Number(row.verified_count) || 0;
@@ -558,22 +473,15 @@ export default function ReportsPage() {
                     return (
                       <div key={row.category_id} className="space-y-1">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-neutral-900 flex items-center gap-1.5">
-                            <span>{row.category_name}</span>
-                            <span className="text-[10px] font-mono px-1.5 py-0.2 bg-neutral-100 text-neutral-600 rounded">
-                              {row.gender_code === 'M' ? 'Putra' : 'Putri'}
-                            </span>
-                            <span className="text-[11px] text-neutral-400 font-normal">({row.competition_name})</span>
+                          <span className="font-semibold text-black">
+                            {row.category_name} ({row.gender_code === 'M' ? 'Putra' : 'Putri'})
                           </span>
-                          <span className="font-mono font-bold text-neutral-900">
-                            {count} peserta <span className="text-emerald-700 font-normal">({verified} valid)</span>
+                          <span className="font-mono text-xs text-neutral-600">
+                            <strong className="text-black">{count}</strong> peserta ({verified} valid)
                           </span>
                         </div>
-                        <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
-                          <div
-                            style={{ width: `${pct}%` }}
-                            className="h-full bg-emerald-600 rounded-full transition-all"
-                          />
+                        <div className="h-2 w-full bg-neutral-100 rounded-sm overflow-hidden border border-neutral-200">
+                          <div style={{ width: `${pct}%` }} className="h-full bg-black" />
                         </div>
                       </div>
                     );
@@ -583,51 +491,35 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* TAB 4: VERIFICATION CHARTS */}
+          {/* TAB 4: VERIFICATION */}
           {activeTab === 'verification' && verifierStats && (
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white border border-neutral-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-neutral-500">Total Telaah Keputusan</div>
-                  <div className="text-xl font-bold font-mono text-neutral-900 mt-1">
-                    {verifierStats.totalDecisions}
-                  </div>
-                  <div className="text-[10px] text-neutral-400 font-mono">Keputusan verifikator</div>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Total Telaah</div>
+                  <div className="text-2xl font-black text-black mt-1">{verifierStats.totalDecisions}</div>
                 </div>
-                <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-emerald-700">Disetujui</div>
-                  <div className="text-xl font-bold font-mono text-emerald-900 mt-1">
-                    {verifierStats.totalApproved}
-                  </div>
-                  <div className="text-[10px] text-emerald-700 font-mono">
-                    {verifierStats.totalDecisions > 0
-                      ? Math.round((verifierStats.totalApproved / verifierStats.totalDecisions) * 100)
-                      : 0}
-                    % diterima
-                  </div>
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Disetujui</div>
+                  <div className="text-2xl font-black text-black mt-1">{verifierStats.totalApproved}</div>
                 </div>
-                <div className="bg-rose-50/60 border border-rose-200 rounded-xl p-3.5 shadow-xs">
-                  <div className="text-[11px] font-medium text-rose-700">Revisi & Ditolak</div>
-                  <div className="text-xl font-bold font-mono text-rose-900 mt-1">
+                <div className="bg-white border border-neutral-300 rounded-md p-4">
+                  <div className="text-[11px] font-medium text-neutral-600 uppercase tracking-wider">Revisi / Tolak</div>
+                  <div className="text-2xl font-black text-black mt-1">
                     {verifierStats.totalRevision + verifierStats.totalRejected}
                   </div>
-                  <div className="text-[10px] text-rose-700 font-mono">Butuh perbaikan / gugur</div>
                 </div>
               </div>
 
-              {/* Stacked Bar Chart per Verifier */}
-              <div className="bg-white border border-neutral-200 rounded-xl p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <CheckSquare className="w-4 h-4 text-emerald-700" />
-                    <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                      Produktivitas Petugas Verifikator
-                    </h3>
-                  </div>
-                  <span className="text-[11px] font-mono text-neutral-400">Disetujui / Revisi / Ditolak</span>
+              {/* Verifier Breakdown */}
+              <div className="bg-white border border-neutral-300 rounded-md p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-200">
+                  <h2 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                    Kinerja Verifikator
+                  </h2>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 pt-1">
                   {data.map((row) => {
                     const total = Number(row.total_decisions) || 0;
                     const verified = Number(row.verified_count) || 0;
@@ -639,38 +531,17 @@ export default function ReportsPage() {
                     const jPct = total > 0 ? (rejected / total) * 100 : 0;
 
                     return (
-                      <div key={row.verifier_id} className="space-y-1.5">
+                      <div key={row.verifier_id} className="space-y-1">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-neutral-900">{row.verifier_name}</span>
-                          <span className="font-mono text-neutral-600">
-                            <strong>{total}</strong> berkas (
-                            <span className="text-emerald-700 font-bold">{verified} disetujui</span>,{' '}
-                            <span className="text-amber-600">{revision} revisi</span>,{' '}
-                            <span className="text-rose-600">{rejected} ditolak</span>)
+                          <span className="font-semibold text-black">{row.verifier_name}</span>
+                          <span className="font-mono text-neutral-600 text-xs">
+                            <strong className="text-black">{total}</strong> berkas ({verified} setuju, {revision} revisi, {rejected} tolak)
                           </span>
                         </div>
-                        <div className="h-4 w-full bg-neutral-100 rounded-full overflow-hidden flex border border-neutral-200">
-                          {verified > 0 && (
-                            <div
-                              style={{ width: `${vPct}%` }}
-                              className="bg-emerald-600 h-full transition-all"
-                              title={`Disetujui: ${verified}`}
-                            />
-                          )}
-                          {revision > 0 && (
-                            <div
-                              style={{ width: `${rPct}%` }}
-                              className="bg-amber-400 h-full transition-all"
-                              title={`Revisi: ${revision}`}
-                            />
-                          )}
-                          {rejected > 0 && (
-                            <div
-                              style={{ width: `${jPct}%` }}
-                              className="bg-rose-500 h-full transition-all"
-                              title={`Ditolak: ${rejected}`}
-                            />
-                          )}
+                        <div className="h-2.5 w-full bg-neutral-100 rounded-sm overflow-hidden flex border border-neutral-200">
+                          {verified > 0 && <div style={{ width: `${vPct}%` }} className="bg-black h-full" />}
+                          {revision > 0 && <div style={{ width: `${rPct}%` }} className="bg-neutral-500 h-full" />}
+                          {rejected > 0 && <div style={{ width: `${jPct}%` }} className="bg-neutral-300 h-full" />}
                         </div>
                       </div>
                     );
@@ -683,50 +554,40 @@ export default function ReportsPage() {
       )}
 
       {/* Tabular Data View */}
-      <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-xs">
+      <div className="bg-white border border-neutral-300 rounded-md overflow-hidden">
         <div className="px-4 py-3 bg-neutral-50 border-b border-neutral-200 flex items-center justify-between">
-          <div className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
-            Tabel Rincian Data
-          </div>
+          <h2 className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
+            Rincian Data
+          </h2>
           <span className="text-[11px] font-mono text-neutral-500">
-            {data.length} baris data tercatat
+            {data.length} baris
           </span>
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-xs text-neutral-500">Memuat rincian tabel...</div>
+          <div className="p-6 text-center text-xs text-neutral-500">Memuat rincian...</div>
         ) : data.length === 0 ? (
-          <div className="p-8 text-center text-xs text-neutral-500">Belum ada rekapitulasi data.</div>
+          <div className="p-6 text-center text-xs text-neutral-500">Belum ada data.</div>
         ) : activeTab === 'participants' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="px-4 py-2.5">Status Pendaftaran</th>
-                  <th className="px-4 py-2.5">Jenis Kelamin</th>
-                  <th className="px-4 py-2.5 text-right">Jumlah Peserta</th>
+                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-2.5">Gender</th>
+                  <th className="px-4 py-2.5 text-right">Jumlah</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200 font-mono">
                 {data.map((row, idx) => (
                   <tr key={idx} className="hover:bg-neutral-50">
                     <td className="px-4 py-2.5 font-semibold text-black">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[11px] ${
-                          row.status_code === 'VERIFIED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : row.status_code === 'SUBMITTED'
-                            ? 'bg-amber-100 text-amber-800'
-                            : row.status_code === 'REVISION_REQUIRED'
-                            ? 'bg-sky-100 text-sky-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
+                      <span className="inline-block px-1.5 py-0.5 rounded-sm text-[11px] bg-neutral-200 text-black">
                         {row.status_code}
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-neutral-600">
-                      {row.gender_code === 'M' ? 'Putra (M)' : 'Putri (F)'}
+                      {row.gender_code === 'M' ? 'Putra' : 'Putri'}
                     </td>
                     <td className="px-4 py-2.5 text-right font-bold text-black">{row.total}</td>
                   </tr>
@@ -740,10 +601,10 @@ export default function ReportsPage() {
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
                   <th className="px-4 py-2.5">Kode</th>
-                  <th className="px-4 py-2.5">Nama LPTK</th>
+                  <th className="px-4 py-2.5">Kafilah</th>
                   <th className="px-4 py-2.5">Desa</th>
-                  <th className="px-4 py-2.5 text-right">Total Pendaftar</th>
-                  <th className="px-4 py-2.5 text-right">Terverifikasi</th>
+                  <th className="px-4 py-2.5 text-right">Diajukan</th>
+                  <th className="px-4 py-2.5 text-right">Valid</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
@@ -753,7 +614,7 @@ export default function ReportsPage() {
                     <td className="px-4 py-2.5 font-semibold text-black">{row.lptk_name}</td>
                     <td className="px-4 py-2.5 text-neutral-600">{row.village_name}</td>
                     <td className="px-4 py-2.5 text-right font-mono font-bold text-black">{row.total_participants}</td>
-                    <td className="px-4 py-2.5 text-right font-mono text-emerald-800 font-semibold">{row.verified_count}</td>
+                    <td className="px-4 py-2.5 text-right font-mono text-black font-semibold">{row.verified_count}</td>
                   </tr>
                 ))}
               </tbody>
@@ -764,8 +625,8 @@ export default function ReportsPage() {
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="px-4 py-2.5">Cabang Kategori</th>
-                  <th className="px-4 py-2.5">Lomba</th>
+                  <th className="px-4 py-2.5">Golongan</th>
+                  <th className="px-4 py-2.5">Cabang</th>
                   <th className="px-4 py-2.5">Gender</th>
                   <th className="px-4 py-2.5 text-right">Pendaftar</th>
                   <th className="px-4 py-2.5 text-right">Valid</th>
@@ -778,7 +639,7 @@ export default function ReportsPage() {
                     <td className="px-4 py-2.5 text-neutral-600">{row.competition_name}</td>
                     <td className="px-4 py-2.5 font-mono text-neutral-600">{row.gender_code}</td>
                     <td className="px-4 py-2.5 text-right font-mono font-bold text-black">{row.total_registered}</td>
-                    <td className="px-4 py-2.5 text-right font-mono text-emerald-800 font-semibold">{row.verified_count}</td>
+                    <td className="px-4 py-2.5 text-right font-mono text-black font-semibold">{row.verified_count}</td>
                   </tr>
                 ))}
               </tbody>
@@ -789,8 +650,8 @@ export default function ReportsPage() {
             <table className="w-full text-left text-xs text-black">
               <thead className="bg-neutral-100 border-b border-neutral-200 text-neutral-600 font-semibold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="px-4 py-2.5">Nama Petugas Verifikator</th>
-                  <th className="px-4 py-2.5 text-right">Total Telaah</th>
+                  <th className="px-4 py-2.5">Verifikator</th>
+                  <th className="px-4 py-2.5 text-right">Total</th>
                   <th className="px-4 py-2.5 text-right">Disetujui</th>
                   <th className="px-4 py-2.5 text-right">Revisi</th>
                   <th className="px-4 py-2.5 text-right">Ditolak</th>
@@ -801,9 +662,9 @@ export default function ReportsPage() {
                   <tr key={row.verifier_id} className="hover:bg-neutral-50">
                     <td className="px-4 py-2.5 font-sans font-semibold text-black">{row.verifier_name}</td>
                     <td className="px-4 py-2.5 text-right font-bold text-black">{row.total_decisions}</td>
-                    <td className="px-4 py-2.5 text-right text-emerald-800 font-semibold">{row.verified_count}</td>
-                    <td className="px-4 py-2.5 text-right text-amber-700">{row.revision_count}</td>
-                    <td className="px-4 py-2.5 text-right text-rose-700">{row.rejected_count}</td>
+                    <td className="px-4 py-2.5 text-right text-black font-semibold">{row.verified_count}</td>
+                    <td className="px-4 py-2.5 text-right text-neutral-600">{row.revision_count}</td>
+                    <td className="px-4 py-2.5 text-right text-neutral-600">{row.rejected_count}</td>
                   </tr>
                 ))}
               </tbody>

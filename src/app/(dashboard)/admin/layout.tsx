@@ -31,7 +31,6 @@ function isRouteAllowed(pathname: string, roleCode?: string): boolean {
       '/admin/lptks',
       '/admin/participants',
       '/admin/juknis',
-      '/admin/reports',
       '/admin/profile',
     ];
     return allowedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

@@ -81,7 +81,6 @@ const DESA_DEFAULT_MENU: MenuItem[] = [
   { title: 'Kafilah', href: '/admin/lptks', icon: 'Building2' },
   { title: 'Peserta', href: '/admin/participants', icon: 'UserCheck' },
   { title: 'Juknis', href: '/admin/juknis', icon: 'BookOpen' },
-  { title: 'Laporan', href: '/admin/reports', icon: 'BarChart3' },
 ];
 
 // Clean, task-focused menu for Admin Kecamatan
