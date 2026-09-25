@@ -12,7 +12,8 @@ export async function GET(
     const rows = await db.query`
       SELECT 
         id, title, slug, category, excerpt, content, cover_image_url, 
-        author_name, published_at
+        gallery_images, video_url, meta_title, meta_description, meta_keywords, content_format,
+        author_name, published_at, created_at, updated_at
       FROM public.posts
       WHERE slug = ${params.slug} AND deleted_at IS NULL AND is_published = true
       LIMIT 1

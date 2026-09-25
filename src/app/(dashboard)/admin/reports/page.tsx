@@ -144,14 +144,8 @@ export default function ReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-neutral-200">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900">Laporan & Statistik</h1>
-            <span className="text-[11px] font-mono px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold">
-              MTQ XIX
-            </span>
+            <h1 className="text-lg font-bold tracking-tight text-neutral-900">Laporan Statistik</h1>
           </div>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Visualisasi diagram analitik dan ekspor data resmi MTQ XIX Tambusai Utara
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={handleExport} className="gap-1.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs">

@@ -258,10 +258,7 @@ export default function SettingsPage() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black">Pengaturan</h1>
-          <p className="text-xs text-neutral-500">
-            Konfigurasi operasional, logo/branding, dan penyimpanan media CDN Neon Object Storage
-          </p>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Pengaturan Sistem</h1>
         </div>
       </div>
 

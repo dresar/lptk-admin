@@ -65,8 +65,7 @@ export default function DashboardPage() {
       {/* Title */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black">Dashboard</h1>
-          <p className="text-xs text-neutral-500">Ringkasan operasional pendataan dan verifikasi peserta LPTK</p>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Dashboard</h1>
         </div>
         <div className="flex gap-2">
           <Link href="/admin/participants/new">

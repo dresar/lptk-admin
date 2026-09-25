@@ -15,6 +15,7 @@ export async function GET(
     const rows = await db.query`
       SELECT 
         id, title, slug, category, excerpt, content, cover_image_url,
+        gallery_images, video_url, meta_title, meta_description, meta_keywords, content_format,
         author_name, is_published, published_at, created_at, updated_at
       FROM public.posts
       WHERE id = ${params.id} AND deleted_at IS NULL
@@ -73,6 +74,12 @@ export async function PUT(
     const excerpt = data.excerpt ?? currentPost.excerpt;
     const content = data.content ?? currentPost.content;
     const cover_image_url = data.cover_image_url !== undefined ? data.cover_image_url : currentPost.cover_image_url;
+    const gallery_images = data.gallery_images !== undefined ? data.gallery_images : currentPost.gallery_images;
+    const video_url = data.video_url !== undefined ? data.video_url : currentPost.video_url;
+    const meta_title = data.meta_title !== undefined ? data.meta_title : currentPost.meta_title;
+    const meta_description = data.meta_description !== undefined ? data.meta_description : currentPost.meta_description;
+    const meta_keywords = data.meta_keywords !== undefined ? data.meta_keywords : currentPost.meta_keywords;
+    const content_format = data.content_format !== undefined ? data.content_format : currentPost.content_format;
     const author_name = data.author_name ?? currentPost.author_name;
     const is_published = data.is_published !== undefined ? data.is_published : currentPost.is_published;
     const published_at = data.published_at ? new Date(data.published_at) : currentPost.published_at;
@@ -86,12 +93,18 @@ export async function PUT(
         excerpt = ${excerpt},
         content = ${content},
         cover_image_url = ${cover_image_url},
+        gallery_images = ${gallery_images || []},
+        video_url = ${video_url || null},
+        meta_title = ${meta_title || null},
+        meta_description = ${meta_description || null},
+        meta_keywords = ${meta_keywords || null},
+        content_format = ${content_format || 'markdown'},
         author_name = ${author_name},
         is_published = ${is_published},
         published_at = ${published_at},
         updated_at = NOW()
       WHERE id = ${params.id}
-      RETURNING id, title, slug, category, excerpt, content, cover_image_url, author_name, is_published, published_at, updated_at;
+      RETURNING id, title, slug, category, excerpt, content, cover_image_url, gallery_images, video_url, meta_title, meta_description, meta_keywords, content_format, author_name, is_published, published_at, updated_at;
     `;
 
     const updatedPost = updatedRows[0];

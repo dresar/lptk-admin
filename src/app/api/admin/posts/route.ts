@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
     const listSql = `
       SELECT 
         id, title, slug, category, excerpt, cover_image_url, 
+        gallery_images, video_url, meta_title, meta_description, meta_keywords, content_format,
         author_name, is_published, published_at, created_at, updated_at
       FROM public.posts
       WHERE ${whereClause}
@@ -83,6 +84,12 @@ export async function POST(req: NextRequest) {
       excerpt,
       content,
       cover_image_url,
+      gallery_images,
+      video_url,
+      meta_title,
+      meta_description,
+      meta_keywords,
+      content_format,
       author_name,
       is_published,
       published_at,
@@ -101,12 +108,14 @@ export async function POST(req: NextRequest) {
     const rows = await db.query`
       INSERT INTO public.posts (
         title, slug, category, excerpt, content, cover_image_url,
+        gallery_images, video_url, meta_title, meta_description, meta_keywords, content_format,
         author_name, is_published, published_at, created_by
       ) VALUES (
         ${title}, ${slug}, ${category}, ${excerpt}, ${content}, ${cover_image_url || null},
+        ${gallery_images || []}, ${video_url || null}, ${meta_title || null}, ${meta_description || null}, ${meta_keywords || null}, ${content_format || 'markdown'},
         ${author_name || 'Sekretariat LPTQ'}, ${is_published}, ${pubDate}, ${user.id}
       )
-      RETURNING id, title, slug, category, excerpt, cover_image_url, author_name, is_published, published_at, created_at;
+      RETURNING id, title, slug, category, excerpt, cover_image_url, gallery_images, video_url, meta_title, meta_description, meta_keywords, content_format, author_name, is_published, published_at, created_at;
     `;
 
     const newPost = rows[0];

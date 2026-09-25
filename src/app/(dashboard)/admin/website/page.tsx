@@ -209,14 +209,11 @@ export default function WebsiteSettingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-neutral-200">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900">Pengaturan Tampilan Website</h1>
+            <h1 className="text-lg font-bold tracking-tight text-neutral-900">Pengaturan Website</h1>
             <span className="text-[11px] font-mono px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-sm font-semibold">
-              Live CMS
+              CMS
             </span>
           </div>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Atur slider gambar latar hero (maks. 5 slide), judul, info kecil, dan hitung mundur pembukaan MTQ XIX
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <a

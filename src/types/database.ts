@@ -164,3 +164,27 @@ export interface AuditLog {
   new_data?: any;
   created_at: string;
 }
+
+export interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  excerpt: string;
+  content: string;
+  cover_image_url?: string | null;
+  gallery_images?: string[];
+  video_url?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  meta_keywords?: string | null;
+  content_format?: 'markdown' | 'html';
+  author_name: string;
+  is_published: boolean;
+  published_at: string;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+}
+

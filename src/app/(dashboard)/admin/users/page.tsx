@@ -134,8 +134,7 @@ export default function UsersPage() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black">Pengguna</h1>
-          <p className="text-xs text-neutral-500">Manajemen akun administrator dan operator LPTK</p>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Pengguna</h1>
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />

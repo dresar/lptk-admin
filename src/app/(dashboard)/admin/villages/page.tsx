@@ -196,8 +196,7 @@ export default function VillagesPage() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black uppercase">Desa</h1>
-          <p className="text-xs text-neutral-500">Master data desa se-Kecamatan Mahato</p>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Data Desa</h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button

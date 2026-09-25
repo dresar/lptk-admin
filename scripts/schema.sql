@@ -258,11 +258,17 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
 CREATE TABLE IF NOT EXISTS public.posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL,
+    slug VARCHAR(255) NOT NULL,
     category VARCHAR(100) NOT NULL,
     excerpt TEXT NOT NULL,
     content TEXT NOT NULL,
     cover_image_url TEXT,
+    gallery_images TEXT[] DEFAULT '{}',
+    video_url TEXT,
+    meta_title VARCHAR(255),
+    meta_description TEXT,
+    meta_keywords VARCHAR(255),
+    content_format VARCHAR(20) DEFAULT 'markdown',
     author_name VARCHAR(150) NOT NULL DEFAULT 'Sekretariat LPTQ',
     is_published BOOLEAN DEFAULT true,
     published_at TIMESTAMPTZ DEFAULT NOW(),
@@ -271,6 +277,7 @@ CREATE TABLE IF NOT EXISTS public.posts (
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
+CREATE UNIQUE INDEX IF NOT EXISTS posts_slug_unique ON public.posts (slug) WHERE deleted_at IS NULL;
 
 -- Indeks Kinerja
 CREATE INDEX IF NOT EXISTS idx_participants_status ON public.participants(status_code);

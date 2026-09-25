@@ -234,10 +234,7 @@ export default function ParticipantsPage() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black uppercase">Peserta</h1>
-          <p className="text-xs text-neutral-500">
-            Pendaftaran dan verifikasi kafilah MTQ/LPTK Mahato
-          </p>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Data Peserta</h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button

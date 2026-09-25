@@ -121,20 +121,19 @@ export default function PostsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header Bar */}
+      {/* Header Bar - Minimalist */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black">Berita & Informasi</h1>
-          <p className="text-xs text-neutral-500">Kelola warta publik, pengumuman jadwal, dan juknis MTQ XIX</p>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Berita & Warta</h1>
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
           <Link
             href="/admin/posts/new"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-emerald-800 hover:bg-emerald-900 text-white rounded-md transition-colors shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Tambah Berita</span>
+            <span>Tambah</span>
           </Link>
         </div>
       </div>

@@ -148,11 +148,10 @@ export default function DocumentTypesPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header Bar */}
+      {/* Header Bar - Minimalist */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-neutral-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black">Dokumen</h1>
-          <p className="text-xs text-neutral-500">Master jenis dokumen persyaratan pendaftaran peserta</p>
+          <h1 className="text-lg font-bold tracking-tight text-neutral-900">Jenis Dokumen</h1>
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle mode={viewMode} onChange={setViewMode} />
