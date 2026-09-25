@@ -193,12 +193,19 @@ export function PublicHero() {
 
           {/* Action Buttons under Title */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/admin/participants/new"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-neutral-900 font-bold text-xs sm:text-sm rounded-md shadow-md transition-colors"
+            >
+              <UserCheck className="w-4 h-4 text-neutral-900" />
+              <span>Daftar Peserta</span>
+            </Link>
             <a
               href="#cek-status"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs sm:text-sm rounded-md shadow-md transition-colors"
             >
               <Search className="w-4 h-4" />
-              <span>Cek Status Peserta</span>
+              <span>Cek Status</span>
             </a>
             <Link
               href="/cabang"

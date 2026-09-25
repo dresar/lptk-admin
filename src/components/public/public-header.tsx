@@ -99,10 +99,17 @@ export function PublicHeader() {
 
         {/* Right CTA */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/admin/participants/new"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-amber-400 hover:bg-amber-300 text-neutral-950 rounded-md shadow-xs transition-colors"
+          >
+            <span>Daftar Peserta</span>
+          </Link>
+
           {isLoggedIn ? (
             <Link
               href="/admin"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-md shadow-xs transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-md shadow-xs transition-colors"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Admin Panel</span>
@@ -110,9 +117,9 @@ export function PublicHeader() {
           ) : (
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 text-neutral-900 rounded-md border border-neutral-300 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 text-neutral-900 rounded-md border border-neutral-300 transition-colors"
             >
-              <span>Masuk Portal</span>
+              <span>Portal Desa</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           )}
@@ -145,6 +152,13 @@ export function PublicHeader() {
           </div>
 
           <div className="pt-3 border-t border-neutral-200 flex flex-col gap-2">
+            <Link
+              href="/admin/participants/new"
+              onClick={handleLinkClick}
+              className="w-full text-center px-4 py-2.5 bg-amber-400 text-neutral-950 font-bold rounded-md text-xs shadow-xs"
+            >
+              Daftar Peserta
+            </Link>
             {isLoggedIn ? (
               <Link
                 href="/admin"
@@ -157,7 +171,7 @@ export function PublicHeader() {
               <Link
                 href="/login"
                 onClick={handleLinkClick}
-                className="w-full text-center px-4 py-2.5 bg-emerald-800 text-white font-bold rounded-md text-xs"
+                className="w-full text-center px-4 py-2.5 bg-neutral-900 text-white font-bold rounded-md text-xs"
               >
                 Masuk Portal Petugas & Kafilah
               </Link>
